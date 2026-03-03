@@ -2,9 +2,9 @@
 __pycache__/
 *.pyc
 *.pyo
-data/moonshot_v2.db
-data/moonshot_v2.db-wal
-data/moonshot_v2.db-shm
+data/*.db
+data/*.db-wal
+data/*.db-shm
 models/champion_long.pkl
 models/champion_short.pkl
 models/tournament/*.pkl
