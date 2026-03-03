@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+data/moonshot_v2.db
+data/moonshot_v2.db-wal
+data/moonshot_v2.db-shm
+models/champion_long.pkl
+models/champion_short.pkl
+models/tournament/*.pkl
+.env

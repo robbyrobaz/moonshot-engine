@@ -1,0 +1,19 @@
+# Moonshot v2 — Python 3.12
+# ML
+lightgbm>=4.0
+xgboost>=2.0
+catboost>=1.2
+scikit-learn>=1.4
+numpy>=1.26
+pandas>=2.1
+
+# Web / Dashboard
+flask>=3.0
+gunicorn>=21.2
+
+# Data fetching
+requests>=2.31
+feedparser>=6.0
+
+# Utilities
+joblib>=1.3

@@ -1,0 +1,16 @@
+[Unit]
+Description=Blofin Moonshot v2 — Main 4h Cycle
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/rob/.openclaw/workspace/blofin-moonshot-v2
+ExecStart=/home/rob/.openclaw/workspace/blofin-moonshot-v2/.venv/bin/python orchestration/run_cycle.py
+Environment=PYTHONPATH=/home/rob/.openclaw/workspace/blofin-moonshot-v2
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=1800
+
+[Install]
+WantedBy=default.target

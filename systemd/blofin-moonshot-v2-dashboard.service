@@ -1,0 +1,17 @@
+[Unit]
+Description=Blofin Moonshot v2 — Dashboard (Flask on port 8893)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/rob/.openclaw/workspace/blofin-moonshot-v2
+ExecStart=/home/rob/.openclaw/workspace/blofin-moonshot-v2/.venv/bin/python dashboard/app.py
+Environment=PYTHONPATH=/home/rob/.openclaw/workspace/blofin-moonshot-v2
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

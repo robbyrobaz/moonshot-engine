@@ -1,0 +1,16 @@
+[Unit]
+Description=Blofin Moonshot v2 — Social Data Collection (1h)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/rob/.openclaw/workspace/blofin-moonshot-v2
+ExecStart=/home/rob/.openclaw/workspace/blofin-moonshot-v2/.venv/bin/python orchestration/run_cycle.py --social
+Environment=PYTHONPATH=/home/rob/.openclaw/workspace/blofin-moonshot-v2
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=600
+
+[Install]
+WantedBy=default.target
