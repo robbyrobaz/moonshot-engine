@@ -130,8 +130,12 @@ def _load_labeled_data(db, direction: str, feature_names: list[str]):
 
     for row in rows:
         stored_names = json.loads(row["feature_names"])
-        stored_values = json.loads(row["feature_values"])
-        name_to_val = dict(zip(stored_names, stored_values))
+        stored_values_raw = json.loads(row["feature_values"])
+        # feature_values may be stored as a dict {name: value} or list [value, ...]
+        if isinstance(stored_values_raw, dict):
+            name_to_val = stored_values_raw
+        else:
+            name_to_val = dict(zip(stored_names, stored_values_raw))
 
         # Extract only the features this model needs, in order
         feat_vec = []
