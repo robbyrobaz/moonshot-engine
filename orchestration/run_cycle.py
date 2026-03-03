@@ -59,6 +59,27 @@ def run_cycle():
         log.error("Candle fetch failed: %s", e)
         errors.append(f"candles: {e}")
 
+    # ── 2b. Opportunistic backfill — new coins lacking full history ───────
+    try:
+        from src.data.candles import backfill_candles
+        import config as _cfg
+        target_ms = int(time.time() * 1000) - int(
+            _cfg.BACKFILL_TARGET_YEARS * 365.25 * 24 * 3600 * 1000
+        )
+        needs_backfill = db.execute(
+            """SELECT symbol FROM coins
+               WHERE is_active = 1
+               AND (oldest_candle_ts IS NULL OR oldest_candle_ts > ?)
+               LIMIT 5""",
+            (target_ms,),
+        ).fetchall()
+        for row in needs_backfill:
+            backfill_candles(db, row["symbol"])
+        if needs_backfill:
+            log.info("Opportunistic backfill: %d coins", len(needs_backfill))
+    except Exception as e:
+        log.warning("Opportunistic backfill failed: %s", e)
+
     # ── 3. Extended data (funding, OI, mark price, tickers) ──────────────
     try:
         from src.data.extended import fetch_all_extended
