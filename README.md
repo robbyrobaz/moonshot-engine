@@ -6,7 +6,7 @@ Self-improving tournament-based engine that detects large price moves (30%+) acr
 
 ```bash
 # Setup
-cd /home/rob/.openclaw/workspace/blofin-moonshot-v2
+cd /home/rob/.openclaw/workspace/moonshot-engine
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 

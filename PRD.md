@@ -1014,7 +1014,7 @@ Single-page Flask app on port 8893.
 ## Module 9: File Structure
 
 ```
-blofin-moonshot-v2/
+moonshot-engine/
 ├── orchestration/
 │   └── run_cycle.py          # main 4h cycle
 ├── src/

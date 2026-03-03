@@ -16,20 +16,20 @@ done
 systemctl --user daemon-reload
 
 echo "Enabling timers..."
-systemctl --user enable blofin-moonshot-v2.timer
-systemctl --user enable blofin-moonshot-v2-social.timer
-systemctl --user enable blofin-moonshot-v2-dashboard.service
+systemctl --user enable moonshot-engine.timer
+systemctl --user enable moonshot-engine-social.timer
+systemctl --user enable moonshot-engine-dashboard.service
 
 echo "Starting services..."
-systemctl --user start blofin-moonshot-v2.timer
-systemctl --user start blofin-moonshot-v2-social.timer
-systemctl --user start blofin-moonshot-v2-dashboard.service
+systemctl --user start moonshot-engine.timer
+systemctl --user start moonshot-engine-social.timer
+systemctl --user start moonshot-engine-dashboard.service
 
 echo ""
 echo "Done. Check status with:"
-echo "  systemctl --user status blofin-moonshot-v2.timer"
-echo "  systemctl --user status blofin-moonshot-v2-social.timer"
-echo "  systemctl --user status blofin-moonshot-v2-dashboard.service"
+echo "  systemctl --user status moonshot-engine.timer"
+echo "  systemctl --user status moonshot-engine-social.timer"
+echo "  systemctl --user status moonshot-engine-dashboard.service"
 echo ""
-echo "Manual run: systemctl --user start blofin-moonshot-v2.service"
+echo "Manual run: systemctl --user start moonshot-engine.service"
 echo "Dashboard: http://localhost:8893"
