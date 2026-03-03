@@ -202,11 +202,13 @@ def backtest_challenger(db, model_params: dict) -> dict:
     Fold 2: Train on oldest 80%, test on next 10%
     Fold 3: Train on oldest 90%, test on final 10%
 
-    All 3 folds must pass gate:
-        bt_pf >= MIN_BT_PF (2.0)
-        bt_precision >= MIN_BT_PRECISION (0.40)
-        bt_trades >= MIN_BT_TRADES (50)
-        bootstrap CI lower bound on PF >= BOOTSTRAP_PF_LOWER_BOUND (1.0)
+    Gate logic: Fold 3 (most recent 10%) MUST pass all gates.
+    Folds 1-2 are soft (crypto regimes shift — older data can underperform).
+        bt_pf >= MIN_BT_PF (from config, default 1.3)
+        bt_precision >= MIN_BT_PRECISION (from config, default 0.25)
+        bt_trades >= MIN_BT_TRADES (from config, default 50)
+        bootstrap CI lower bound >= BOOTSTRAP_PF_LOWER_BOUND (from config, default 0.8)
+    Failed models still get real aggregate PF saved to DB for dashboard visibility.
 
     Returns dict with: passed, bt_trades, bt_pf, bt_precision, bt_pnl,
                         bt_ci_lower, model_obj, entry_threshold, invalidation_threshold
@@ -275,12 +277,17 @@ def backtest_challenger(db, model_params: dict) -> dict:
             metrics["precision"], metrics["ci_lower"],
         )
 
-        # Gate check per fold
-        if (metrics["trades"] < MIN_BT_TRADES
-                or metrics["pf"] < MIN_BT_PF
-                or metrics["precision"] < MIN_BT_PRECISION
-                or metrics["ci_lower"] < BOOTSTRAP_PF_LOWER_BOUND):
+        # Track per-fold gate pass/fail (fold 3 = most recent data is the hard gate)
+        fold_gate_ok = (
+            metrics["trades"] >= MIN_BT_TRADES
+            and metrics["pf"] >= MIN_BT_PF
+            and metrics["precision"] >= MIN_BT_PRECISION
+            and metrics["ci_lower"] >= BOOTSTRAP_PF_LOWER_BOUND
+        )
+        if fold_idx == 2 and not fold_gate_ok:
+            # Fold 3 (most recent data) must pass — hard requirement
             all_passed = False
+        # Folds 1-2: soft gate — track but don't fail immediately (crypto regimes shift)
 
         total_trades += metrics["trades"]
         total_pnl += metrics["pnl"]
@@ -292,13 +299,23 @@ def backtest_challenger(db, model_params: dict) -> dict:
             last_val_scores = metrics.get("scores")
             last_val_y = metrics.get("y_test")
 
+    # Always compute aggregate metrics so failed models get real PF saved to DB
+    agg_pf, agg_ci = bootstrap_pf(all_trades_pnl) if all_trades_pnl else (0.0, 0.0)
+    agg_precision = (sum(m["precision"] * m["trades"] for m in fold_metrics)
+                     / max(total_trades, 1)) if fold_metrics else 0.0
+
+    # Save aggregate metrics into result (used for DB even on failure)
+    result.update({
+        "bt_trades": total_trades,
+        "bt_pf": agg_pf,
+        "bt_precision": agg_precision,
+        "bt_pnl": total_pnl,
+        "bt_ci_lower": agg_ci,
+    })
+
+    # Fold 3 (most recent data) is the hard gate — if it failed, return here
     if not all_passed or not fold_metrics:
         return result
-
-    # Aggregate metrics across all folds
-    agg_pf, agg_ci = bootstrap_pf(all_trades_pnl)
-    agg_precision = (sum(m["precision"] * m["trades"] for m in fold_metrics)
-                     / max(total_trades, 1))
 
     # Compute invalidation threshold from fold 3 validation scores
     invalidation_threshold = 0.0
@@ -311,11 +328,6 @@ def backtest_challenger(db, model_params: dict) -> dict:
 
     result.update({
         "passed": True,
-        "bt_trades": total_trades,
-        "bt_pf": agg_pf,
-        "bt_precision": agg_precision,
-        "bt_pnl": total_pnl,
-        "bt_ci_lower": agg_ci,
         "model_obj": last_model,
         "entry_threshold": threshold,
         "invalidation_threshold": invalidation_threshold,

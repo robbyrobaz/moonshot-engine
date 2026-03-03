@@ -103,7 +103,7 @@ def _load_top_challengers(conn):
         SELECT model_id, direction, model_type, bt_pf, bt_precision,
                bt_trades, bt_pnl, retire_reason, created_at
         FROM tournament_models
-        WHERE stage = 'retired' AND bt_pf IS NOT NULL
+        WHERE stage = 'retired' AND bt_pf > 0
         ORDER BY bt_pf DESC
         LIMIT 10
     """
