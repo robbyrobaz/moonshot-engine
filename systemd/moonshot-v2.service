@@ -1,5 +1,5 @@
 [Unit]
-Description=Blofin Moonshot v2 — Main 4h Cycle
+Description=Moonshot v2 — Main 4h Cycle
 After=network-online.target
 Wants=network-online.target
 

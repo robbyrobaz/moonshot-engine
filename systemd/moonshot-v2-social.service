@@ -1,5 +1,5 @@
 [Unit]
-Description=Blofin Moonshot v2 — Social Data Collection (1h)
+Description=Moonshot v2 — Social Data Collection (1h)
 After=network-online.target
 Wants=network-online.target
 

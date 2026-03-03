@@ -1,5 +1,5 @@
 [Unit]
-Description=Blofin Moonshot v2 — Social Collection 1h Timer
+Description=Moonshot v2 — Social Collection 1h Timer
 
 [Timer]
 OnCalendar=*-*-* *:30:00

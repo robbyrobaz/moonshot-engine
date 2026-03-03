@@ -1,5 +1,5 @@
 [Unit]
-Description=Blofin Moonshot v2 — Dashboard (Flask on port 8893)
+Description=Moonshot v2 — Dashboard (Flask on port 8893)
 After=network-online.target
 Wants=network-online.target
 
