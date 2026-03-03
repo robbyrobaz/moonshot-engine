@@ -209,11 +209,14 @@ def _load_regime(conn):
     market_breadth = None
     if breadth_row:
         try:
-            names = json.loads(breadth_row["feature_names"])
             vals = json.loads(breadth_row["feature_values"])
-            idx = names.index("market_breadth") if "market_breadth" in names else -1
-            if idx >= 0:
-                market_breadth = vals[idx]
+            if isinstance(vals, dict):
+                market_breadth = vals.get("market_breadth", market_breadth)
+            else:
+                names = json.loads(breadth_row["feature_names"])
+                idx = names.index("market_breadth") if "market_breadth" in names else -1
+                if idx >= 0:
+                    market_breadth = vals[idx]
         except (json.JSONDecodeError, ValueError, IndexError):
             pass
 
@@ -940,7 +943,7 @@ tr:hover td { background: rgba(15,52,96,0.35); }
             <div class="lbl">DB Size</div>
         </div>
         <div class="metric">
-            <div class="val">{{ "{:,}"|format(health.candle_count) }}</div>
+            <div class="val">{{ health.candle_count }}</div>
             <div class="lbl">Candles</div>
         </div>
         <div class="metric">
