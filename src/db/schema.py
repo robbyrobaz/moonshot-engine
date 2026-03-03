@@ -193,10 +193,11 @@ CREATE TABLE IF NOT EXISTS runs (
 def get_db(db_path=None) -> sqlite3.Connection:
     """Get a SQLite connection with WAL mode and row factory."""
     path = str(db_path or DB_PATH)
-    conn = sqlite3.connect(path)
+    conn = sqlite3.connect(path, timeout=30)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=NORMAL")
     conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("PRAGMA busy_timeout=30000")
     conn.row_factory = sqlite3.Row
     return conn
 
