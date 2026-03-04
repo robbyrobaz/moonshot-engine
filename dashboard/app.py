@@ -385,6 +385,23 @@ def index():
                 "sl_dist": _fmt_pct(sl_dist) if sl_dist is not None else "—",
             })
 
+        active_models = [m for m in leaderboard if m["stage"] == "forward_test"]
+        champion_models = [m for m in leaderboard if m["stage"] == "champion"]
+        ft_summary = {
+            "active_models": len(active_models),
+            "champions": len(champion_models),
+            "open_positions": len(open_pos_data),
+            "closed_48h": len(recent_closes),
+            "wins_48h": closes_summary["wins"],
+            "losses_48h": closes_summary["losses"],
+            "total_pnl_48h": closes_summary["total_pnl"],
+            "win_rate_48h": closes_summary["win_rate"],
+            "coins_scored": (health["run"]["coins_scored"] if health.get("run") else 0),
+            "last_run_id": (health["run"]["run_id"] if health.get("run") else None),
+            "last_run_ended": (health["run"]["ended_at"] if health.get("run") else None),
+            "run_errors": (health["run"]["errors"] if health.get("run") else None),
+        }
+
         ctx = {
             "refresh_seconds": config.DASHBOARD_REFRESH_SECONDS,
             "leaderboard": leaderboard,
@@ -398,6 +415,7 @@ def index():
             "social": social,
             "funding": funding,
             "health": health,
+            "ft_summary": ft_summary,
             "ts_to_str": _ts_to_str,
             "age_days": _age_days,
             "fmt_pct": _fmt_pct,
@@ -425,6 +443,20 @@ def _empty_ctx():
         "social": {"mentions": [], "trending": [], "fear_greed": None},
         "funding": [],
         "health": {"run": None, "candle_count": 0, "coin_count": 0, "db_size_mb": 0},
+        "ft_summary": {
+            "active_models": 0,
+            "champions": 0,
+            "open_positions": 0,
+            "closed_48h": 0,
+            "wins_48h": 0,
+            "losses_48h": 0,
+            "total_pnl_48h": 0,
+            "win_rate_48h": 0,
+            "coins_scored": 0,
+            "last_run_id": None,
+            "last_run_ended": None,
+            "run_errors": None,
+        },
         "ts_to_str": _ts_to_str,
         "age_days": _age_days,
         "fmt_pct": _fmt_pct,
@@ -634,6 +666,29 @@ tr:hover td { background: rgba(15,52,96,0.35); }
 .summary-item { font-size: 0.85rem; }
 .summary-item span { font-weight: 600; }
 
+/* ── NQ-v3 style live summary strip ───────────────────────────────────── */
+.kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+.kpi {
+    background: rgba(15,52,96,0.28);
+    border: 1px solid rgba(79,195,247,0.20);
+    border-radius: 8px;
+    padding: 10px;
+}
+.kpi .k { font-size: 0.72rem; color: #9aa4b2; text-transform: uppercase; letter-spacing: 0.03em; }
+.kpi .v { font-size: 1.15rem; font-weight: 700; color: #fff; margin-top: 4px; }
+.section-tag {
+    display: inline-block;
+    margin-bottom: 10px;
+    font-size: 0.72rem;
+    color: #9aa4b2;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
 /* ── Trending list ─────────────────────────────────────────────────────── */
 .trending-list { display: flex; flex-wrap: wrap; gap: 6px; }
 .trending-tag {
@@ -685,6 +740,26 @@ tr:hover td { background: rgba(15,52,96,0.35); }
 </div>
 
 <div class="grid">
+
+<!-- ── 0. Live FT-PL Summary ───────────────────────────────────────────── -->
+<div class="card full-width">
+    <div class="section-tag">Live Focus</div>
+    <h2>FT-PL Summary (Forward Test — Paper on Live data)</h2>
+    <div class="kpi-strip">
+        <div class="kpi"><div class="k">Active FT Models</div><div class="v">{{ ft_summary.active_models }}</div></div>
+        <div class="kpi"><div class="k">Champions</div><div class="v">{{ ft_summary.champions }}</div></div>
+        <div class="kpi"><div class="k">Open Positions</div><div class="v">{{ ft_summary.open_positions }}</div></div>
+        <div class="kpi"><div class="k">Closed (48h)</div><div class="v">{{ ft_summary.closed_48h }}</div></div>
+        <div class="kpi"><div class="k">Win Rate (48h)</div><div class="v">{{ "%.1f"|format(ft_summary.win_rate_48h) }}%</div></div>
+        <div class="kpi"><div class="k">PnL (48h)</div><div class="v {{ 'green' if ft_summary.total_pnl_48h >= 0 else 'red' }}">{{ fmt_pct(ft_summary.total_pnl_48h, 2) }}</div></div>
+        <div class="kpi"><div class="k">Coins Scored (last run)</div><div class="v">{{ ft_summary.coins_scored }}</div></div>
+        <div class="kpi"><div class="k">Last Run</div><div class="v">{% if ft_summary.last_run_id %}#{{ ft_summary.last_run_id }}{% else %}—{% endif %}</div></div>
+    </div>
+    <div style="margin-top:10px;font-size:0.82rem;color:#a8b3c2;">
+        Mode: <b>FT-PL ON</b> (live data + paper trades) &middot; <b>BLE OFF</b> (no broker execution)
+        {% if ft_summary.run_errors %}&middot; <span class="red">Last run error: {{ ft_summary.run_errors }}</span>{% endif %}
+    </div>
+</div>
 
 <!-- ── 1. Tournament Leaderboard ───────────────────────────────────────── -->
 <div class="card full-width">
@@ -804,7 +879,8 @@ tr:hover td { background: rgba(15,52,96,0.35); }
 
 <!-- ── 3. Open Positions ──────────────────────────────────────────────── -->
 <div class="card full-width">
-    <h2>Open Positions ({{ open_positions|length }})</h2>
+    <div class="section-tag">Live Focus</div>
+    <h2>Open Positions (FT-PL) — {{ open_positions|length }}</h2>
     {% if open_positions %}
     <div class="tbl-wrap">
     <table>
@@ -837,7 +913,8 @@ tr:hover td { background: rgba(15,52,96,0.35); }
 
 <!-- ── 4. Recent Closes (48h) ─────────────────────────────────────────── -->
 <div class="card full-width">
-    <h2>Recent Closes (48h)</h2>
+    <div class="section-tag">Live Focus</div>
+    <h2>Recent Closes (48h FT-PL)</h2>
     {% if recent_closes %}
     <div class="summary-bar">
         <div class="summary-item">Total PnL: <span class="{{ 'green' if closes_summary.total_pnl >= 0 else 'red' }}">{{ fmt_pct(closes_summary.total_pnl, 2) }}</span></div>
@@ -986,7 +1063,8 @@ tr:hover td { background: rgba(15,52,96,0.35); }
 
 <!-- ── 9. System Health ──────────────────────────────────────────────── -->
 <div class="card">
-    <h2>System Health</h2>
+    <div class="section-tag">Runtime</div>
+    <h2>Cycle Health</h2>
     <div class="metric-grid">
         <div class="metric">
             <div class="val">{{ "%.1f"|format(health.db_size_mb) }}MB</div>
