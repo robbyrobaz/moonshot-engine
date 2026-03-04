@@ -701,6 +701,17 @@ tr:hover td { background: rgba(15,52,96,0.35); }
 
 /* ── Timeline ──────────────────────────────────────────────────────────── */
 .timeline { position: relative; padding-left: 20px; }
+.hidden-block { display: none; }
+.more-btn {
+    margin-top: 10px;
+    padding: 6px 10px;
+    border: 1px solid #0f3460;
+    border-radius: 6px;
+    background: rgba(15,52,96,0.25);
+    color: #cfe8ff;
+    cursor: pointer;
+    font-size: 0.78rem;
+}
 .timeline::before {
     content: '';
     position: absolute;
@@ -774,7 +785,7 @@ tr:hover td { background: rgba(15,52,96,0.35); }
         <th>Age</th><th>Status</th>
     </tr></thead>
     <tbody>
-    {% for m in leaderboard %}
+    {% for m in leaderboard[:10] %}
     {% set is_champion = m['stage'] == 'champion' %}
     {% set is_paused = m['is_paused'] == 1 %}
     {% set retiring = (m['ft_pf'] is not none and m['ft_pf'] < 1.5 and m['ft_trades'] is not none and m['ft_trades'] >= 15) %}
@@ -809,9 +820,26 @@ tr:hover td { background: rgba(15,52,96,0.35); }
         </td>
     </tr>
     {% endfor %}
+    {% if leaderboard|length > 10 %}
+    {% for m in leaderboard[10:] %}
+    {% set is_champion = m['stage'] == 'champion' %}
+    {% set is_paused = m['is_paused'] == 1 %}
+    {% set retiring = (m['ft_pf'] is not none and m['ft_pf'] < 1.5 and m['ft_trades'] is not none and m['ft_trades'] >= 15) %}
+    <tr class="more-leaderboard hidden-block">
+        <td>{{ truncate(m['model_id']) }}</td><td>{{ m['direction'] or '—' }}</td><td>{{ m['model_type'] or '—' }}</td><td>{{ m['stage'] }}</td>
+        <td>{{ fmt_float(m['bt_pf'], 2) }}</td><td>{{ fmt_pct(m['bt_precision'] * 100 if m['bt_precision'] else None, 1) }}</td>
+        <td>{{ m['bt_trades'] or 0 }}</td><td>{{ m['ft_trades'] or 0 }}</td><td>{{ fmt_pct(m['ft_pnl'], 2) }}</td><td>{{ fmt_float(m['ft_pf'], 2) }}</td>
+        <td>{{ fmt_pct(m['ft_max_drawdown_pct'], 1) }}</td><td>{{ age_days(m['created_at']) }}d</td>
+        <td>{% if is_champion %}Champion{% elif is_paused %}Paused{% elif retiring %}At risk{% else %}Active{% endif %}</td>
+    </tr>
+    {% endfor %}
+    {% endif %}
     </tbody>
     </table>
     </div>
+    {% if leaderboard|length > 10 %}
+    <button class="more-btn" onclick="toggleMore('more-leaderboard', this)">Show more</button>
+    {% endif %}
     {% else %}
     <div class="empty">No active FT/champion models yet — see Top Challengers below.</div>
     {% endif %}
@@ -856,7 +884,7 @@ tr:hover td { background: rgba(15,52,96,0.35); }
     <h2>Champion History</h2>
     {% if champion_history %}
     <div class="timeline">
-    {% for c in champion_history %}
+    {% for c in champion_history[:10] %}
         <div class="timeline-item {{ 'retired' if c['retired_at'] else '' }}">
             <div class="timeline-date">
                 Promoted: {{ ts_to_str(c['promoted_to_champion_at']) }}
@@ -872,6 +900,19 @@ tr:hover td { background: rgba(15,52,96,0.35); }
         </div>
     {% endfor %}
     </div>
+    {% if champion_history|length > 10 %}
+    <div id="more-champ-history" class="hidden-block">
+      <div class="timeline">
+      {% for c in champion_history[10:] %}
+        <div class="timeline-item {{ 'retired' if c['retired_at'] else '' }}">
+          <div class="timeline-date">Promoted: {{ ts_to_str(c['promoted_to_champion_at']) }}</div>
+          <div class="timeline-info">{{ truncate(c['model_id']) }} &middot; PF {{ fmt_float(c['ft_pf'], 2) }} &middot; {{ c['ft_trades'] or 0 }} trades</div>
+        </div>
+      {% endfor %}
+      </div>
+    </div>
+    <button class="more-btn" onclick="toggleMore('more-champ-history', this)">Show more</button>
+    {% endif %}
     {% else %}
     <div class="empty">No champions promoted yet.</div>
     {% endif %}
@@ -890,7 +931,7 @@ tr:hover td { background: rgba(15,52,96,0.35); }
         <th>To TP</th><th>To SL</th>
     </tr></thead>
     <tbody>
-    {% for p in open_positions %}
+    {% for p in open_positions[:10] %}
     <tr>
         <td><strong>{{ p.symbol }}</strong></td>
         <td><span class="badge badge-{{ p.direction }}">{{ p.direction }}</span></td>
@@ -903,9 +944,18 @@ tr:hover td { background: rgba(15,52,96,0.35); }
         <td>{{ p.sl_dist }}</td>
     </tr>
     {% endfor %}
+    {% for p in open_positions[10:] %}
+    <tr class="more-open hidden-block">
+        <td><strong>{{ p.symbol }}</strong></td><td>{{ p.direction }}</td><td>{{ p.model_id }}</td><td>{{ p.entry_ts }}</td>
+        <td>{{ p.entry_price }}</td><td>{{ p.current_price }}</td><td>{{ p.upnl_str }}</td><td>{{ p.tp_dist }}</td><td>{{ p.sl_dist }}</td>
+    </tr>
+    {% endfor %}
     </tbody>
     </table>
     </div>
+    {% if open_positions|length > 10 %}
+    <button class="more-btn" onclick="toggleMore('more-open', this)">Show more</button>
+    {% endif %}
     {% else %}
     <div class="empty">No open positions.</div>
     {% endif %}
@@ -930,7 +980,7 @@ tr:hover td { background: rgba(15,52,96,0.35); }
         <th>PnL%</th><th>Reason</th><th>Closed At</th>
     </tr></thead>
     <tbody>
-    {% for c in recent_closes %}
+    {% for c in recent_closes[:10] %}
     <tr>
         <td><strong>{{ c['symbol'] }}</strong></td>
         <td><span class="badge badge-{{ c['direction'] or 'long' }}">{{ c['direction'] or '—' }}</span></td>
@@ -942,9 +992,18 @@ tr:hover td { background: rgba(15,52,96,0.35); }
         <td>{{ ts_to_str(c['exit_ts']) }}</td>
     </tr>
     {% endfor %}
+    {% for c in recent_closes[10:] %}
+    <tr class="more-closes hidden-block">
+        <td><strong>{{ c['symbol'] }}</strong></td><td>{{ c['direction'] or '—' }}</td><td>{{ truncate(c['model_id']) }}</td>
+        <td>{{ fmt_float(c['entry_price']) }}</td><td>{{ fmt_float(c['exit_price']) }}</td><td>{{ fmt_pct(c['pnl_pct'], 2) }}</td><td>{{ c['exit_reason'] or '—' }}</td><td>{{ ts_to_str(c['exit_ts']) }}</td>
+    </tr>
+    {% endfor %}
     </tbody>
     </table>
     </div>
+    {% if recent_closes|length > 10 %}
+    <button class="more-btn" onclick="toggleMore('more-closes', this)">Show more</button>
+    {% endif %}
     {% else %}
     <div class="empty">No closed positions in the last 48 hours.</div>
     {% endif %}
@@ -1021,15 +1080,21 @@ tr:hover td { background: rgba(15,52,96,0.35); }
     <table>
     <thead><tr><th>Symbol</th><th>Mentions</th></tr></thead>
     <tbody>
-    {% for m in social.mentions %}
+    {% for m in social.mentions[:10] %}
     <tr>
         <td><strong>{{ m['symbol'] }}</strong></td>
         <td>{{ m['mentions_24h'] }}</td>
     </tr>
     {% endfor %}
+    {% for m in social.mentions[10:] %}
+    <tr class="more-mentions hidden-block"><td><strong>{{ m['symbol'] }}</strong></td><td>{{ m['mentions_24h'] }}</td></tr>
+    {% endfor %}
     </tbody>
     </table>
     </div>
+    {% if social.mentions|length > 10 %}
+    <button class="more-btn" onclick="toggleMore('more-mentions', this)">Show more</button>
+    {% endif %}
     {% elif not social.fear_greed and not social.trending %}
     <div class="empty">No social data yet.</div>
     {% endif %}
@@ -1040,7 +1105,7 @@ tr:hover td { background: rgba(15,52,96,0.35); }
     <h2>Funding Rates</h2>
     {% if funding %}
     <div class="funding-grid">
-    {% for f in funding %}
+    {% for f in funding[:10] %}
         {% set rate = f['funding_rate'] or 0 %}
         {% set intensity = [[(rate * 10000)|abs, 100]|min, 10]|max %}
         {% if rate > 0 %}
@@ -1056,6 +1121,28 @@ tr:hover td { background: rgba(15,52,96,0.35); }
         </div>
     {% endfor %}
     </div>
+    {% if funding|length > 10 %}
+    <div id="more-funding" class="hidden-block" style="margin-top:8px;">
+      <div class="funding-grid">
+      {% for f in funding[10:] %}
+        {% set rate = f['funding_rate'] or 0 %}
+        {% set intensity = [[(rate * 10000)|abs, 100]|min, 10]|max %}
+        {% if rate > 0 %}
+            {% set bg = 'rgba(255,23,68,' ~ (intensity / 100 * 0.6) ~ ')' %}
+        {% elif rate < 0 %}
+            {% set bg = 'rgba(33,150,243,' ~ (intensity / 100 * 0.6) ~ ')' %}
+        {% else %}
+            {% set bg = 'rgba(136,136,136,0.15)' %}
+        {% endif %}
+        <div class="funding-cell" style="background:{{ bg }}">
+            <div class="sym">{{ f['symbol']|replace('-USDT','')|replace('-USD','') }}</div>
+            <div class="rate">{{ "%.4f"|format(rate * 100) }}%</div>
+        </div>
+      {% endfor %}
+      </div>
+    </div>
+    <button class="more-btn" onclick="toggleMore('more-funding', this)">Show more</button>
+    {% endif %}
     {% else %}
     <div class="empty">No funding rate data yet.</div>
     {% endif %}
@@ -1128,6 +1215,23 @@ tr:hover td { background: rgba(15,52,96,0.35); }
 <div style="text-align:center; padding: 20px 0 8px; color:#444; font-size:0.72rem;">
     Moonshot v2 Dashboard &middot; Read-only &middot; Refresh {{ refresh_seconds }}s
 </div>
+
+<script>
+function toggleMore(target, btn){
+  const byId = document.getElementById(target);
+  if(byId){
+    const show = byId.style.display === 'none' || byId.style.display === '';
+    byId.style.display = show ? 'block' : 'none';
+    if(btn){ btn.textContent = show ? 'Show less' : 'Show more'; }
+    return;
+  }
+  const rows = document.querySelectorAll('.' + target);
+  if(!rows.length) return;
+  const hidden = rows[0].style.display === '' || rows[0].style.display === 'none';
+  rows.forEach(r => r.style.display = hidden ? 'table-row' : 'none');
+  if(btn){ btn.textContent = hidden ? 'Show less' : 'Show more'; }
+}
+</script>
 
 </body>
 </html>
