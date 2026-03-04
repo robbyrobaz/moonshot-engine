@@ -47,7 +47,7 @@ def _get_feature_values(db, symbol: str, ts_ms: int, feature_names: list[str]):
 
     stored_names = json.loads(row["feature_names"])
     stored_values = json.loads(row["feature_values"])
-    name_to_val = dict(zip(stored_names, stored_values))
+    name_to_val = stored_values  # already a dict: {"feature_name": value, ...}
 
     vec = []
     for fn in feature_names:
