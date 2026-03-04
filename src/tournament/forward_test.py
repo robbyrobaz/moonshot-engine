@@ -46,15 +46,22 @@ def _get_feature_values(db, symbol: str, ts_ms: int, feature_names: list[str]):
         return None
 
     stored_names = json.loads(row["feature_names"])
-    stored_values = json.loads(row["feature_values"])
-    name_to_val = stored_values  # already a dict: {"feature_name": value, ...}
+    stored_values_raw = json.loads(row["feature_values"])
+    # feature_values may be stored as a dict {name: value} or list [value, ...]
+    if isinstance(stored_values_raw, dict):
+        name_to_val = stored_values_raw
+    else:
+        name_to_val = dict(zip(stored_names, stored_values_raw))
 
     vec = []
     for fn in feature_names:
         val = name_to_val.get(fn)
         if val is None:
             return None
-        vec.append(float(val))
+        try:
+            vec.append(float(val))
+        except (TypeError, ValueError):
+            return None
     return vec
 
 

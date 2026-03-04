@@ -107,6 +107,7 @@ def collect_rss_feeds(db) -> int:
     # Match both the ticker and common names
     ts = _now_ms()
     count = 0
+    pending_rows = []
 
     for feed_name, feed_url in RSS_FEEDS:
         try:
@@ -124,18 +125,22 @@ def collect_rss_feeds(db) -> int:
                         mentioned.add(sym)
 
                 for sym in mentioned:
-                    db.execute(
-                        "INSERT INTO social_events "
-                        "(symbol, source, ts, event_type, numeric_value, text_snippet) "
-                        "VALUES (?, ?, ?, ?, ?, ?)",
-                        (sym, f"rss_{feed_name}", ts, "mention", None, title[:200]),
+                    pending_rows.append(
+                        (sym, f"rss_{feed_name}", ts, "mention", None, title[:200])
                     )
                     count += 1
 
         except Exception as e:
             log.warning("collect_rss_feeds: %s error: %s", feed_name, e)
 
-    db.commit()
+    if pending_rows:
+        db.executemany(
+            "INSERT INTO social_events "
+            "(symbol, source, ts, event_type, numeric_value, text_snippet) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            pending_rows,
+        )
+        db.commit()
     log.info("collect_rss_feeds: %d mentions across %d feeds", count, len(RSS_FEEDS))
     return count
 
@@ -155,6 +160,7 @@ def collect_reddit(db, top_symbols: list[str] | None = None) -> int:
 
     ts = _now_ms()
     count = 0
+    pending_rows = []
     headers = {"User-Agent": "moonshot-v2/1.0"}
 
     for subreddit in REDDIT_SUBREDDITS:
@@ -179,11 +185,8 @@ def collect_reddit(db, top_symbols: list[str] | None = None) -> int:
                     post_data = post.get("data", {})
                     title = post_data.get("title", "")[:200]
                     score = post_data.get("score", 0)
-                    db.execute(
-                        "INSERT INTO social_events "
-                        "(symbol, source, ts, event_type, numeric_value, text_snippet) "
-                        "VALUES (?, ?, ?, ?, ?, ?)",
-                        (symbol, "reddit", ts, "mention", score, title),
+                    pending_rows.append(
+                        (symbol, "reddit", ts, "mention", score, title)
                     )
                     count += 1
 
@@ -193,7 +196,14 @@ def collect_reddit(db, top_symbols: list[str] | None = None) -> int:
             except Exception as e:
                 log.warning("collect_reddit: r/%s %s error: %s", subreddit, symbol, e)
 
-    db.commit()
+    if pending_rows:
+        db.executemany(
+            "INSERT INTO social_events "
+            "(symbol, source, ts, event_type, numeric_value, text_snippet) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            pending_rows,
+        )
+        db.commit()
     log.info("collect_reddit: %d mentions across %d subreddits", count, len(REDDIT_SUBREDDITS))
     return count
 
@@ -214,6 +224,7 @@ def collect_github(db) -> int:
     # repos is expected to be: {"BTC": "bitcoin/bitcoin", "ETH": "ethereum/go-ethereum", ...}
     ts = _now_ms()
     count = 0
+    pending_rows = []
     headers = {"Accept": "application/vnd.github.v3+json"}
     if GITHUB_TOKEN:
         headers["Authorization"] = f"token {GITHUB_TOKEN}"
@@ -234,11 +245,8 @@ def collect_github(db) -> int:
             all_commits = data.get("all", [])
             if all_commits:
                 recent_commits = all_commits[-1]
-                db.execute(
-                    "INSERT INTO social_events "
-                    "(symbol, source, ts, event_type, numeric_value, text_snippet) "
-                    "VALUES (?, ?, ?, ?, ?, ?)",
-                    (symbol.upper(), "github", ts, "weekly_commits", recent_commits, repo),
+                pending_rows.append(
+                    (symbol.upper(), "github", ts, "weekly_commits", recent_commits, repo)
                 )
                 count += 1
 
@@ -247,7 +255,14 @@ def collect_github(db) -> int:
         except Exception as e:
             log.warning("collect_github: %s (%s) error: %s", symbol, repo, e)
 
-    db.commit()
+    if pending_rows:
+        db.executemany(
+            "INSERT INTO social_events "
+            "(symbol, source, ts, event_type, numeric_value, text_snippet) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            pending_rows,
+        )
+        db.commit()
     log.info("collect_github: %d repos tracked", count)
     return count
 
