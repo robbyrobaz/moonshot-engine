@@ -48,9 +48,11 @@ MIN_BT_TRADES = _env("MIN_BT_TRADES", 50, int)
 MIN_BT_PF = _env("MIN_BT_PF", 2.0, float)
 MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.40, float)
 MAX_FT_MODELS = _env("MAX_FT_MODELS", 10, int)
-MIN_FT_TRADES_EVAL = _env("MIN_FT_TRADES_EVAL", 20, int)
-MIN_FT_PF_KEEP = _env("MIN_FT_PF_KEEP", 1.3, float)
-MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 1.5, float)
+# 2026-03-06: Relaxed thresholds — keep models in FT longer to collect more data.
+# Only retire clear losers (PF < 0.8) after substantial sample (200+ trades).
+MIN_FT_TRADES_EVAL = _env("MIN_FT_TRADES_EVAL", 200, int)  # was 20
+MIN_FT_PF_KEEP = _env("MIN_FT_PF_KEEP", 0.8, float)        # was 1.3
+MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 0.8, float)  # was 1.5 — same gate at 50 trades
 CHALLENGER_COUNT_PER_HOUR = _env("CHALLENGER_COUNT_PER_HOUR", 10, int)
 CHAMPION_BEAT_MARGIN = _env("CHAMPION_BEAT_MARGIN", 0.10, float)
 BOOTSTRAP_RESAMPLES = _env("BOOTSTRAP_RESAMPLES", 1000, int)

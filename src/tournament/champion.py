@@ -19,8 +19,8 @@ from config import (
 def demote_underperformers(db):
     """Demote FT models that fail performance gates.
 
-    After 20 trades: ft_pf < 1.3 -> stage='retired'
-    After 50 trades: ft_pf < 1.5 -> stage='retired'
+    2026-03-06: Relaxed thresholds — keep models in FT longer.
+    After 200 trades: ft_pf < 0.8 -> stage='retired' (only clear losers)
     """
     now_ms = int(time.time() * 1000)
 
