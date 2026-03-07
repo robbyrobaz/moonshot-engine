@@ -1,4 +1,11 @@
-"""Moonshot v2 — Champion selection and demotion logic."""
+"""Moonshot v2 — Champion selection and demotion logic.
+
+2026-03-07: MAJOR POLICY CHANGE
+- FT is FREE data collection — never demote early
+- Only demote if: PF < 0.5 AND trades >= 500 (catastrophic AND significant)
+- Rank by: ft_pnl (primary), ft_pf (secondary), ft_trades (tiebreaker)
+- Let models run! Data collection IS the goal.
+"""
 
 import time
 
@@ -9,7 +16,6 @@ from config import (
     CHAMPION_LONG_PATH,
     CHAMPION_SHORT_PATH,
     MIN_FT_PF_KEEP,
-    MIN_FT_PF_KEEP_50,
     MIN_FT_TRADES_EVAL,
     TOURNAMENT_DIR,
     log,
@@ -19,48 +25,43 @@ from config import (
 def demote_underperformers(db):
     """Demote FT models that fail performance gates.
 
-    2026-03-07: VERY relaxed — FT is free data, keep everything.
-    Only retire if: PF < 0.5 AND trades > 500 (catastrophic AND significant)
-    FT "losses" are NOT real losses — they're valuable learning data.
+    POLICY: FT is FREE data. Only demote truly catastrophic performers.
+    - Must have 500+ trades (statistically significant)
+    - Must have PF < 0.5 (clearly no edge)
+    - Everything else keeps running to collect data
     """
     now_ms = int(time.time() * 1000)
 
-    # Gate 1: 20+ trades, PF < 1.3
-    demoted_20 = db.execute(
+    # Only demote catastrophic losers with enough data
+    demoted = db.execute(
         """UPDATE tournament_models
            SET stage = 'retired', retired_at = ?,
-               retire_reason = 'ft_pf_below_1.3_after_20_trades'
-           WHERE stage = 'forward_test'
-             AND ft_trades >= ?
-             AND ft_pf < ?""",
-        (now_ms, MIN_FT_TRADES_EVAL, MIN_FT_PF_KEEP),
-    ).rowcount
-
-    # Gate 2: 50+ trades, PF < 1.5
-    demoted_50 = db.execute(
-        """UPDATE tournament_models
-           SET stage = 'retired', retired_at = ?,
-               retire_reason = 'ft_pf_below_1.5_after_50_trades'
-           WHERE stage = 'forward_test'
+               retire_reason = 'ft_catastrophic_pf_below_0.5_after_500_trades'
+           WHERE stage IN ('forward_test', 'ft')
              AND ft_trades >= 500
-             AND ft_pf < ?""",
-        (now_ms, MIN_FT_PF_KEEP_50),
+             AND ft_pf < 0.5
+             AND ft_pf IS NOT NULL""",
+        (now_ms,),
     ).rowcount
 
     db.commit()
-    total = demoted_20 + demoted_50
-    if total > 0:
-        log.info("demote_underperformers: retired %d models (%d at 20-trade gate, %d at 50-trade gate)",
-                 total, demoted_20, demoted_50)
+    if demoted > 0:
+        log.info("demote_underperformers: retired %d catastrophic models (PF < 0.5 after 500+ trades)", demoted)
+    else:
+        log.debug("demote_underperformers: no models demoted (good — FT is free data)")
 
 
 def crown_champion_if_ready(db):
     """Select the best FT model as champion, separately for long and short.
 
-    Champion criteria:
-    - stage = 'forward_test'
-    - ft_trades >= MIN_FT_TRADES_EVAL (20)
-    - Best ft_pnl among qualifying models
+    Ranking criteria (in order):
+    1. ft_pnl — total profit/loss percentage (primary)
+    2. ft_pf — profit factor (secondary)
+    3. ft_trades — more trades = more confidence (tiebreaker)
+
+    Champion requirements:
+    - stage = 'forward_test' or 'ft'
+    - ft_trades >= 20 (basic minimum for comparison)
     - Must beat current champion's ft_pnl by CHAMPION_BEAT_MARGIN (10%)
     """
     now_ms = int(time.time() * 1000)
@@ -69,7 +70,7 @@ def crown_champion_if_ready(db):
                                  ("short", CHAMPION_SHORT_PATH)]:
         # Find current champion
         current = db.execute(
-            """SELECT model_id, ft_pnl FROM tournament_models
+            """SELECT model_id, ft_pnl, ft_pf, ft_trades FROM tournament_models
                WHERE stage = 'champion' AND direction = ?""",
             (direction,),
         ).fetchone()
@@ -77,29 +78,33 @@ def crown_champion_if_ready(db):
         current_pnl = current["ft_pnl"] if current else 0.0
         current_id = current["model_id"] if current else None
 
-        # Find best FT candidate
+        # Find best FT candidate (ranked by pnl, then pf, then trades)
         candidate = db.execute(
-            """SELECT model_id, ft_pnl FROM tournament_models
-               WHERE stage = 'forward_test' AND direction = ?
-                 AND ft_trades >= ?
-               ORDER BY ft_pnl DESC
+            """SELECT model_id, ft_pnl, ft_pf, ft_trades FROM tournament_models
+               WHERE stage IN ('forward_test', 'ft') AND direction = ?
+                 AND ft_trades >= 20
+                 AND ft_pnl IS NOT NULL
+               ORDER BY ft_pnl DESC, ft_pf DESC, ft_trades DESC
                LIMIT 1""",
-            (direction, MIN_FT_TRADES_EVAL),
+            (direction,),
         ).fetchone()
 
         if candidate is None:
+            log.debug("crown_champion %s: no qualifying candidates", direction)
             continue
 
         cand_pnl = candidate["ft_pnl"]
+        cand_pf = candidate["ft_pf"] or 0
+        cand_trades = candidate["ft_trades"]
         cand_id = candidate["model_id"]
 
         # Must beat current champion by margin
         required_pnl = current_pnl * (1.0 + CHAMPION_BEAT_MARGIN) if current_pnl > 0 else 0.0
         if cand_pnl <= required_pnl:
-            log.info("crown_champion %s: candidate %s (pnl=%.4f) does not beat "
-                     "current %s (pnl=%.4f, required=%.4f)",
-                     direction, cand_id, cand_pnl,
-                     current_id or "none", current_pnl, required_pnl)
+            log.info("crown_champion %s: candidate %s (pnl=%.2f%%, pf=%.2f, trades=%d) "
+                     "does not beat current %s (pnl=%.2f%%, required=%.2f%%)",
+                     direction, cand_id[:12], cand_pnl, cand_pf, cand_trades,
+                     current_id[:12] if current_id else "none", current_pnl, required_pnl)
             continue
 
         # Copy model pickle to champion path
@@ -108,12 +113,12 @@ def crown_champion_if_ready(db):
             pkl_path.parent.mkdir(parents=True, exist_ok=True)
             model = joblib.load(src_path)
             joblib.dump(model, pkl_path)
-            log.info("crown_champion %s: saved %s to %s", direction, cand_id, pkl_path)
+            log.info("crown_champion %s: saved %s to %s", direction, cand_id[:12], pkl_path)
         else:
-            log.error("crown_champion %s: pickle not found for %s", direction, cand_id)
+            log.error("crown_champion %s: pickle not found for %s", direction, cand_id[:12])
             continue
 
-        # Demote old champion back to forward_test
+        # Demote old champion back to forward_test (NOT retired!)
         if current_id:
             db.execute(
                 """UPDATE tournament_models
@@ -121,8 +126,8 @@ def crown_champion_if_ready(db):
                    WHERE model_id = ?""",
                 (current_id,),
             )
-            log.info("crown_champion %s: demoted old champion %s to forward_test",
-                     direction, current_id)
+            log.info("crown_champion %s: demoted old champion %s back to FT (keeps running)",
+                     direction, current_id[:12])
 
         # Promote new champion
         db.execute(
@@ -131,8 +136,8 @@ def crown_champion_if_ready(db):
                WHERE model_id = ?""",
             (now_ms, cand_id),
         )
-        log.info("crown_champion %s: promoted %s (ft_pnl=%.4f)",
-                 direction, cand_id, cand_pnl)
+        log.info("crown_champion %s: promoted %s (pnl=%.2f%%, pf=%.2f, trades=%d)",
+                 direction, cand_id[:12], cand_pnl, cand_pf, cand_trades)
 
     db.commit()
 
@@ -167,8 +172,8 @@ def load_champions(db) -> tuple:
                 (direction,),
             ).fetchone()
             if row:
-                log.info("champion %s: %s ft_pnl=%.4f ft_trades=%d ft_pf=%.2f",
-                         direction, row["model_id"], row["ft_pnl"],
-                         row["ft_trades"], row["ft_pf"])
+                log.info("champion %s: %s pnl=%.2f%% trades=%d pf=%.2f",
+                         direction, row["model_id"][:12], row["ft_pnl"],
+                         row["ft_trades"], row["ft_pf"] or 0)
 
     return (long_model, short_model)
