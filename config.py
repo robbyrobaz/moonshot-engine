@@ -87,7 +87,7 @@ CONSEC_LOSS_SKIP = _env("CONSEC_LOSS_SKIP", 5, int)
 CONFIDENCE_RECOVERY_PER_WIN = _env("CONFIDENCE_RECOVERY_PER_WIN", 0.25, float)
 
 # ── Drawdown Circuit Breaker ─────────────────────────────────────────────
-FT_MAX_DRAWDOWN_PAUSE = _env("FT_MAX_DRAWDOWN_PAUSE", 0.30, float)
+FT_MAX_DRAWDOWN_PAUSE = _env("FT_MAX_DRAWDOWN_PAUSE", 100.0, float)  # 10000% - effectively disabled
 FT_PAUSE_HOURS = _env("FT_PAUSE_HOURS", 48, int)
 CHAMPION_DD_REDUCE = _env("CHAMPION_DD_REDUCE", 0.20, float)
 CHAMPION_DD_PAUSE = _env("CHAMPION_DD_PAUSE", 0.35, float)
