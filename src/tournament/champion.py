@@ -153,7 +153,8 @@ def load_champions(db) -> tuple:
 
     for direction, pkl_path in [("long", CHAMPION_LONG_PATH), ("short", CHAMPION_SHORT_PATH)]:
         row = db.execute(
-            "SELECT model_id, ft_pnl, ft_trades, ft_pf, entry_threshold, invalidation_threshold "
+            "SELECT model_id, ft_pnl, ft_trades, ft_pf, entry_threshold, invalidation_threshold, "
+            "feature_set, feature_version "
             "FROM tournament_models WHERE stage = 'champion' AND direction = ?",
             (direction,),
         ).fetchone()
@@ -169,6 +170,14 @@ def load_champions(db) -> tuple:
             results[direction] = None
             continue
 
+        # Deserialize feature_set from JSON string
+        import json as _json
+        raw_fs = row["feature_set"]
+        try:
+            feature_set = _json.loads(raw_fs) if raw_fs else []
+        except Exception:
+            feature_set = []
+
         champ = {
             "model_id": row["model_id"],
             "model": model,
@@ -177,6 +186,8 @@ def load_champions(db) -> tuple:
             "ft_pf": row["ft_pf"],
             "entry_threshold": row["entry_threshold"],
             "invalidation_threshold": row["invalidation_threshold"],
+            "feature_set": feature_set,
+            "feature_version": row["feature_version"],
             "direction": direction,
         }
         log.info("champion %s: %s pnl=%.2f%% trades=%d pf=%.2f",
