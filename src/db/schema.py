@@ -156,7 +156,7 @@ CREATE TABLE IF NOT EXISTS positions (
 CREATE INDEX IF NOT EXISTS idx_positions_model ON positions(model_id, status);
 CREATE INDEX IF NOT EXISTS idx_positions_symbol ON positions(symbol, status);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_positions_unique_open
-    ON positions(symbol, direction)
+    ON positions(symbol, direction, is_champion_trade)
     WHERE status = 'open';
 
 -- ── Per-coin model confidence ───────────────────────────────────────────

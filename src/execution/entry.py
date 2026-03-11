@@ -61,18 +61,18 @@ def _get_current_price(db: sqlite3.Connection, symbol: str) -> float | None:
 
 
 def _count_open_positions(db: sqlite3.Connection, direction: str) -> int:
-    """Count open positions for a given direction."""
+    """Count open champion positions for a given direction."""
     row = db.execute(
-        "SELECT COUNT(*) AS cnt FROM positions WHERE direction = ? AND status = 'open'",
+        "SELECT COUNT(*) AS cnt FROM positions WHERE direction = ? AND status = 'open' AND is_champion_trade = 1",
         (direction,),
     ).fetchone()
     return row["cnt"]
 
 
 def _has_open_position(db: sqlite3.Connection, symbol: str, direction: str) -> bool:
-    """Check if there is already an open position for this symbol+direction."""
+    """Check if there is already an open champion position for this symbol+direction."""
     row = db.execute(
-        "SELECT 1 FROM positions WHERE symbol = ? AND direction = ? AND status = 'open' LIMIT 1",
+        "SELECT 1 FROM positions WHERE symbol = ? AND direction = ? AND status = 'open' AND is_champion_trade = 1 LIMIT 1",
         (symbol, direction),
     ).fetchone()
     return row is not None
@@ -188,10 +188,7 @@ def score_and_enter(
         model = champion["model"]
         model_id = champion["model_id"]
         feature_set = champion["feature_set"]
-        entry_threshold = max(
-            float(champion["entry_threshold"]),
-            float(config.ENTRY_THRESHOLD_FLOOR),
-        )
+        entry_threshold = float(champion["entry_threshold"])
 
         # Compute features and score all symbols
         scored = []
@@ -206,7 +203,8 @@ def score_and_enter(
                 continue
 
             # Build feature vector in the order expected by the model
-            feature_values = [features.get(f) for f in feature_set]
+            fv_dict = features["feature_values"]
+            feature_values = [fv_dict.get(f) for f in feature_set]
             if any(v is None for v in feature_values):
                 log.debug("score_and_enter: missing features for %s, skipping", symbol)
                 continue

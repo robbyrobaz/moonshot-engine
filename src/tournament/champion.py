@@ -170,13 +170,19 @@ def load_champions(db) -> tuple:
             results[direction] = None
             continue
 
-        # Deserialize feature_set from JSON string
+        # Deserialize feature_set from JSON string or named preset
         import json as _json
+        from src.tournament.challenger import FEATURE_SUBSETS
         raw_fs = row["feature_set"]
-        try:
-            feature_set = _json.loads(raw_fs) if raw_fs else []
-        except Exception:
-            feature_set = []
+        feature_set = []
+        if raw_fs:
+            try:
+                feature_set = _json.loads(raw_fs)
+            except Exception:
+                # Try as a named preset (e.g. "extended_only")
+                feature_set = FEATURE_SUBSETS.get(raw_fs, [])
+                if not feature_set:
+                    log.warning("load_champions: unknown feature_set '%s' for %s", raw_fs, row["model_id"][:12])
 
         champ = {
             "model_id": row["model_id"],
