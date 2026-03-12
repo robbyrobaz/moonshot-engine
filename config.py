@@ -91,7 +91,7 @@ PAPER_ACCOUNT_SIZE = _env("PAPER_ACCOUNT_SIZE", 100_000.0, float)
 # 2026-03-11: Increased 2→5 so that when position slots are available, up to 5
 # signals are taken per 4h cycle instead of just 2.
 TOP_N_SIGNALS = _env("TOP_N_SIGNALS", 5, int)
-ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.70, float)
+ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.30, float)
 SYMBOL_WHITELIST = _env_csv("SYMBOL_WHITELIST", [])
 SYMBOL_WHITELIST_MIN_TRADES = _env("SYMBOL_WHITELIST_MIN_TRADES", 20, int)
 
