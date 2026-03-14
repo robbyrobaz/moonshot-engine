@@ -3,1249 +3,357 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Moonshot v2 — Dashboard</title>
+<title>Moonshot v2</title>
 <style>
-/* ── Reset & CSS Variables ───────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --vault-gold:    #FFD700;
-  --ft-green:      #4CAF50;
-  --rising-blue:   #4fc3f7;
-  --loss-red:      #FF5252;
-  --bg-dark:       #1a1a2e;
-  --card-bg:       #16213e;
-  --card-border:   #0f3460;
-  --text-primary:  #e0e0e0;
-  --text-muted:    #888;
-  --green-bright:  #00e676;
-  --orange:        #ff9100;
-  --yellow:        #ffeb3b;
-}
-
-html { scroll-behavior: smooth; }
-
-body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: var(--bg-dark);
-  color: var(--text-primary);
-  line-height: 1.5;
-  min-height: 100vh;
-}
-
-a { color: var(--rising-blue); text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-/* ── Keyframes ───────────────────────────────────────────────────────────── */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes pulse-gold {
-  0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.4); }
-  50%       { box-shadow: 0 0 20px rgba(255,215,0,0.8), 0 0 40px rgba(255,215,0,0.3); }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.fade-in { animation: fadeIn 0.4s ease both; }
-
-/* ── Page Layout ─────────────────────────────────────────────────────────── */
-.page-wrap {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 16px;
-}
-
-/* ── Header ──────────────────────────────────────────────────────────────── */
-.site-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 14px 0 16px;
-  border-bottom: 1px solid var(--card-border);
-  margin-bottom: 20px;
-}
-
-.site-header h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.01em;
-}
-
-.site-header h1 span {
-  color: var(--vault-gold);
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.last-updated {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-/* ── Regime Badge ────────────────────────────────────────────────────────── */
-.regime-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.regime-badge .dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-}
-
-.regime-bull   { background: rgba(0,230,118,0.15);  color: var(--green-bright); border: 1px solid rgba(0,230,118,0.35); }
-.regime-bull   .dot { background: var(--green-bright); }
-.regime-bear   { background: rgba(255,82,82,0.15);  color: var(--loss-red);    border: 1px solid rgba(255,82,82,0.35); }
-.regime-bear   .dot { background: var(--loss-red); }
-.regime-neutral{ background: rgba(255,235,59,0.12); color: var(--yellow);      border: 1px solid rgba(255,235,59,0.3); }
-.regime-neutral .dot { background: var(--yellow); }
-.regime-unknown{ background: rgba(136,136,136,0.15);color: var(--text-muted);  border: 1px solid rgba(136,136,136,0.3); }
-.regime-unknown .dot { background: var(--text-muted); }
-
-/* ── Main Grid ───────────────────────────────────────────────────────────── */
-.main-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 768px) {
-  .main-grid { grid-template-columns: repeat(2, 1fr); }
-  .col-full  { grid-column: 1 / -1; }
-}
-
-@media (min-width: 1200px) {
-  .main-grid { grid-template-columns: repeat(3, 1fr); }
-  .col-full  { grid-column: 1 / -1; }
-  .col-2     { grid-column: span 2; }
-}
-
-/* ── Cards ───────────────────────────────────────────────────────────────── */
-.card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  padding: 18px;
-  animation: fadeIn 0.35s ease both;
-}
-
-.card-title {
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
-
-.card h2 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--card-border);
-}
-
-.empty-state {
-  color: var(--text-muted);
-  font-style: italic;
-  padding: 14px 0;
-  text-align: center;
-  font-size: 0.875rem;
-}
-
-/* ── THE VAULT ───────────────────────────────────────────────────────────── */
-.vault-section {
-  grid-column: 1 / -1;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
-  border: 1px solid rgba(255,215,0,0.35);
-  border-radius: 12px;
-  padding: 22px;
-  position: relative;
-  overflow: hidden;
-  animation: pulse-gold 3s ease-in-out infinite, fadeIn 0.4s ease both;
-}
-
-.vault-section::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  background: radial-gradient(ellipse at 20% 50%, rgba(255,215,0,0.04) 0%, transparent 60%),
-              radial-gradient(ellipse at 80% 20%, rgba(255,215,0,0.03) 0%, transparent 50%);
-  pointer-events: none;
-}
-
-.vault-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.vault-icon {
-  font-size: 1.5rem;
-  line-height: 1;
-}
-
-.vault-header h2 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--vault-gold);
-  text-shadow: 0 0 20px rgba(255,215,0,0.4);
-  border: none;
-  padding: 0;
-  margin: 0;
-  letter-spacing: 0.03em;
-}
-
-.vault-subtitle {
-  font-size: 0.78rem;
-  color: rgba(255,215,0,0.6);
-  margin-top: 1px;
-}
-
-.vault-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 14px;
-}
-
-.vault-model-card {
-  background: rgba(255,215,0,0.04);
-  border: 1px solid rgba(255,215,0,0.2);
-  border-radius: 8px;
-  padding: 14px 16px;
-  position: relative;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.vault-model-card:hover {
-  border-color: rgba(255,215,0,0.45);
-  background: rgba(255,215,0,0.07);
-}
-
-.vault-model-card.is-champion {
-  border-color: rgba(255,215,0,0.5);
-  background: rgba(255,215,0,0.06);
-}
-
-.vault-model-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  gap: 8px;
-}
-
-.vault-model-id {
-  font-family: 'Courier New', monospace;
-  font-size: 0.78rem;
-  color: rgba(255,215,0,0.75);
-  word-break: break-all;
-  line-height: 1.4;
-  flex: 1;
-}
-
-.champion-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,165,0,0.2));
-  border: 1px solid rgba(255,215,0,0.5);
-  color: var(--vault-gold);
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.ft-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(76,175,80,0.15);
-  border: 1px solid rgba(76,175,80,0.35);
-  color: var(--ft-green);
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.paused-badge {
-  background: rgba(255,235,59,0.15);
-  border: 1px solid rgba(255,235,59,0.35);
-  color: var(--yellow);
-}
-
-.vault-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.vault-metric {
-  text-align: center;
-  background: rgba(0,0,0,0.2);
-  border-radius: 5px;
-  padding: 7px 4px;
-}
-
-.vault-metric .vm-val {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1;
-}
-
-.vault-metric .vm-lbl {
-  font-size: 0.63rem;
-  color: var(--text-muted);
-  margin-top: 3px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.vault-metric .vm-val.green  { color: var(--green-bright); }
-.vault-metric .vm-val.red    { color: var(--loss-red); }
-.vault-metric .vm-val.gold   { color: var(--vault-gold); }
-
-.dir-badge {
-  display: inline-block;
-  padding: 2px 7px;
-  border-radius: 3px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.dir-short { background: rgba(255,82,82,0.18); color: var(--loss-red); }
-.dir-long  { background: rgba(0,230,118,0.18); color: var(--green-bright); }
-
-/* ── Live Positions ──────────────────────────────────────────────────────── */
-.positions-list { display: flex; flex-direction: column; gap: 8px; }
-
-.position-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto auto;
-  align-items: center;
-  gap: 10px;
-  background: rgba(15,52,96,0.2);
-  border: 1px solid rgba(15,52,96,0.5);
-  border-radius: 7px;
-  padding: 10px 12px;
-  font-size: 0.83rem;
-}
-
-.position-symbol { font-weight: 700; color: #fff; }
-.position-model  { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; font-family: monospace; }
-
-.position-prices {
-  text-align: right;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.position-pnl {
-  font-size: 1rem;
-  font-weight: 700;
-  text-align: right;
-  min-width: 60px;
-}
-
-.position-dists {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  text-align: right;
-  line-height: 1.6;
-}
-
-/* ── Pipeline Funnel ─────────────────────────────────────────────────────── */
-.funnel-wrap { display: flex; flex-direction: column; gap: 10px; }
-
-.funnel-stage {
-  position: relative;
-}
-
-.funnel-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  margin-bottom: 4px;
-}
-
-.funnel-label .name { color: var(--text-primary); font-weight: 500; }
-.funnel-label .count{ color: var(--text-muted); }
-.funnel-label .rate { color: var(--rising-blue); font-size: 0.72rem; }
-
-.funnel-track {
-  background: rgba(15,52,96,0.4);
-  border-radius: 4px;
-  height: 18px;
-  overflow: hidden;
-  position: relative;
-}
-
-.funnel-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.6s ease;
-}
-
-.funnel-fill.f-trained   { background: linear-gradient(90deg, #2196F3, #4fc3f7); }
-.funnel-fill.f-backtest  { background: linear-gradient(90deg, #9C27B0, #ce93d8); }
-.funnel-fill.f-ft        { background: linear-gradient(90deg, var(--ft-green), #81C784); }
-.funnel-fill.f-champion  { background: linear-gradient(90deg, #FF8F00, var(--vault-gold)); }
-
-/* ── Rising Stars ────────────────────────────────────────────────────────── */
-.stars-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
-}
-
-.star-card {
-  background: rgba(79,195,247,0.06);
-  border: 1px solid rgba(79,195,247,0.2);
-  border-radius: 8px;
-  padding: 12px;
-  transition: border-color 0.2s;
-}
-
-.star-card:hover { border-color: rgba(79,195,247,0.45); }
-
-.star-id {
-  font-family: monospace;
-  font-size: 0.72rem;
-  color: var(--rising-blue);
-  margin-bottom: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.star-metrics {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.star-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.78rem;
-}
-
-.star-row .lbl { color: var(--text-muted); }
-.star-row .val { color: #fff; font-weight: 600; }
-
-/* ── Tables ──────────────────────────────────────────────────────────────── */
-.tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
-}
-
-th {
-  text-align: left;
-  padding: 7px 10px;
-  color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--card-border);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-td {
-  padding: 6px 10px;
-  white-space: nowrap;
-  border-bottom: 1px solid rgba(15,52,96,0.4);
-}
-
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: rgba(15,52,96,0.3); }
-
-/* ── Summary Strip ───────────────────────────────────────────────────────── */
-.summary-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  padding: 10px 12px;
-  background: rgba(15,52,96,0.25);
-  border-radius: 7px;
-  margin-bottom: 14px;
-  font-size: 0.83rem;
-}
-
-.summary-item .lbl { color: var(--text-muted); margin-right: 4px; }
-.summary-item .val { font-weight: 600; color: #fff; }
-
-/* ── Market Context Bar ──────────────────────────────────────────────────── */
-.market-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: center;
-}
-
-.market-kpi { text-align: center; flex: 1; min-width: 80px; }
-.market-kpi .mk-val { font-size: 1.2rem; font-weight: 700; color: #fff; }
-.market-kpi .mk-lbl { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
-
-.fg-meter {
-  flex: 2;
-  min-width: 140px;
-}
-
-.fg-track {
-  background: linear-gradient(90deg, #FF5252 0%, #ff9100 35%, #ffeb3b 50%, #4CAF50 75%, #00e676 100%);
-  height: 8px;
-  border-radius: 4px;
-  position: relative;
-  margin-top: 6px;
-}
-
-.fg-thumb {
-  position: absolute;
-  top: -4px;
-  width: 16px;
-  height: 16px;
-  background: #fff;
-  border-radius: 50%;
-  transform: translateX(-50%);
-  box-shadow: 0 0 6px rgba(0,0,0,0.5);
-  transition: left 0.6s ease;
-}
-
-/* ── Health Footer ───────────────────────────────────────────────────────── */
-.health-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 8px;
-}
-
-.health-metric {
-  background: rgba(15,52,96,0.25);
-  border-radius: 6px;
-  padding: 10px;
-  text-align: center;
-}
-
-.health-metric .hm-val { font-size: 1.15rem; font-weight: 700; color: #fff; }
-.health-metric .hm-lbl { font-size: 0.68rem; color: var(--text-muted); margin-top: 3px; }
-
-.health-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.health-ok  { background: rgba(76,175,80,0.15); color: var(--ft-green); }
-.health-err { background: rgba(255,82,82,0.15); color: var(--loss-red); }
-
-/* ── Colors ──────────────────────────────────────────────────────────────── */
-.green  { color: var(--green-bright) !important; }
-.red    { color: var(--loss-red) !important; }
-.gold   { color: var(--vault-gold) !important; }
-.blue   { color: var(--rising-blue) !important; }
-.muted  { color: var(--text-muted) !important; }
-
-/* ── Loading Spinner ─────────────────────────────────────────────────────── */
-.spinner {
-  width: 28px;
-  height: 28px;
-  border: 3px solid rgba(79,195,247,0.15);
-  border-top-color: var(--rising-blue);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 20px auto;
-}
-
-.loading-wrap { display: flex; justify-content: center; padding: 20px 0; }
-
-/* ── Buttons ─────────────────────────────────────────────────────────────── */
-.more-btn {
-  margin-top: 10px;
-  padding: 5px 12px;
-  background: rgba(15,52,96,0.3);
-  border: 1px solid var(--card-border);
-  border-radius: 5px;
-  color: var(--rising-blue);
-  cursor: pointer;
-  font-size: 0.78rem;
-  transition: background 0.15s;
-}
-
-.more-btn:hover { background: rgba(15,52,96,0.5); }
-
-/* ── Footer ──────────────────────────────────────────────────────────────── */
-.page-footer {
-  text-align: center;
-  padding: 24px 0 12px;
-  font-size: 0.72rem;
-  color: #444;
-}
-
-/* ── Error Banner ────────────────────────────────────────────────────────── */
-.error-banner {
-  background: rgba(255,82,82,0.12);
-  border: 1px solid rgba(255,82,82,0.3);
-  color: var(--loss-red);
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 0.8rem;
-}
-
-/* ── Section tag ─────────────────────────────────────────────────────────── */
-.section-tag {
-  display: inline-block;
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin-bottom: 4px;
-}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#FFD700;--green:#4CAF50;--red:#FF5252;--blue:#4fc3f7;
+  --bg:#1a1a2e;--card:#16213e;--border:#0f3460;
+  --t1:#e0e0e0;--t2:#888;--gbr:#00e676;
+}
+body{font:11px/1.35 'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t1);padding:6px 10px}
+a{color:var(--blue);text-decoration:none}
+
+/* Header */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.hdr h1{font-size:13px;font-weight:700;color:#fff}
+.hdr h1 b{color:var(--gold)}
+.hdr-r{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--t2)}
+.badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.b-bull{background:rgba(0,230,118,.15);color:var(--gbr);border:1px solid rgba(0,230,118,.3)}
+.b-bear{background:rgba(255,82,82,.15);color:var(--red);border:1px solid rgba(255,82,82,.3)}
+.b-neutral{background:rgba(255,235,59,.12);color:#ffeb3b;border:1px solid rgba(255,235,59,.25)}
+.b-unknown{background:rgba(136,136,136,.15);color:var(--t2);border:1px solid rgba(136,136,136,.3)}
+
+/* Stats bar */
+.stats{display:flex;flex-wrap:wrap;gap:4px 12px;padding:4px 6px;background:var(--card);border:1px solid var(--border);border-radius:4px;margin-bottom:6px;font-size:10px}
+.stats .s{color:var(--t2)}.stats .v{color:#fff;font-weight:600}
+.green{color:var(--gbr)!important}.red{color:var(--red)!important}.gold{color:var(--gold)!important}
+
+/* Section headers */
+.sec{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;padding:6px 0 3px;border-bottom:1px solid var(--border);margin-bottom:3px}
+
+/* Tables — ultra-compact */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th{text-align:left;padding:2px 5px;color:var(--t2);font-weight:600;white-space:nowrap;border-bottom:1px solid var(--border);font-size:9px;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;user-select:none}
+th:hover{color:var(--blue)}
+th.sorted-asc::after{content:' \u25B2';font-size:7px}
+th.sorted-desc::after{content:' \u25BC';font-size:7px}
+td{padding:2px 5px;white-space:nowrap;border-bottom:1px solid rgba(15,52,96,.3)}
+tr:hover td{background:rgba(15,52,96,.25)}
+tr.champ td{background:rgba(255,215,0,.04)}
+td.mono{font-family:'Courier New',monospace;font-size:9px}
+
+/* Direction badges */
+.d{display:inline-block;padding:0 4px;border-radius:2px;font-size:9px;font-weight:700;text-transform:uppercase}
+.d-s{background:rgba(255,82,82,.15);color:var(--red)}
+.d-l{background:rgba(0,230,118,.15);color:var(--gbr)}
+
+/* Stage badges */
+.st{display:inline-block;padding:0 4px;border-radius:2px;font-size:8px;font-weight:700;text-transform:uppercase}
+.st-c{background:rgba(255,215,0,.2);color:var(--gold);border:1px solid rgba(255,215,0,.4)}
+.st-ft{background:rgba(76,175,80,.12);color:var(--green)}
+.st-p{background:rgba(255,235,59,.12);color:#ffeb3b}
+
+/* Pipeline inline */
+.pipe{display:flex;gap:3px;align-items:center;font-size:9px;color:var(--t2);margin-bottom:6px}
+.pipe .p-bar{height:10px;border-radius:2px;min-width:2px}
+.pipe .p-n{font-weight:700;color:#fff;min-width:28px;text-align:right}
+.pipe .p-lbl{min-width:50px}
+.pipe .p-arr{color:var(--blue);font-size:8px}
+
+/* Buttons */
+.btn{padding:2px 8px;background:rgba(15,52,96,.3);border:1px solid var(--border);border-radius:3px;color:var(--blue);cursor:pointer;font-size:9px}
+.btn:hover{background:rgba(15,52,96,.5)}
+
+/* Grid layout */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+@media(max-width:768px){.grid2{grid-template-columns:1fr}}
+
+/* Fear & Greed inline */
+.fg-bar{display:inline-block;width:60px;height:6px;background:linear-gradient(90deg,#FF5252,#ff9100,#ffeb3b,#4CAF50,#00e676);border-radius:3px;position:relative;vertical-align:middle}
+.fg-bar .fg-dot{position:absolute;top:-2px;width:10px;height:10px;background:#fff;border-radius:50%;transform:translateX(-50%);box-shadow:0 0 3px rgba(0,0,0,.5)}
+
+/* Loading */
+.loading{color:var(--t2);font-style:italic;padding:4px 0;font-size:10px}
+.err{background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.25);color:var(--red);border-radius:3px;padding:3px 6px;font-size:10px}
+
+/* Health inline */
+.health-row{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:9px;color:var(--t2);padding:4px 0;border-top:1px solid var(--border);margin-top:4px}
+.health-row .ok{color:var(--green)}.health-row .bad{color:var(--red)}
 </style>
 </head>
 <body>
 
-<div class="page-wrap">
-
-  <!-- ── Header ───────────────────────────────────────────────────────────── -->
-  <header class="site-header">
-    <h1>Moonshot <span>v2</span></h1>
-    <div class="header-right">
-      <span class="last-updated" id="last-updated">Loading...</span>
-      <span id="regime-badge" class="regime-badge regime-unknown">
-        <span class="dot"></span>
-        <span id="regime-text">—</span>
-      </span>
-    </div>
-  </header>
-
-  <div class="main-grid">
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-         THE VAULT — hero section
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <section class="vault-section" id="vault-section">
-      <div class="vault-header">
-        <div class="vault-icon">🏛</div>
-        <div>
-          <h2>THE VAULT</h2>
-          <div class="vault-subtitle">Top performing models in forward test</div>
-        </div>
-      </div>
-      <div id="vault-body">
-        <div class="loading-wrap"><div class="spinner"></div></div>
-      </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-         Live Positions
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <div class="card col-2" id="positions-card">
-      <div class="section-tag">Live Focus</div>
-      <h2>Open Positions <span id="positions-count" class="muted" style="font-size:0.85rem;font-weight:400;"></span></h2>
-      <div id="positions-body">
-        <div class="loading-wrap"><div class="spinner"></div></div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-         Pipeline Funnel
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <div class="card">
-      <h2>Pipeline Funnel</h2>
-      <div id="pipeline-body">
-        <div class="loading-wrap"><div class="spinner"></div></div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-         Rising Stars
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <div class="card col-2">
-      <div class="section-tag">Emerging</div>
-      <h2>Rising Stars</h2>
-      <div id="stars-body">
-        <div class="loading-wrap"><div class="spinner"></div></div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-         Recent Trades
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <div class="card col-full">
-      <div class="section-tag">Live Focus</div>
-      <h2>Recent Trades (48h)</h2>
-      <div id="trades-body">
-        <div class="loading-wrap"><div class="spinner"></div></div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-         Market Context
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <div class="card col-2">
-      <h2>Market Context</h2>
-      <div id="market-body">
-        <div class="loading-wrap"><div class="spinner"></div></div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-         System Health
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <div class="card">
-      <div class="section-tag">Runtime</div>
-      <h2>System Health</h2>
-      <div id="health-body">
-        <div class="loading-wrap"><div class="spinner"></div></div>
-      </div>
-    </div>
-
-  </div><!-- .main-grid -->
-
-  <div class="page-footer">
-    Moonshot v2 Dashboard &middot; Read-only &middot;
-    Auto-refresh every 5 min &middot;
-    <span id="footer-time"></span>
+<!-- Header -->
+<div class="hdr">
+  <h1>Moonshot <b>v2</b></h1>
+  <div class="hdr-r">
+    <span id="last-updated">loading</span>
+    <span id="regime-badge" class="badge b-unknown"><span id="regime-text">—</span></span>
+    <span id="fg-inline"></span>
+    <span id="btc-inline"></span>
   </div>
+</div>
 
-</div><!-- .page-wrap -->
+<!-- Pipeline + Stats bar (inline) -->
+<div id="stats-bar" class="stats"><span class="loading">loading...</span></div>
+
+<!-- Master Models Table -->
+<div class="sec">All Models — FT &amp; Champion <span id="models-count" style="font-weight:400"></span></div>
+<div class="tw"><table id="models-table"><tbody><tr><td class="loading" colspan="10">loading...</td></tr></tbody></table></div>
+<div style="padding:3px 0" id="models-toggle-wrap"></div>
+
+<!-- Two-column: Positions + Recent Trades -->
+<div class="grid2">
+  <div>
+    <div class="sec">Open Positions <span id="pos-count" style="font-weight:400"></span></div>
+    <div class="tw"><table id="pos-table"><tbody><tr><td class="loading" colspan="8">loading...</td></tr></tbody></table></div>
+    <div id="pos-toggle-wrap" style="padding:3px 0"></div>
+  </div>
+  <div>
+    <div class="sec">Recent Trades (48h) <span id="trades-sum" style="font-weight:400"></span></div>
+    <div class="tw"><table id="trades-table"><tbody><tr><td class="loading" colspan="7">loading...</td></tr></tbody></table></div>
+    <div id="trades-toggle-wrap" style="padding:3px 0"></div>
+  </div>
+</div>
+
+<!-- Health footer -->
+<div id="health-row" class="health-row">loading...</div>
 
 <script>
 // ── Utilities ──────────────────────────────────────────────────────────────
-
-function fmtPct(val, dec = 2) {
-  if (val == null || val === '' || isNaN(val)) return '—';
-  const n = parseFloat(val);
-  const sign = n >= 0 ? '+' : '';
-  return sign + n.toFixed(dec) + '%';
+function fp(v,d=2){if(v==null||v===''||isNaN(v))return'—';const n=+v;return(n>=0?'+':'')+n.toFixed(d)+'%'}
+function ff(v,d=2){if(v==null||v===''||isNaN(v))return'—';return(+v).toFixed(d)}
+function fn(v){if(v==null)return'—';return Number(v).toLocaleString()}
+function pc(v){if(v==null)return'';return+v>=0?'green':'red'}
+function tr8(id){if(!id)return'—';return id.slice(0,8)}
+function dir(d){return d==='short'?'<span class="d d-s">S</span>':'<span class="d d-l">L</span>'}
+function stg(s,paused){
+  if(s==='champion')return'<span class="st st-c">CHAMP</span>';
+  if(paused)return'<span class="st st-p">PAUSED</span>';
+  return'<span class="st st-ft">FT</span>';
 }
 
-function fmtFloat(val, dec = 2) {
-  if (val == null || val === '' || isNaN(val)) return '—';
-  return parseFloat(val).toFixed(dec);
-}
+async function api(ep){const r=await fetch(ep);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
 
-function fmtNum(val) {
-  if (val == null) return '—';
-  return Number(val).toLocaleString();
-}
+// ── State ──────────────────────────────────────────────────────────────────
+let modelsData=[], modelsSortCol='ft_pnl', modelsSortDir='desc', modelsShowAll=false;
+let posShowAll=false, tradesShowAll=false;
 
-function pnlClass(val) {
-  if (val == null) return '';
-  return parseFloat(val) >= 0 ? 'green' : 'red';
-}
+// ── Header / Market ────────────────────────────────────────────────────────
+async function loadHeader(){
+  try{
+    const[mkt,pipe,health]=await Promise.all([api('/api/market'),api('/api/pipeline'),api('/api/health')]);
 
-function truncate(id, len = 10) {
-  if (!id) return '—';
-  return id.length > len ? id.slice(0, len) + '…' : id;
-}
+    // Regime badge
+    const reg=(mkt.regime||'unknown').toLowerCase();
+    const b=document.getElementById('regime-badge');
+    const t=document.getElementById('regime-text');
+    if(b)b.className='badge b-'+reg;
+    if(t)t.textContent=reg.toUpperCase();
 
-function dirBadge(dir) {
-  const cls = dir === 'short' ? 'dir-short' : 'dir-long';
-  return `<span class="dir-badge ${cls}">${dir || '—'}</span>`;
-}
+    // BTC 30d
+    const btc=mkt.btc_30d_return!=null?mkt.btc_30d_return*100:null;
+    document.getElementById('btc-inline').innerHTML=btc!=null?
+      `<span class="${pc(btc)}" style="font-weight:700">BTC ${fp(btc,1)}</span>`:'';
 
-function spinner() {
-  return '<div class="loading-wrap"><div class="spinner"></div></div>';
-}
+    // Fear & Greed
+    const fgObj=mkt.fear_greed;
+    const fg=fgObj!=null?fgObj.value:null;
+    document.getElementById('fg-inline').innerHTML=fg!=null?
+      `F&G:<b style="color:${fg<25?'var(--red)':fg<50?'var(--gold)':fg<75?'#ffeb3b':'var(--green)'}">${Math.round(fg)}</b>`:''
 
-function errBanner(msg) {
-  return `<div class="error-banner">${msg}</div>`;
-}
-
-// ── Fetch helper ───────────────────────────────────────────────────────────
-
-async function apiFetch(endpoint) {
-  const res = await fetch(endpoint);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
-}
-
-// ── Timestamp ──────────────────────────────────────────────────────────────
-
-function nowStr() {
-  return new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
-}
-
-function updateTimestamp() {
-  const t = nowStr();
-  const el = document.getElementById('last-updated');
-  if (el) el.textContent = 'Updated ' + t;
-  const ft = document.getElementById('footer-time');
-  if (ft) ft.textContent = t;
-}
-
-// ── Market / Regime (header badge) ────────────────────────────────────────
-
-async function loadMarket() {
-  const el = document.getElementById('market-body');
-  try {
-    const d = await apiFetch('/api/market');
-
-    // Update header regime badge
-    const regime = (d.regime || 'unknown').toLowerCase();
-    const badge  = document.getElementById('regime-badge');
-    const txt    = document.getElementById('regime-text');
-    if (badge && txt) {
-      badge.className = `regime-badge regime-${regime}`;
-      txt.textContent = regime.toUpperCase();
-    }
-
-    // Fear & Greed gauge — API returns {value, label, ts} object
-    const fgObj = d.fear_greed;
-    const fg = fgObj != null ? fgObj.value : null;
-    const fgLabel = fgObj != null ? fgObj.label : '';
-    const fgColor = fg == null ? '#888'
-      : fg < 25  ? '#FF5252'
-      : fg < 50  ? '#ff9100'
-      : fg < 75  ? '#ffeb3b'
-      : '#4CAF50';
-
-    const btc30d = d.btc_30d_return;
-    const btc30dPct = btc30d != null ? btc30d * 100 : null;
-
-    el.innerHTML = `
-      <div class="market-bar">
-        <div class="market-kpi">
-          <div class="mk-val regime-${regime}" style="font-size:1rem;">${regime.toUpperCase()}</div>
-          <div class="mk-lbl">Regime</div>
-        </div>
-        <div class="market-kpi">
-          <div class="mk-val ${btc30dPct != null ? (btc30dPct >= 0 ? 'green' : 'red') : ''}">${fmtPct(btc30dPct, 1)}</div>
-          <div class="mk-lbl">BTC 30d</div>
-        </div>
-        ${fg != null ? `
-        <div class="fg-meter" style="flex:2; min-width:160px;">
-          <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);">
-            <span>Fear &amp; Greed</span>
-            <span style="color:${fgColor};font-weight:700;">${Math.round(fg)}</span>
-          </div>
-          <div class="fg-track">
-            <div class="fg-thumb" style="left:${fg}%"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:#555;margin-top:3px;">
-            <span>Extreme Fear</span><span>Extreme Greed</span>
-          </div>
-        </div>
-        ` : ''}
-      </div>
+    // Stats bar
+    const sb=document.getElementById('stats-bar');
+    sb.innerHTML=`
+      <span><span class="s">Trained:</span> <span class="v">${fn(pipe.total_ever)}</span></span>
+      <span><span class="s">BT Pass:</span> <span class="v">${fn(pipe.ever_reached_ft)}</span> <span class="s">(${pipe.bt_pass_rate_pct}%)</span></span>
+      <span><span class="s">FT Active:</span> <span class="v">${fn(pipe.forward_test)}</span></span>
+      <span><span class="s">Retired:</span> <span class="v">${fn(pipe.retired_from_ft)}</span></span>
+      <span><span class="s">Champion:</span> <span class="v gold">${pipe.champion}</span></span>
+      <span><span class="s">FT→Champ:</span> <span class="v">${pipe.ft_to_champion_rate_pct}%</span></span>
+      <span><span class="s">DB:</span> <span class="v">${health.db_size_mb!=null?ff(health.db_size_mb/1024,1)+'GB':'—'}</span></span>
+      <span><span class="s">Coins:</span> <span class="v">${fn(health.coin_count)}</span></span>
+      <span><span class="s">Run:</span> <span class="v">#${health.last_run_id||'—'}</span></span>
+      ${health.errors?'<span class="red">ERR: '+health.errors+'</span>':''}
     `;
-  } catch (e) {
-    el.innerHTML = errBanner('Failed to load market data: ' + e.message);
+
+    // Health footer
+    const hf=document.getElementById('health-row');
+    const cycles=health.recent_cycles||[];
+    const avgDur=cycles.length?Math.round(cycles.reduce((a,c)=>a+(c.duration_s||0),0)/cycles.length):null;
+    hf.innerHTML=`
+      <span><span class="ok">●</span> ${health.status==='ok'?'Healthy':'Error'}</span>
+      <span>Candles: ${fn(health.candle_count)}</span>
+      <span>FT models: ${health.ft_model_count}</span>
+      <span>Champions: ${health.champion_count}</span>
+      ${avgDur!=null?'<span>Avg cycle: '+avgDur+'s</span>':''}
+      <span>Updated: ${new Date().toISOString().slice(0,16).replace('T',' ')} UTC</span>
+    `;
+
+    document.getElementById('last-updated').textContent=new Date().toISOString().slice(11,16)+' UTC';
+  }catch(e){
+    document.getElementById('stats-bar').innerHTML='<span class="err">'+e.message+'</span>';
   }
 }
 
-// ── THE VAULT ──────────────────────────────────────────────────────────────
+// ── Models Master Table ────────────────────────────────────────────────────
+async function loadModels(){
+  try{
+    const resp=await api('/api/models');
+    modelsData=resp.models||[];
+    document.getElementById('models-count').textContent='('+modelsData.length+')';
+    renderModels();
+  }catch(e){
+    document.getElementById('models-table').innerHTML='<tbody><tr><td class="err" colspan="10">'+e.message+'</td></tr></tbody>';
+  }
+}
 
-async function loadVault() {
-  const el = document.getElementById('vault-body');
-  try {
-    const resp = await apiFetch('/api/vault');
-    const models = resp.vault || [];
-
-    if (models.length === 0) {
-      el.innerHTML = '<div class="empty-state">No models in the vault yet — tournament is building.</div>';
-      return;
+function renderModels(){
+  const sorted=[...modelsData].sort((a,b)=>{
+    let va=a[modelsSortCol], vb=b[modelsSortCol];
+    if(va==null)va=-Infinity;if(vb==null)vb=-Infinity;
+    if(modelsSortCol==='model_id'||modelsSortCol==='direction'||modelsSortCol==='stage'){
+      va=String(va);vb=String(vb);
+      return modelsSortDir==='asc'?va.localeCompare(vb):vb.localeCompare(va);
     }
+    return modelsSortDir==='asc'?va-vb:vb-va;
+  });
 
-    const cards = models.map(m => {
-      const isChamp  = m.stage === 'champion';
-      const isPaused = m.is_paused;
-      const pnlCls   = pnlClass(m.ft_pnl);
-      const pfCls    = m.ft_pf != null ? (m.ft_pf >= 2.0 ? 'gold' : m.ft_pf >= 1.0 ? 'green' : 'red') : '';
-      const ddCls    = m.ft_max_drawdown_pct != null && Math.abs(m.ft_max_drawdown_pct) > 15 ? 'red' : '';
+  const LIMIT=10;
+  const show=modelsShowAll?sorted:sorted.slice(0,LIMIT);
 
-      const stageBadge = isChamp
-        ? '<span class="champion-badge">★ Champion</span>'
-        : isPaused
-          ? '<span class="ft-badge paused-badge">⏸ Paused</span>'
-          : '<span class="ft-badge">▶ FT Contender</span>';
+  const cols=[
+    {key:'model_id',label:'Model'},
+    {key:'direction',label:'Dir'},
+    {key:'stage',label:'Stage'},
+    {key:'ft_trades',label:'Trades'},
+    {key:'ft_pnl',label:'FT PnL%'},
+    {key:'ft_pf',label:'FT PF'},
+    {key:'ft_win_rate',label:'FT WR%'},
+    {key:'ft_max_drawdown_pct',label:'Max DD'},
+    {key:'bt_pf',label:'BT PF'},
+    {key:'days_in_ft',label:'Age(d)'},
+  ];
 
-      return `
-        <div class="vault-model-card ${isChamp ? 'is-champion' : ''}">
-          <div class="vault-model-top">
-            <div>
-              <div class="vault-model-id">${m.model_id || '—'}</div>
-              <div style="margin-top:5px;">${dirBadge(m.direction)}</div>
-            </div>
-            ${stageBadge}
-          </div>
-          <div class="vault-metrics">
-            <div class="vault-metric">
-              <div class="vm-val ${pnlCls}">${fmtPct(m.ft_pnl)}</div>
-              <div class="vm-lbl">FT PnL</div>
-            </div>
-            <div class="vault-metric">
-              <div class="vm-val ${pfCls}">${fmtFloat(m.ft_pf)}</div>
-              <div class="vm-lbl">FT PF</div>
-            </div>
-            <div class="vault-metric">
-              <div class="vm-val">${m.ft_trades ?? '—'}</div>
-              <div class="vm-lbl">Trades</div>
-            </div>
-            <div class="vault-metric">
-              <div class="vm-val">${m.ft_win_rate != null ? fmtFloat(m.ft_win_rate, 1) + '%' : '—'}</div>
-              <div class="vm-lbl">Win Rate</div>
-            </div>
-            <div class="vault-metric">
-              <div class="vm-val ${ddCls}">${m.ft_max_drawdown_pct != null ? fmtFloat(Math.abs(m.ft_max_drawdown_pct), 1) + '%' : '—'}</div>
-              <div class="vm-lbl">Max DD</div>
-            </div>
-            <div class="vault-metric">
-              <div class="vm-val">${m.days_in_ft ?? '—'}d</div>
-              <div class="vm-lbl">Age</div>
-            </div>
-          </div>
-          <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,215,0,0.12);display:flex;gap:16px;font-size:0.72rem;color:var(--text-muted);">
-            <span>BT PF: <span style="color:#fff;">${fmtFloat(m.bt_pf)}</span></span>
-            <span>BT Prec: <span style="color:#fff;">${m.bt_precision != null ? fmtFloat(m.bt_precision * 100, 1) + '%' : '—'}</span></span>
-          </div>
-        </div>
-      `;
-    }).join('');
+  const ths=cols.map(c=>{
+    let cls='';
+    if(c.key===modelsSortCol)cls=modelsSortDir==='asc'?'sorted-asc':'sorted-desc';
+    return`<th class="${cls}" onclick="sortModels('${c.key}')">${c.label}</th>`;
+  }).join('');
 
-    el.innerHTML = `<div class="vault-cards fade-in">${cards}</div>`;
-  } catch (e) {
-    el.innerHTML = errBanner('Failed to load vault: ' + e.message);
-  }
+  const trs=show.map(m=>{
+    const isChamp=m.stage==='champion';
+    const pfCls=m.ft_pf!=null?(m.ft_pf>=2?'gold':m.ft_pf>=1?'green':'red'):'';
+    return`<tr class="${isChamp?'champ':''}">
+      <td class="mono">${tr8(m.model_id)}</td>
+      <td>${dir(m.direction)}</td>
+      <td>${stg(m.stage,m.is_paused)}</td>
+      <td>${m.ft_trades??'—'}</td>
+      <td class="${pc(m.ft_pnl)}">${fp(m.ft_pnl)}</td>
+      <td class="${pfCls}">${ff(m.ft_pf)}</td>
+      <td>${m.ft_win_rate!=null?ff(m.ft_win_rate,1)+'%':'—'}</td>
+      <td>${m.ft_max_drawdown_pct!=null?ff(Math.abs(m.ft_max_drawdown_pct),1)+'%':'—'}</td>
+      <td>${ff(m.bt_pf)}</td>
+      <td>${m.days_in_ft??'—'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('models-table').innerHTML=`<thead><tr>${ths}</tr></thead><tbody>${trs}</tbody>`;
+
+  const wrap=document.getElementById('models-toggle-wrap');
+  if(sorted.length>LIMIT){
+    wrap.innerHTML=modelsShowAll?
+      `<button class="btn" onclick="modelsShowAll=false;renderModels()">Show top 10</button>`:
+      `<button class="btn" onclick="modelsShowAll=true;renderModels()">Show all ${sorted.length} models</button>`;
+  }else{wrap.innerHTML='';}
 }
 
-// ── Live Positions ─────────────────────────────────────────────────────────
-
-async function loadPositions() {
-  const el    = document.getElementById('positions-body');
-  const count = document.getElementById('positions-count');
-  try {
-    const resp = await apiFetch('/api/positions');
-    const positions = resp.positions || [];
-
-    if (count) count.textContent = `(${positions.length})`;
-
-    if (positions.length === 0) {
-      el.innerHTML = '<div class="empty-state">No open positions right now.</div>';
-      return;
-    }
-
-    const rows = positions.map(p => {
-      const pnlCls = pnlClass(p.unrealized_pnl_pct);
-      return `
-        <div class="position-row">
-          <div>
-            ${dirBadge(p.direction)}
-          </div>
-          <div>
-            <div class="position-symbol">${p.symbol || '—'}</div>
-            <div class="position-model">${truncate(p.model_id, 12)}</div>
-          </div>
-          <div class="position-prices">
-            <div>Entry: ${fmtFloat(p.entry_price, 4)}</div>
-            <div>Now: ${fmtFloat(p.current_price, 4)}</div>
-          </div>
-          <div>
-            <div class="position-pnl ${pnlCls}">${fmtPct(p.unrealized_pnl_pct)}</div>
-            <div class="position-dists">
-              <div>TP: ${fmtPct(p.tp_distance_pct, 1)}</div>
-              <div>SL: ${fmtPct(p.sl_distance_pct, 1)}</div>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    el.innerHTML = `<div class="positions-list fade-in">${rows}</div>`;
-  } catch (e) {
-    el.innerHTML = errBanner('Failed to load positions: ' + e.message);
-  }
+function sortModels(col){
+  if(modelsSortCol===col){modelsSortDir=modelsSortDir==='desc'?'asc':'desc'}
+  else{modelsSortCol=col;modelsSortDir='desc'}
+  renderModels();
 }
 
-// ── Pipeline Funnel ────────────────────────────────────────────────────────
+// ── Open Positions ─────────────────────────────────────────────────────────
+async function loadPositions(){
+  const el=document.getElementById('pos-table');
+  const cnt=document.getElementById('pos-count');
+  try{
+    const resp=await api('/api/positions');
+    const pos=resp.positions||[];
+    cnt.textContent='('+pos.length+')';
 
-async function loadPipeline() {
-  const el = document.getElementById('pipeline-body');
-  try {
-    const d = await apiFetch('/api/pipeline');
+    if(!pos.length){el.innerHTML='<tbody><tr><td class="loading" colspan="8">No open positions</td></tr></tbody>';return}
 
-    // Stages: total_ever → ever_reached_ft → forward_test → champion
-    const btPassed = d.ever_reached_ft || 0;
-    const stages = [
-      { key: 'total_ever',       label: 'Total Trained',    cls: 'f-trained',  count: d.total_ever || 0 },
-      { key: 'ever_reached_ft',  label: 'Passed Backtest',  cls: 'f-backtest', count: btPassed },
-      { key: 'forward_test',     label: 'Forward Test',     cls: 'f-ft',       count: d.forward_test || 0 },
-      { key: 'champion',         label: 'Champion',         cls: 'f-champion', count: d.champion || 0 },
-    ];
+    const LIMIT=10;
+    const show=posShowAll?pos:pos.slice(0,LIMIT);
 
-    const maxCount = Math.max(...stages.map(s => s.count || 0), 1);
+    const rows=show.map(p=>`<tr>
+      <td><b>${p.symbol||'—'}</b></td>
+      <td>${dir(p.direction)}</td>
+      <td class="mono">${tr8(p.model_id)}</td>
+      <td>${ff(p.entry_price,4)}</td>
+      <td>${ff(p.current_price,4)}</td>
+      <td class="${pc(p.unrealized_pnl_pct)}"><b>${fp(p.unrealized_pnl_pct)}</b></td>
+      <td style="color:var(--green)">${fp(p.tp_distance_pct,1)}</td>
+      <td style="color:var(--red)">${fp(p.sl_distance_pct,1)}</td>
+    </tr>`).join('');
 
-    const html = stages.map((s, i) => {
-      const cnt  = s.count ?? 0;
-      const pct  = Math.round((cnt / maxCount) * 100);
-      const prev = i > 0 ? (stages[i - 1].count || 0) : null;
-      const rate = prev != null && prev > 0 ? Math.round((cnt / prev) * 100) + '%' : '';
-      return `
-        <div class="funnel-stage">
-          <div class="funnel-label">
-            <span class="name">${s.label}</span>
-            <span style="display:flex;gap:10px;">
-              ${rate ? `<span class="rate">↓ ${rate}</span>` : ''}
-              <span class="count">${fmtNum(cnt)}</span>
-            </span>
-          </div>
-          <div class="funnel-track">
-            <div class="funnel-fill ${s.cls}" style="width:${pct}%"></div>
-          </div>
-        </div>
-      `;
-    }).join('');
+    el.innerHTML=`<thead><tr><th>Sym</th><th>Dir</th><th>Model</th><th>Entry</th><th>Now</th><th>PnL%</th><th>→TP</th><th>→SL</th></tr></thead><tbody>${rows}</tbody>`;
 
-    el.innerHTML = `<div class="funnel-wrap fade-in">${html}</div>`;
-  } catch (e) {
-    el.innerHTML = errBanner('Failed to load pipeline: ' + e.message);
-  }
-}
-
-// ── Rising Stars ───────────────────────────────────────────────────────────
-
-async function loadStars() {
-  const el = document.getElementById('stars-body');
-  try {
-    const resp = await apiFetch('/api/rising-stars');
-    const stars = resp.rising_stars || [];
-
-    if (stars.length === 0) {
-      el.innerHTML = '<div class="empty-state">No rising stars yet — models are being evaluated.</div>';
-      return;
-    }
-
-    const cards = stars.map(s => `
-      <div class="star-card">
-        <div class="star-id" title="${s.model_id}">${truncate(s.model_id, 14)}</div>
-        <div style="margin-bottom:6px;">${dirBadge(s.direction)}</div>
-        <div class="star-metrics">
-          <div class="star-row">
-            <span class="lbl">FT PF</span>
-            <span class="val ${s.ft_pf >= 2 ? 'gold' : ''}">${fmtFloat(s.ft_pf)}</span>
-          </div>
-          <div class="star-row">
-            <span class="lbl">FT Trades</span>
-            <span class="val">${s.ft_trades ?? '—'}</span>
-          </div>
-          <div class="star-row">
-            <span class="lbl">FT PnL</span>
-            <span class="val ${pnlClass(s.ft_pnl)}">${fmtPct(s.ft_pnl)}</span>
-          </div>
-          <div class="star-row">
-            <span class="lbl">Age</span>
-            <span class="val">${s.days_in_ft ?? '—'}d</span>
-          </div>
-        </div>
-      </div>
-    `).join('');
-
-    el.innerHTML = `<div class="stars-grid fade-in">${cards}</div>`;
-  } catch (e) {
-    el.innerHTML = errBanner('Failed to load rising stars: ' + e.message);
-  }
+    const wrap=document.getElementById('pos-toggle-wrap');
+    if(pos.length>LIMIT){
+      wrap.innerHTML=posShowAll?
+        `<button class="btn" onclick="posShowAll=false;loadPositions()">Show 10</button>`:
+        `<button class="btn" onclick="posShowAll=true;loadPositions()">Show all ${pos.length}</button>`;
+    }else{wrap.innerHTML='';}
+  }catch(e){el.innerHTML='<tbody><tr><td class="err" colspan="8">'+e.message+'</td></tr></tbody>';}
 }
 
 // ── Recent Trades ──────────────────────────────────────────────────────────
+async function loadTrades(){
+  const el=document.getElementById('trades-table');
+  const sumEl=document.getElementById('trades-sum');
+  try{
+    const d=await api('/api/recent-trades');
+    const trades=d.trades||[];
+    const sum=d.summary||{};
+    sumEl.innerHTML=`<span class="${pc(sum.total_pnl)}">${fp(sum.total_pnl)}</span> ${sum.wins||0}W/${sum.losses||0}L`;
 
-async function loadTrades() {
-  const el = document.getElementById('trades-body');
-  try {
-    const d = await apiFetch('/api/recent-trades');
-    const trades = d.trades || [];
-    const sum    = d.summary || {};
+    if(!trades.length){el.innerHTML='<tbody><tr><td class="loading" colspan="7">No trades in 48h</td></tr></tbody>';return}
 
-    // Summary strip
-    const byReason = sum.by_reason || {};
-    const reasonHtml = Object.entries(byReason).map(([reason, info]) => `
-      <div class="summary-item">
-        <span class="lbl">${reason}:</span>
-        <span class="val">${info.count} (<span class="${pnlClass(info.pnl)}">${fmtPct(info.pnl)}</span>)</span>
-      </div>
-    `).join('');
+    const LIMIT=10;
+    const show=tradesShowAll?trades:trades.slice(0,LIMIT);
 
-    const summaryHtml = `
-      <div class="summary-strip">
-        <div class="summary-item">
-          <span class="lbl">Total PnL:</span>
-          <span class="val ${pnlClass(sum.total_pnl)}">${fmtPct(sum.total_pnl)}</span>
-        </div>
-        <div class="summary-item">
-          <span class="lbl">Win Rate:</span>
-          <span class="val">${sum.win_rate != null ? fmtFloat(sum.win_rate, 1) + '%' : '—'} (${sum.wins ?? 0}W / ${sum.losses ?? 0}L)</span>
-        </div>
-        ${reasonHtml}
-      </div>
-    `;
+    const rows=show.map(t=>`<tr>
+      <td><b>${t.symbol||'—'}</b></td>
+      <td>${dir(t.direction)}</td>
+      <td class="mono">${tr8(t.model_id)}</td>
+      <td class="${pc(t.pnl_pct)}"><b>${fp(t.pnl_pct)}</b></td>
+      <td style="color:var(--t2)">${t.exit_reason||'—'}</td>
+      <td style="color:var(--t2);font-size:9px">${t.exit_ts||'—'}</td>
+    </tr>`).join('');
 
-    if (!trades || trades.length === 0) {
-      el.innerHTML = summaryHtml + '<div class="empty-state">No closed trades in the last 48 hours.</div>';
-      return;
-    }
+    el.innerHTML=`<thead><tr><th>Sym</th><th>Dir</th><th>Model</th><th>PnL%</th><th>Reason</th><th>Closed</th></tr></thead><tbody>${rows}</tbody>`;
 
-    const INIT_ROWS = 10;
-    const rowsHtml = trades.map((t, i) => `
-      <tr${i >= INIT_ROWS ? ' class="trade-more" style="display:none;"' : ''}>
-        <td><strong>${t.symbol || '—'}</strong></td>
-        <td>${dirBadge(t.direction)}</td>
-        <td style="font-family:monospace;font-size:0.75rem;">${truncate(t.model_id, 12)}</td>
-        <td>${fmtFloat(t.entry_price, 4)}</td>
-        <td>${fmtFloat(t.exit_price, 4)}</td>
-        <td class="${pnlClass(t.pnl_pct)}"><strong>${fmtPct(t.pnl_pct)}</strong></td>
-        <td><span style="font-size:0.75rem;color:var(--text-muted);">${t.exit_reason || '—'}</span></td>
-        <td style="font-size:0.75rem;color:var(--text-muted);">${t.exit_ts || '—'}</td>
-      </tr>
-    `).join('');
-
-    const showMoreBtn = trades.length > INIT_ROWS
-      ? `<button class="more-btn" onclick="toggleTradeRows(this)">Show ${trades.length - INIT_ROWS} more</button>`
-      : '';
-
-    el.innerHTML = `
-      ${summaryHtml}
-      <div class="tbl-wrap fade-in">
-        <table>
-          <thead>
-            <tr>
-              <th>Symbol</th><th>Dir</th><th>Model</th>
-              <th>Entry</th><th>Exit</th><th>PnL%</th>
-              <th>Reason</th><th>Closed At</th>
-            </tr>
-          </thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-      </div>
-      ${showMoreBtn}
-    `;
-  } catch (e) {
-    el.innerHTML = errBanner('Failed to load recent trades: ' + e.message);
-  }
+    const wrap=document.getElementById('trades-toggle-wrap');
+    if(trades.length>LIMIT){
+      wrap.innerHTML=tradesShowAll?
+        `<button class="btn" onclick="tradesShowAll=false;loadTrades()">Show 10</button>`:
+        `<button class="btn" onclick="tradesShowAll=true;loadTrades()">Show all ${trades.length}</button>`;
+    }else{wrap.innerHTML='';}
+  }catch(e){el.innerHTML='<tbody><tr><td class="err" colspan="7">'+e.message+'</td></tr></tbody>';}
 }
 
-function toggleTradeRows(btn) {
-  const rows = document.querySelectorAll('.trade-more');
-  const showing = rows[0] && rows[0].style.display !== 'none';
-  rows.forEach(r => r.style.display = showing ? 'none' : 'table-row');
-  btn.textContent = showing ? `Show ${rows.length} more` : 'Show less';
+// ── Orchestrate ────────────────────────────────────────────────────────────
+async function refreshAll(){
+  await Promise.allSettled([loadHeader(),loadModels(),loadPositions(),loadTrades()]);
 }
-
-// ── System Health ──────────────────────────────────────────────────────────
-
-async function loadHealth() {
-  const el = document.getElementById('health-body');
-  try {
-    const d = await apiFetch('/api/health');
-
-    const statusCls = d.status === 'ok' ? 'health-ok' : 'health-err';
-    const statusTxt = d.status === 'ok' ? '● Healthy' : '● ' + (d.detail || 'Error');
-
-    el.innerHTML = `
-      <div class="fade-in">
-        <div style="margin-bottom:12px;">
-          <span class="health-status ${statusCls}">${statusTxt}</span>
-        </div>
-        <div class="health-grid">
-          <div class="health-metric">
-            <div class="hm-val">${d.db_size_mb != null ? d.db_size_mb.toFixed(1) + 'MB' : '—'}</div>
-            <div class="hm-lbl">DB Size</div>
-          </div>
-          <div class="health-metric">
-            <div class="hm-val">${fmtNum(d.candle_count)}</div>
-            <div class="hm-lbl">Candles</div>
-          </div>
-          <div class="health-metric">
-            <div class="hm-val">${fmtNum(d.coin_count)}</div>
-            <div class="hm-lbl">Coins</div>
-          </div>
-          <div class="health-metric">
-            <div class="hm-val">${d.last_run_id != null ? '#' + d.last_run_id : '—'}</div>
-            <div class="hm-lbl">Last Run</div>
-          </div>
-        </div>
-        ${d.last_run_ended ? `
-          <div style="margin-top:10px;font-size:0.75rem;color:var(--text-muted);">
-            Last completed: <span style="color:var(--text-primary);">${d.last_run_ended}</span>
-          </div>
-        ` : ''}
-        ${d.errors ? `
-          <div style="margin-top:8px;" class="error-banner">
-            Last run errors: ${d.errors}
-          </div>
-        ` : ''}
-      </div>
-    `;
-  } catch (e) {
-    el.innerHTML = errBanner('Failed to load health: ' + e.message);
-  }
-}
-
-// ── Orchestrate all loads ──────────────────────────────────────────────────
-
-async function refreshAll() {
-  updateTimestamp();
-  // Load in parallel — market first so regime badge updates quickly
-  await Promise.allSettled([
-    loadMarket(),
-    loadVault(),
-    loadPositions(),
-    loadPipeline(),
-    loadStars(),
-    loadTrades(),
-    loadHealth(),
-  ]);
-}
-
-// Initial load
 refreshAll();
-
-// Auto-refresh every 5 minutes
-setInterval(refreshAll, 5 * 60 * 1000);
+setInterval(refreshAll,5*60*1000);
 </script>
-
 </body>
 </html>

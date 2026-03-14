@@ -353,6 +353,52 @@ def api_vault():
         conn.close()
 
 
+@app.route("/api/models")
+def api_models():
+    """All FT + champion models for the master leaderboard table."""
+    try:
+        conn = _ro_db()
+    except sqlite3.OperationalError:
+        return jsonify({"error": "database not found"}), 503
+
+    try:
+        sql = """
+            SELECT model_id, direction, stage, model_type,
+                   ft_pnl, ft_pf, ft_trades, ft_wins, ft_max_drawdown_pct,
+                   is_paused, bt_pf, bt_precision, promoted_to_ft_at
+            FROM tournament_models
+            WHERE stage IN ('forward_test', 'champion')
+            ORDER BY ft_pnl DESC
+        """
+        rows = _safe_query(conn, sql)
+        now_ms = time.time() * 1000
+        result = []
+        for r in rows:
+            ft_trades = r["ft_trades"] or 0
+            ft_wins = r["ft_wins"] or 0
+            ft_win_rate = (ft_wins / ft_trades * 100) if ft_trades > 0 else None
+            days_in_ft = _age_days(r["promoted_to_ft_at"])
+            result.append({
+                "model_id": r["model_id"],
+                "direction": r["direction"],
+                "stage": r["stage"],
+                "model_type": r["model_type"],
+                "ft_pnl": r["ft_pnl"],
+                "ft_pf": r["ft_pf"],
+                "ft_trades": ft_trades,
+                "ft_wins": ft_wins,
+                "ft_win_rate": round(ft_win_rate, 2) if ft_win_rate is not None else None,
+                "ft_max_drawdown_pct": r["ft_max_drawdown_pct"],
+                "days_in_ft": days_in_ft,
+                "is_paused": bool(r["is_paused"]),
+                "bt_pf": r["bt_pf"],
+                "bt_precision": r["bt_precision"],
+            })
+        return jsonify({"models": result, "count": len(result)})
+    finally:
+        conn.close()
+
+
 @app.route("/api/pipeline")
 def api_pipeline():
     """Pipeline funnel counts: how many models at each stage.
