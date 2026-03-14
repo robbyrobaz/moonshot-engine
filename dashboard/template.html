@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moonshot v2 — Dashboard</title>
+<style>
+/* ── Reset & CSS Variables ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --vault-gold:    #FFD700;
+  --ft-green:      #4CAF50;
+  --rising-blue:   #4fc3f7;
+  --loss-red:      #FF5252;
+  --bg-dark:       #1a1a2e;
+  --card-bg:       #16213e;
+  --card-border:   #0f3460;
+  --text-primary:  #e0e0e0;
+  --text-muted:    #888;
+  --green-bright:  #00e676;
+  --orange:        #ff9100;
+  --yellow:        #ffeb3b;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+a { color: var(--rising-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Keyframes ───────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.4); }
+  50%       { box-shadow: 0 0 20px rgba(255,215,0,0.8), 0 0 40px rgba(255,215,0,0.3); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.fade-in { animation: fadeIn 0.4s ease both; }
+
+/* ── Page Layout ─────────────────────────────────────────────────────────── */
+.page-wrap {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 0 16px;
+  border-bottom: 1px solid var(--card-border);
+  margin-bottom: 20px;
+}
+
+.site-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.site-header h1 span {
+  color: var(--vault-gold);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.last-updated {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ── Regime Badge ────────────────────────────────────────────────────────── */
+.regime-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.regime-badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.regime-bull   { background: rgba(0,230,118,0.15);  color: var(--green-bright); border: 1px solid rgba(0,230,118,0.35); }
+.regime-bull   .dot { background: var(--green-bright); }
+.regime-bear   { background: rgba(255,82,82,0.15);  color: var(--loss-red);    border: 1px solid rgba(255,82,82,0.35); }
+.regime-bear   .dot { background: var(--loss-red); }
+.regime-neutral{ background: rgba(255,235,59,0.12); color: var(--yellow);      border: 1px solid rgba(255,235,59,0.3); }
+.regime-neutral .dot { background: var(--yellow); }
+.regime-unknown{ background: rgba(136,136,136,0.15);color: var(--text-muted);  border: 1px solid rgba(136,136,136,0.3); }
+.regime-unknown .dot { background: var(--text-muted); }
+
+/* ── Main Grid ───────────────────────────────────────────────────────────── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .main-grid { grid-template-columns: repeat(2, 1fr); }
+  .col-full  { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1200px) {
+  .main-grid { grid-template-columns: repeat(3, 1fr); }
+  .col-full  { grid-column: 1 / -1; }
+  .col-2     { grid-column: span 2; }
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 18px;
+  animation: fadeIn 0.35s ease both;
+}
+
+.card-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.card h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.empty-state {
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 14px 0;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+/* ── THE VAULT ───────────────────────────────────────────────────────────── */
+.vault-section {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+  border: 1px solid rgba(255,215,0,0.35);
+  border-radius: 12px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  animation: pulse-gold 3s ease-in-out infinite, fadeIn 0.4s ease both;
+}
+
+.vault-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at 20% 50%, rgba(255,215,0,0.04) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(255,215,0,0.03) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.vault-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.vault-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.vault-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--vault-gold);
+  text-shadow: 0 0 20px rgba(255,215,0,0.4);
+  border: none;
+  padding: 0;
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+.vault-subtitle {
+  font-size: 0.78rem;
+  color: rgba(255,215,0,0.6);
+  margin-top: 1px;
+}
+
+.vault-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.vault-model-card {
+  background: rgba(255,215,0,0.04);
+  border: 1px solid rgba(255,215,0,0.2);
+  border-radius: 8px;
+  padding: 14px 16px;
+  position: relative;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.vault-model-card:hover {
+  border-color: rgba(255,215,0,0.45);
+  background: rgba(255,215,0,0.07);
+}
+
+.vault-model-card.is-champion {
+  border-color: rgba(255,215,0,0.5);
+  background: rgba(255,215,0,0.06);
+}
+
+.vault-model-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.vault-model-id {
+  font-family: 'Courier New', monospace;
+  font-size: 0.78rem;
+  color: rgba(255,215,0,0.75);
+  word-break: break-all;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.champion-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,165,0,0.2));
+  border: 1px solid rgba(255,215,0,0.5);
+  color: var(--vault-gold);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ft-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(76,175,80,0.15);
+  border: 1px solid rgba(76,175,80,0.35);
+  color: var(--ft-green);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.paused-badge {
+  background: rgba(255,235,59,0.15);
+  border: 1px solid rgba(255,235,59,0.35);
+  color: var(--yellow);
+}
+
+.vault-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.vault-metric {
+  text-align: center;
+  background: rgba(0,0,0,0.2);
+  border-radius: 5px;
+  padding: 7px 4px;
+}
+
+.vault-metric .vm-val {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.vault-metric .vm-lbl {
+  font-size: 0.63rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.vault-metric .vm-val.green  { color: var(--green-bright); }
+.vault-metric .vm-val.red    { color: var(--loss-red); }
+.vault-metric .vm-val.gold   { color: var(--vault-gold); }
+
+.dir-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.dir-short { background: rgba(255,82,82,0.18); color: var(--loss-red); }
+.dir-long  { background: rgba(0,230,118,0.18); color: var(--green-bright); }
+
+/* ── Live Positions ──────────────────────────────────────────────────────── */
+.positions-list { display: flex; flex-direction: column; gap: 8px; }
+
+.position-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  background: rgba(15,52,96,0.2);
+  border: 1px solid rgba(15,52,96,0.5);
+  border-radius: 7px;
+  padding: 10px 12px;
+  font-size: 0.83rem;
+}
+
+.position-symbol { font-weight: 700; color: #fff; }
+.position-model  { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; font-family: monospace; }
+
+.position-prices {
+  text-align: right;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.position-pnl {
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: right;
+  min-width: 60px;
+}
+
+.position-dists {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: right;
+  line-height: 1.6;
+}
+
+/* ── Pipeline Funnel ─────────────────────────────────────────────────────── */
+.funnel-wrap { display: flex; flex-direction: column; gap: 10px; }
+
+.funnel-stage {
+  position: relative;
+}
+
+.funnel-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+}
+
+.funnel-label .name { color: var(--text-primary); font-weight: 500; }
+.funnel-label .count{ color: var(--text-muted); }
+.funnel-label .rate { color: var(--rising-blue); font-size: 0.72rem; }
+
+.funnel-track {
+  background: rgba(15,52,96,0.4);
+  border-radius: 4px;
+  height: 18px;
+  overflow: hidden;
+  position: relative;
+}
+
+.funnel-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.funnel-fill.f-trained   { background: linear-gradient(90deg, #2196F3, #4fc3f7); }
+.funnel-fill.f-backtest  { background: linear-gradient(90deg, #9C27B0, #ce93d8); }
+.funnel-fill.f-ft        { background: linear-gradient(90deg, var(--ft-green), #81C784); }
+.funnel-fill.f-champion  { background: linear-gradient(90deg, #FF8F00, var(--vault-gold)); }
+
+/* ── Rising Stars ────────────────────────────────────────────────────────── */
+.stars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.star-card {
+  background: rgba(79,195,247,0.06);
+  border: 1px solid rgba(79,195,247,0.2);
+  border-radius: 8px;
+  padding: 12px;
+  transition: border-color 0.2s;
+}
+
+.star-card:hover { border-color: rgba(79,195,247,0.45); }
+
+.star-id {
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: var(--rising-blue);
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.star-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.star-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+}
+
+.star-row .lbl { color: var(--text-muted); }
+.star-row .val { color: #fff; font-weight: 600; }
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+th {
+  text-align: left;
+  padding: 7px 10px;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+td {
+  padding: 6px 10px;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(15,52,96,0.4);
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(15,52,96,0.3); }
+
+/* ── Summary Strip ───────────────────────────────────────────────────────── */
+.summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 10px 12px;
+  background: rgba(15,52,96,0.25);
+  border-radius: 7px;
+  margin-bottom: 14px;
+  font-size: 0.83rem;
+}
+
+.summary-item .lbl { color: var(--text-muted); margin-right: 4px; }
+.summary-item .val { font-weight: 600; color: #fff; }
+
+/* ── Market Context Bar ──────────────────────────────────────────────────── */
+.market-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.market-kpi { text-align: center; flex: 1; min-width: 80px; }
+.market-kpi .mk-val { font-size: 1.2rem; font-weight: 700; color: #fff; }
+.market-kpi .mk-lbl { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+.fg-meter {
+  flex: 2;
+  min-width: 140px;
+}
+
+.fg-track {
+  background: linear-gradient(90deg, #FF5252 0%, #ff9100 35%, #ffeb3b 50%, #4CAF50 75%, #00e676 100%);
+  height: 8px;
+  border-radius: 4px;
+  position: relative;
+  margin-top: 6px;
+}
+
+.fg-thumb {
+  position: absolute;
+  top: -4px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 6px rgba(0,0,0,0.5);
+  transition: left 0.6s ease;
+}
+
+/* ── Health Footer ───────────────────────────────────────────────────────── */
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.health-metric {
+  background: rgba(15,52,96,0.25);
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+}
+
+.health-metric .hm-val { font-size: 1.15rem; font-weight: 700; color: #fff; }
+.health-metric .hm-lbl { font-size: 0.68rem; color: var(--text-muted); margin-top: 3px; }
+
+.health-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.health-ok  { background: rgba(76,175,80,0.15); color: var(--ft-green); }
+.health-err { background: rgba(255,82,82,0.15); color: var(--loss-red); }
+
+/* ── Colors ──────────────────────────────────────────────────────────────── */
+.green  { color: var(--green-bright) !important; }
+.red    { color: var(--loss-red) !important; }
+.gold   { color: var(--vault-gold) !important; }
+.blue   { color: var(--rising-blue) !important; }
+.muted  { color: var(--text-muted) !important; }
+
+/* ── Loading Spinner ─────────────────────────────────────────────────────── */
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(79,195,247,0.15);
+  border-top-color: var(--rising-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 20px auto;
+}
+
+.loading-wrap { display: flex; justify-content: center; padding: 20px 0; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.more-btn {
+  margin-top: 10px;
+  padding: 5px 12px;
+  background: rgba(15,52,96,0.3);
+  border: 1px solid var(--card-border);
+  border-radius: 5px;
+  color: var(--rising-blue);
+  cursor: pointer;
+  font-size: 0.78rem;
+  transition: background 0.15s;
+}
+
+.more-btn:hover { background: rgba(15,52,96,0.5); }
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.page-footer {
+  text-align: center;
+  padding: 24px 0 12px;
+  font-size: 0.72rem;
+  color: #444;
+}
+
+/* ── Error Banner ────────────────────────────────────────────────────────── */
+.error-banner {
+  background: rgba(255,82,82,0.12);
+  border: 1px solid rgba(255,82,82,0.3);
+  color: var(--loss-red);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+}
+
+/* ── Section tag ─────────────────────────────────────────────────────────── */
+.section-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 4px;
+}
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- ── Header ───────────────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <h1>Moonshot <span>v2</span></h1>
+    <div class="header-right">
+      <span class="last-updated" id="last-updated">Loading...</span>
+      <span id="regime-badge" class="regime-badge regime-unknown">
+        <span class="dot"></span>
+        <span id="regime-text">—</span>
+      </span>
+    </div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         THE VAULT — hero section
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <section class="vault-section" id="vault-section">
+      <div class="vault-header">
+        <div class="vault-icon">🏛</div>
+        <div>
+          <h2>THE VAULT</h2>
+          <div class="vault-subtitle">Top performing models in forward test</div>
+        </div>
+      </div>
+      <div id="vault-body">
+        <div class="loading-wrap"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Live Positions
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="card col-2" id="positions-card">
+      <div class="section-tag">Live Focus</div>
+      <h2>Open Positions <span id="positions-count" class="muted" style="font-size:0.85rem;font-weight:400;"></span></h2>
+      <div id="positions-body">
+        <div class="loading-wrap"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Pipeline Funnel
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="card">
+      <h2>Pipeline Funnel</h2>
+      <div id="pipeline-body">
+        <div class="loading-wrap"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Rising Stars
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="card col-2">
+      <div class="section-tag">Emerging</div>
+      <h2>Rising Stars</h2>
+      <div id="stars-body">
+        <div class="loading-wrap"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Recent Trades
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="card col-full">
+      <div class="section-tag">Live Focus</div>
+      <h2>Recent Trades (48h)</h2>
+      <div id="trades-body">
+        <div class="loading-wrap"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Market Context
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="card col-2">
+      <h2>Market Context</h2>
+      <div id="market-body">
+        <div class="loading-wrap"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         System Health
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="card">
+      <div class="section-tag">Runtime</div>
+      <h2>System Health</h2>
+      <div id="health-body">
+        <div class="loading-wrap"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+  </div><!-- .main-grid -->
+
+  <div class="page-footer">
+    Moonshot v2 Dashboard &middot; Read-only &middot;
+    Auto-refresh every 5 min &middot;
+    <span id="footer-time"></span>
+  </div>
+
+</div><!-- .page-wrap -->
+
+<script>
+// ── Utilities ──────────────────────────────────────────────────────────────
+
+function fmtPct(val, dec = 2) {
+  if (val == null || val === '' || isNaN(val)) return '—';
+  const n = parseFloat(val);
+  const sign = n >= 0 ? '+' : '';
+  return sign + n.toFixed(dec) + '%';
+}
+
+function fmtFloat(val, dec = 2) {
+  if (val == null || val === '' || isNaN(val)) return '—';
+  return parseFloat(val).toFixed(dec);
+}
+
+function fmtNum(val) {
+  if (val == null) return '—';
+  return Number(val).toLocaleString();
+}
+
+function pnlClass(val) {
+  if (val == null) return '';
+  return parseFloat(val) >= 0 ? 'green' : 'red';
+}
+
+function truncate(id, len = 10) {
+  if (!id) return '—';
+  return id.length > len ? id.slice(0, len) + '…' : id;
+}
+
+function dirBadge(dir) {
+  const cls = dir === 'short' ? 'dir-short' : 'dir-long';
+  return `<span class="dir-badge ${cls}">${dir || '—'}</span>`;
+}
+
+function spinner() {
+  return '<div class="loading-wrap"><div class="spinner"></div></div>';
+}
+
+function errBanner(msg) {
+  return `<div class="error-banner">${msg}</div>`;
+}
+
+// ── Fetch helper ───────────────────────────────────────────────────────────
+
+async function apiFetch(endpoint) {
+  const res = await fetch(endpoint);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+// ── Timestamp ──────────────────────────────────────────────────────────────
+
+function nowStr() {
+  return new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+}
+
+function updateTimestamp() {
+  const t = nowStr();
+  const el = document.getElementById('last-updated');
+  if (el) el.textContent = 'Updated ' + t;
+  const ft = document.getElementById('footer-time');
+  if (ft) ft.textContent = t;
+}
+
+// ── Market / Regime (header badge) ────────────────────────────────────────
+
+async function loadMarket() {
+  const el = document.getElementById('market-body');
+  try {
+    const d = await apiFetch('/api/market');
+
+    // Update header regime badge
+    const regime = (d.regime || 'unknown').toLowerCase();
+    const badge  = document.getElementById('regime-badge');
+    const txt    = document.getElementById('regime-text');
+    if (badge && txt) {
+      badge.className = `regime-badge regime-${regime}`;
+      txt.textContent = regime.toUpperCase();
+    }
+
+    // Fear & Greed gauge
+    const fg = d.fear_greed ?? null;
+    const fgColor = fg == null ? '#888'
+      : fg < 25  ? '#FF5252'
+      : fg < 50  ? '#ff9100'
+      : fg < 75  ? '#ffeb3b'
+      : '#4CAF50';
+
+    const btc30d = d.btc_30d_return;
+    const btc30dPct = btc30d != null ? btc30d * 100 : null;
+
+    el.innerHTML = `
+      <div class="market-bar">
+        <div class="market-kpi">
+          <div class="mk-val regime-${regime}" style="font-size:1rem;">${regime.toUpperCase()}</div>
+          <div class="mk-lbl">Regime</div>
+        </div>
+        <div class="market-kpi">
+          <div class="mk-val ${btc30dPct != null ? (btc30dPct >= 0 ? 'green' : 'red') : ''}">${fmtPct(btc30dPct, 1)}</div>
+          <div class="mk-lbl">BTC 30d</div>
+        </div>
+        ${fg != null ? `
+        <div class="fg-meter" style="flex:2; min-width:160px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);">
+            <span>Fear &amp; Greed</span>
+            <span style="color:${fgColor};font-weight:700;">${Math.round(fg)}</span>
+          </div>
+          <div class="fg-track">
+            <div class="fg-thumb" style="left:${fg}%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:#555;margin-top:3px;">
+            <span>Extreme Fear</span><span>Extreme Greed</span>
+          </div>
+        </div>
+        ` : ''}
+      </div>
+    `;
+  } catch (e) {
+    el.innerHTML = errBanner('Failed to load market data: ' + e.message);
+  }
+}
+
+// ── THE VAULT ──────────────────────────────────────────────────────────────
+
+async function loadVault() {
+  const el = document.getElementById('vault-body');
+  try {
+    const models = await apiFetch('/api/vault');
+
+    if (!models || models.length === 0) {
+      el.innerHTML = '<div class="empty-state">No models in the vault yet — tournament is building.</div>';
+      return;
+    }
+
+    const cards = models.map(m => {
+      const isChamp  = m.stage === 'champion';
+      const isPaused = m.is_paused;
+      const pnlCls   = pnlClass(m.ft_pnl);
+      const pfCls    = m.ft_pf != null ? (m.ft_pf >= 2.0 ? 'gold' : m.ft_pf >= 1.0 ? 'green' : 'red') : '';
+      const ddCls    = m.ft_max_drawdown_pct != null && Math.abs(m.ft_max_drawdown_pct) > 15 ? 'red' : '';
+
+      const stageBadge = isChamp
+        ? '<span class="champion-badge">★ Champion</span>'
+        : isPaused
+          ? '<span class="ft-badge paused-badge">⏸ Paused</span>'
+          : '<span class="ft-badge">▶ FT Contender</span>';
+
+      return `
+        <div class="vault-model-card ${isChamp ? 'is-champion' : ''}">
+          <div class="vault-model-top">
+            <div>
+              <div class="vault-model-id">${m.model_id || '—'}</div>
+              <div style="margin-top:5px;">${dirBadge(m.direction)}</div>
+            </div>
+            ${stageBadge}
+          </div>
+          <div class="vault-metrics">
+            <div class="vault-metric">
+              <div class="vm-val ${pnlCls}">${fmtPct(m.ft_pnl)}</div>
+              <div class="vm-lbl">FT PnL</div>
+            </div>
+            <div class="vault-metric">
+              <div class="vm-val ${pfCls}">${fmtFloat(m.ft_pf)}</div>
+              <div class="vm-lbl">FT PF</div>
+            </div>
+            <div class="vault-metric">
+              <div class="vm-val">${m.ft_trades ?? '—'}</div>
+              <div class="vm-lbl">Trades</div>
+            </div>
+            <div class="vault-metric">
+              <div class="vm-val">${m.ft_win_rate != null ? fmtFloat(m.ft_win_rate, 1) + '%' : '—'}</div>
+              <div class="vm-lbl">Win Rate</div>
+            </div>
+            <div class="vault-metric">
+              <div class="vm-val ${ddCls}">${m.ft_max_drawdown_pct != null ? fmtFloat(Math.abs(m.ft_max_drawdown_pct), 1) + '%' : '—'}</div>
+              <div class="vm-lbl">Max DD</div>
+            </div>
+            <div class="vault-metric">
+              <div class="vm-val">${m.days_in_ft ?? '—'}d</div>
+              <div class="vm-lbl">Age</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,215,0,0.12);display:flex;gap:16px;font-size:0.72rem;color:var(--text-muted);">
+            <span>BT PF: <span style="color:#fff;">${fmtFloat(m.bt_pf)}</span></span>
+            <span>BT Prec: <span style="color:#fff;">${m.bt_precision != null ? fmtFloat(m.bt_precision * 100, 1) + '%' : '—'}</span></span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    el.innerHTML = `<div class="vault-cards fade-in">${cards}</div>`;
+  } catch (e) {
+    el.innerHTML = errBanner('Failed to load vault: ' + e.message);
+  }
+}
+
+// ── Live Positions ─────────────────────────────────────────────────────────
+
+async function loadPositions() {
+  const el    = document.getElementById('positions-body');
+  const count = document.getElementById('positions-count');
+  try {
+    const positions = await apiFetch('/api/positions');
+
+    if (count) count.textContent = `(${positions.length})`;
+
+    if (!positions || positions.length === 0) {
+      el.innerHTML = '<div class="empty-state">No open positions right now.</div>';
+      return;
+    }
+
+    const rows = positions.map(p => {
+      const pnlCls = pnlClass(p.unrealized_pnl_pct);
+      return `
+        <div class="position-row">
+          <div>
+            ${dirBadge(p.direction)}
+          </div>
+          <div>
+            <div class="position-symbol">${p.symbol || '—'}</div>
+            <div class="position-model">${truncate(p.model_id, 12)}</div>
+          </div>
+          <div class="position-prices">
+            <div>Entry: ${fmtFloat(p.entry_price, 4)}</div>
+            <div>Now: ${fmtFloat(p.current_price, 4)}</div>
+          </div>
+          <div>
+            <div class="position-pnl ${pnlCls}">${fmtPct(p.unrealized_pnl_pct)}</div>
+            <div class="position-dists">
+              <div>TP: ${fmtPct(p.tp_distance_pct, 1)}</div>
+              <div>SL: ${fmtPct(p.sl_distance_pct, 1)}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    el.innerHTML = `<div class="positions-list fade-in">${rows}</div>`;
+  } catch (e) {
+    el.innerHTML = errBanner('Failed to load positions: ' + e.message);
+  }
+}
+
+// ── Pipeline Funnel ────────────────────────────────────────────────────────
+
+async function loadPipeline() {
+  const el = document.getElementById('pipeline-body');
+  try {
+    const d = await apiFetch('/api/pipeline');
+
+    // Stages: trained → backtest_passed → forward_test → champion
+    const stages = [
+      { key: 'trained',          label: 'Trained',          cls: 'f-trained',  count: d.trained  },
+      { key: 'backtest_passed',  label: 'Backtest Passed',  cls: 'f-backtest', count: d.backtest_passed },
+      { key: 'forward_test',     label: 'Forward Test',     cls: 'f-ft',       count: d.forward_test },
+      { key: 'champion',         label: 'Champion',         cls: 'f-champion', count: d.champion },
+    ];
+
+    const maxCount = Math.max(...stages.map(s => s.count || 0), 1);
+
+    const html = stages.map((s, i) => {
+      const cnt  = s.count ?? 0;
+      const pct  = Math.round((cnt / maxCount) * 100);
+      const prev = i > 0 ? (stages[i - 1].count || 0) : null;
+      const rate = prev != null && prev > 0 ? Math.round((cnt / prev) * 100) + '%' : '';
+      return `
+        <div class="funnel-stage">
+          <div class="funnel-label">
+            <span class="name">${s.label}</span>
+            <span style="display:flex;gap:10px;">
+              ${rate ? `<span class="rate">↓ ${rate}</span>` : ''}
+              <span class="count">${fmtNum(cnt)}</span>
+            </span>
+          </div>
+          <div class="funnel-track">
+            <div class="funnel-fill ${s.cls}" style="width:${pct}%"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    el.innerHTML = `<div class="funnel-wrap fade-in">${html}</div>`;
+  } catch (e) {
+    el.innerHTML = errBanner('Failed to load pipeline: ' + e.message);
+  }
+}
+
+// ── Rising Stars ───────────────────────────────────────────────────────────
+
+async function loadStars() {
+  const el = document.getElementById('stars-body');
+  try {
+    const stars = await apiFetch('/api/rising-stars');
+
+    if (!stars || stars.length === 0) {
+      el.innerHTML = '<div class="empty-state">No rising stars yet — models are being evaluated.</div>';
+      return;
+    }
+
+    const cards = stars.map(s => `
+      <div class="star-card">
+        <div class="star-id" title="${s.model_id}">${truncate(s.model_id, 14)}</div>
+        <div style="margin-bottom:6px;">${dirBadge(s.direction)}</div>
+        <div class="star-metrics">
+          <div class="star-row">
+            <span class="lbl">BT PF</span>
+            <span class="val ${s.bt_pf >= 2 ? 'gold' : ''}">${fmtFloat(s.bt_pf)}</span>
+          </div>
+          <div class="star-row">
+            <span class="lbl">Precision</span>
+            <span class="val">${s.bt_precision != null ? fmtFloat(s.bt_precision * 100, 1) + '%' : '—'}</span>
+          </div>
+          <div class="star-row">
+            <span class="lbl">BT Trades</span>
+            <span class="val">${s.bt_trades ?? '—'}</span>
+          </div>
+          ${s.ft_trades != null ? `
+          <div class="star-row">
+            <span class="lbl">FT Trades</span>
+            <span class="val">${s.ft_trades}</span>
+          </div>
+          <div class="star-row">
+            <span class="lbl">FT PnL</span>
+            <span class="val ${pnlClass(s.ft_pnl)}">${fmtPct(s.ft_pnl)}</span>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    el.innerHTML = `<div class="stars-grid fade-in">${cards}</div>`;
+  } catch (e) {
+    el.innerHTML = errBanner('Failed to load rising stars: ' + e.message);
+  }
+}
+
+// ── Recent Trades ──────────────────────────────────────────────────────────
+
+async function loadTrades() {
+  const el = document.getElementById('trades-body');
+  try {
+    const d = await apiFetch('/api/recent-trades');
+    const trades = d.trades || [];
+    const sum    = d.summary || {};
+
+    // Summary strip
+    const byReason = sum.by_reason || {};
+    const reasonHtml = Object.entries(byReason).map(([reason, info]) => `
+      <div class="summary-item">
+        <span class="lbl">${reason}:</span>
+        <span class="val">${info.count} (<span class="${pnlClass(info.pnl)}">${fmtPct(info.pnl)}</span>)</span>
+      </div>
+    `).join('');
+
+    const summaryHtml = `
+      <div class="summary-strip">
+        <div class="summary-item">
+          <span class="lbl">Total PnL:</span>
+          <span class="val ${pnlClass(sum.total_pnl)}">${fmtPct(sum.total_pnl)}</span>
+        </div>
+        <div class="summary-item">
+          <span class="lbl">Win Rate:</span>
+          <span class="val">${sum.win_rate != null ? fmtFloat(sum.win_rate, 1) + '%' : '—'} (${sum.wins ?? 0}W / ${sum.losses ?? 0}L)</span>
+        </div>
+        ${reasonHtml}
+      </div>
+    `;
+
+    if (!trades || trades.length === 0) {
+      el.innerHTML = summaryHtml + '<div class="empty-state">No closed trades in the last 48 hours.</div>';
+      return;
+    }
+
+    const INIT_ROWS = 10;
+    const rowsHtml = trades.map((t, i) => `
+      <tr${i >= INIT_ROWS ? ' class="trade-more" style="display:none;"' : ''}>
+        <td><strong>${t.symbol || '—'}</strong></td>
+        <td>${dirBadge(t.direction)}</td>
+        <td style="font-family:monospace;font-size:0.75rem;">${truncate(t.model_id, 12)}</td>
+        <td>${fmtFloat(t.entry_price, 4)}</td>
+        <td>${fmtFloat(t.exit_price, 4)}</td>
+        <td class="${pnlClass(t.pnl_pct)}"><strong>${fmtPct(t.pnl_pct)}</strong></td>
+        <td><span style="font-size:0.75rem;color:var(--text-muted);">${t.exit_reason || '—'}</span></td>
+        <td style="font-size:0.75rem;color:var(--text-muted);">${t.exit_ts || '—'}</td>
+      </tr>
+    `).join('');
+
+    const showMoreBtn = trades.length > INIT_ROWS
+      ? `<button class="more-btn" onclick="toggleTradeRows(this)">Show ${trades.length - INIT_ROWS} more</button>`
+      : '';
+
+    el.innerHTML = `
+      ${summaryHtml}
+      <div class="tbl-wrap fade-in">
+        <table>
+          <thead>
+            <tr>
+              <th>Symbol</th><th>Dir</th><th>Model</th>
+              <th>Entry</th><th>Exit</th><th>PnL%</th>
+              <th>Reason</th><th>Closed At</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+      ${showMoreBtn}
+    `;
+  } catch (e) {
+    el.innerHTML = errBanner('Failed to load recent trades: ' + e.message);
+  }
+}
+
+function toggleTradeRows(btn) {
+  const rows = document.querySelectorAll('.trade-more');
+  const showing = rows[0] && rows[0].style.display !== 'none';
+  rows.forEach(r => r.style.display = showing ? 'none' : 'table-row');
+  btn.textContent = showing ? `Show ${rows.length} more` : 'Show less';
+}
+
+// ── System Health ──────────────────────────────────────────────────────────
+
+async function loadHealth() {
+  const el = document.getElementById('health-body');
+  try {
+    const d = await apiFetch('/api/health');
+
+    const statusCls = d.status === 'ok' ? 'health-ok' : 'health-err';
+    const statusTxt = d.status === 'ok' ? '● Healthy' : '● ' + (d.detail || 'Error');
+
+    el.innerHTML = `
+      <div class="fade-in">
+        <div style="margin-bottom:12px;">
+          <span class="health-status ${statusCls}">${statusTxt}</span>
+        </div>
+        <div class="health-grid">
+          <div class="health-metric">
+            <div class="hm-val">${d.db_size_mb != null ? d.db_size_mb.toFixed(1) + 'MB' : '—'}</div>
+            <div class="hm-lbl">DB Size</div>
+          </div>
+          <div class="health-metric">
+            <div class="hm-val">${fmtNum(d.candle_count)}</div>
+            <div class="hm-lbl">Candles</div>
+          </div>
+          <div class="health-metric">
+            <div class="hm-val">${fmtNum(d.coin_count)}</div>
+            <div class="hm-lbl">Coins</div>
+          </div>
+          <div class="health-metric">
+            <div class="hm-val">${d.last_run_id != null ? '#' + d.last_run_id : '—'}</div>
+            <div class="hm-lbl">Last Run</div>
+          </div>
+        </div>
+        ${d.last_run_ended ? `
+          <div style="margin-top:10px;font-size:0.75rem;color:var(--text-muted);">
+            Last completed: <span style="color:var(--text-primary);">${d.last_run_ended}</span>
+          </div>
+        ` : ''}
+        ${d.errors ? `
+          <div style="margin-top:8px;" class="error-banner">
+            Last run errors: ${d.errors}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  } catch (e) {
+    el.innerHTML = errBanner('Failed to load health: ' + e.message);
+  }
+}
+
+// ── Orchestrate all loads ──────────────────────────────────────────────────
+
+async function refreshAll() {
+  updateTimestamp();
+  // Load in parallel — market first so regime badge updates quickly
+  await Promise.allSettled([
+    loadMarket(),
+    loadVault(),
+    loadPositions(),
+    loadPipeline(),
+    loadStars(),
+    loadTrades(),
+    loadHealth(),
+  ]);
+}
+
+// Initial load
+refreshAll();
+
+// Auto-refresh every 5 minutes
+setInterval(refreshAll, 5 * 60 * 1000);
+</script>
+
+</body>
+</html>
