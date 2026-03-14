@@ -835,8 +835,10 @@ async function loadMarket() {
       txt.textContent = regime.toUpperCase();
     }
 
-    // Fear & Greed gauge
-    const fg = d.fear_greed ?? null;
+    // Fear & Greed gauge — API returns {value, label, ts} object
+    const fgObj = d.fear_greed;
+    const fg = fgObj != null ? fgObj.value : null;
+    const fgLabel = fgObj != null ? fgObj.label : '';
     const fgColor = fg == null ? '#888'
       : fg < 25  ? '#FF5252'
       : fg < 50  ? '#ff9100'
@@ -958,11 +960,12 @@ async function loadPositions() {
   const el    = document.getElementById('positions-body');
   const count = document.getElementById('positions-count');
   try {
-    const positions = await apiFetch('/api/positions');
+    const resp = await apiFetch('/api/positions');
+    const positions = resp.positions || [];
 
     if (count) count.textContent = `(${positions.length})`;
 
-    if (!positions || positions.length === 0) {
+    if (positions.length === 0) {
       el.innerHTML = '<div class="empty-state">No open positions right now.</div>';
       return;
     }
@@ -1006,12 +1009,13 @@ async function loadPipeline() {
   try {
     const d = await apiFetch('/api/pipeline');
 
-    // Stages: trained → backtest_passed → forward_test → champion
+    // Stages: total_ever → ever_reached_ft → forward_test → champion
+    const btPassed = d.ever_reached_ft || 0;
     const stages = [
-      { key: 'trained',          label: 'Trained',          cls: 'f-trained',  count: d.trained  },
-      { key: 'backtest_passed',  label: 'Backtest Passed',  cls: 'f-backtest', count: d.backtest_passed },
-      { key: 'forward_test',     label: 'Forward Test',     cls: 'f-ft',       count: d.forward_test },
-      { key: 'champion',         label: 'Champion',         cls: 'f-champion', count: d.champion },
+      { key: 'total_ever',       label: 'Total Trained',    cls: 'f-trained',  count: d.total_ever || 0 },
+      { key: 'ever_reached_ft',  label: 'Passed Backtest',  cls: 'f-backtest', count: btPassed },
+      { key: 'forward_test',     label: 'Forward Test',     cls: 'f-ft',       count: d.forward_test || 0 },
+      { key: 'champion',         label: 'Champion',         cls: 'f-champion', count: d.champion || 0 },
     ];
 
     const maxCount = Math.max(...stages.map(s => s.count || 0), 1);
@@ -1048,9 +1052,10 @@ async function loadPipeline() {
 async function loadStars() {
   const el = document.getElementById('stars-body');
   try {
-    const stars = await apiFetch('/api/rising-stars');
+    const resp = await apiFetch('/api/rising-stars');
+    const stars = resp.rising_stars || [];
 
-    if (!stars || stars.length === 0) {
+    if (stars.length === 0) {
       el.innerHTML = '<div class="empty-state">No rising stars yet — models are being evaluated.</div>';
       return;
     }
@@ -1061,27 +1066,21 @@ async function loadStars() {
         <div style="margin-bottom:6px;">${dirBadge(s.direction)}</div>
         <div class="star-metrics">
           <div class="star-row">
-            <span class="lbl">BT PF</span>
-            <span class="val ${s.bt_pf >= 2 ? 'gold' : ''}">${fmtFloat(s.bt_pf)}</span>
+            <span class="lbl">FT PF</span>
+            <span class="val ${s.ft_pf >= 2 ? 'gold' : ''}">${fmtFloat(s.ft_pf)}</span>
           </div>
-          <div class="star-row">
-            <span class="lbl">Precision</span>
-            <span class="val">${s.bt_precision != null ? fmtFloat(s.bt_precision * 100, 1) + '%' : '—'}</span>
-          </div>
-          <div class="star-row">
-            <span class="lbl">BT Trades</span>
-            <span class="val">${s.bt_trades ?? '—'}</span>
-          </div>
-          ${s.ft_trades != null ? `
           <div class="star-row">
             <span class="lbl">FT Trades</span>
-            <span class="val">${s.ft_trades}</span>
+            <span class="val">${s.ft_trades ?? '—'}</span>
           </div>
           <div class="star-row">
             <span class="lbl">FT PnL</span>
             <span class="val ${pnlClass(s.ft_pnl)}">${fmtPct(s.ft_pnl)}</span>
           </div>
-          ` : ''}
+          <div class="star-row">
+            <span class="lbl">Age</span>
+            <span class="val">${s.days_in_ft ?? '—'}d</span>
+          </div>
         </div>
       </div>
     `).join('');
