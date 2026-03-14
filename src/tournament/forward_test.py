@@ -8,6 +8,7 @@ import joblib
 import numpy as np
 
 from config import (
+    DISABLE_SOCIAL_FEATURES,
     FT_MAX_DRAWDOWN_PAUSE,
     FT_PAUSE_HOURS,
     TP_PCT,
@@ -19,6 +20,8 @@ from config import (
     TOURNAMENT_DIR,
     log,
 )
+from src.features.registry import FEATURE_REGISTRY
+from src.scoring.thresholds import effective_entry_threshold
 from src.tournament.challenger import FEATURE_SUBSETS
 
 
@@ -69,7 +72,11 @@ def _get_feature_values(db, symbol: str, ts_ms: int, feature_names: list[str]):
 
     vec = []
     for fn in feature_names:
-        val = name_to_val.get(fn)
+        reg = FEATURE_REGISTRY.get(fn)
+        if DISABLE_SOCIAL_FEATURES and reg and reg.get("category") == "social":
+            val = reg["neutral"]
+        else:
+            val = name_to_val.get(fn)
         if val is None:
             return None
         try:
@@ -102,8 +109,7 @@ def _compute_exit_pnl(direction: str, entry_price: float,
         return (entry_price - exit_price) / entry_price
 
 
-def _check_exit_conditions(db, pos, ts_ms: int, current_price: float,
-                           model=None, feature_names=None) -> str | None:
+def _check_exit_conditions(db, pos, ts_ms: int, current_price: float) -> str | None:
     """Check all exit conditions for a position.
 
     Returns exit_reason string or None if position stays open.
@@ -148,22 +154,18 @@ def _check_exit_conditions(db, pos, ts_ms: int, current_price: float,
         return "time"
 
     # Invalidation: re-score, exit if below threshold
-    if model is not None and feature_names is not None:
-        symbol = pos["symbol"]
-        vec = _get_feature_values(db, symbol, ts_ms, feature_names)
-        if vec is not None:
-            X = np.array([vec], dtype=np.float32)
-            current_score = float(model.predict_proba(X)[:, 1][0])
-            # Get invalidation threshold from the model's tournament entry
-            inv_row = db.execute(
-                "SELECT invalidation_threshold FROM tournament_models WHERE model_id = ?",
-                (pos["model_id"],),
-            ).fetchone()
-            if inv_row and inv_row["invalidation_threshold"]:
-                inv_threshold = inv_row["invalidation_threshold"]
-                # Allow grace period
-                if bars_elapsed >= INVALIDATION_GRACE_BARS and current_score < inv_threshold:
-                    return "invalidation"
+    inv_row = db.execute(
+        "SELECT invalidation_threshold FROM tournament_models WHERE model_id = ?",
+        (pos["model_id"],),
+    ).fetchone()
+    if (
+        inv_row
+        and inv_row["invalidation_threshold"] is not None
+        and pos["entry_ml_score"] is not None
+        and bars_elapsed >= INVALIDATION_GRACE_BARS
+        and pos["entry_ml_score"] < inv_row["invalidation_threshold"]
+    ):
+        return "invalidation"
 
     return None
 
@@ -237,8 +239,6 @@ def check_ft_exits(db, ts_ms: int):
     if not open_positions:
         return
 
-    # Cache loaded models
-    model_cache = {}
     models_updated = set()
 
     for pos in open_positions:
@@ -248,17 +248,7 @@ def check_ft_exits(db, ts_ms: int):
         if current_price is None:
             continue
 
-        # Load model for invalidation check
-        if model_id not in model_cache:
-            model_cache[model_id] = _load_model(model_id)
-        model = model_cache[model_id]
-
-        feature_names = _resolve_feature_names(pos["feature_set"])
-
-        exit_reason = _check_exit_conditions(
-            db, pos, ts_ms, current_price,
-            model=model, feature_names=feature_names,
-        )
+        exit_reason = _check_exit_conditions(db, pos, ts_ms, current_price)
 
         # Update high water mark
         direction = pos["direction"]
@@ -319,7 +309,7 @@ def score_forward_test_models(db, all_symbols: list[str], ts_ms: int):
 
     # Load active FT models
     ft_models = db.execute(
-        """SELECT model_id, direction, feature_set, entry_threshold
+        """SELECT model_id, direction, feature_set, entry_threshold, invalidation_threshold
            FROM tournament_models
            WHERE stage = 'forward_test' AND is_paused = 0"""
     ).fetchall()
@@ -335,7 +325,10 @@ def score_forward_test_models(db, all_symbols: list[str], ts_ms: int):
         model_id = tm["model_id"]
         direction = tm["direction"]
         feature_names = _resolve_feature_names(tm["feature_set"])
-        entry_threshold = tm["entry_threshold"]
+        entry_threshold = effective_entry_threshold(
+            tm["entry_threshold"],
+            tm["invalidation_threshold"],
+        )
 
         model = _load_model(model_id)
         if model is None:
@@ -344,6 +337,10 @@ def score_forward_test_models(db, all_symbols: list[str], ts_ms: int):
 
         # Score all symbols
         scores = _score_symbols(db, model, feature_names, all_symbols, now_ms)
+        feature_map = {
+            symbol: _get_feature_values(db, symbol, now_ms, feature_names)
+            for symbol, _ in scores
+        }
 
         # Find signals above threshold
         signals = [(sym, sc) for sym, sc in scores if sc >= entry_threshold]
@@ -370,10 +367,25 @@ def score_forward_test_models(db, all_symbols: list[str], ts_ms: int):
                 db.execute(
                     """INSERT INTO positions
                        (symbol, direction, model_id, is_champion_trade,
-                        entry_ts, entry_price, entry_ml_score, status,
-                        high_water_price)
-                       VALUES (?, ?, ?, 0, ?, ?, ?, 'open', ?)""",
-                    (symbol, direction, model_id, now_ms, price, score, price),
+                        entry_ts, entry_price, entry_ml_score, entry_features,
+                        status, high_water_price)
+                       VALUES (?, ?, ?, 0, ?, ?, ?, ?, 'open', ?)""",
+                    (
+                        symbol,
+                        direction,
+                        model_id,
+                        now_ms,
+                        price,
+                        score,
+                        json.dumps({
+                            "feature_version": None,
+                            "feature_names": feature_names,
+                            "feature_values": dict(
+                                zip(feature_names, feature_map.get(symbol) or [])
+                            ),
+                        }),
+                        price,
+                    ),
                 )
             except sqlite3.IntegrityError:
                 log.debug("FT open skipped: duplicate open for %s %s", direction, symbol)

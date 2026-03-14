@@ -28,7 +28,7 @@ def _env_csv(key: str, default: list[str] | None = None) -> list[str]:
 
 # ── Paths ────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "data" / "moonshot_v2.db"
+DB_PATH = Path(os.environ.get("MOONSHOT_DB_PATH", str(BASE_DIR / "data" / "moonshot_v2.db")))
 MODELS_DIR = BASE_DIR / "models"
 TOURNAMENT_DIR = MODELS_DIR / "tournament"
 CHAMPION_LONG_PATH = MODELS_DIR / "champion_long.pkl"
@@ -93,7 +93,7 @@ PAPER_ACCOUNT_SIZE = _env("PAPER_ACCOUNT_SIZE", 100_000.0, float)
 # 2026-03-11: Increased 2→5 so that when position slots are available, up to 5
 # signals are taken per 4h cycle instead of just 2.
 TOP_N_SIGNALS = _env("TOP_N_SIGNALS", 5, int)
-ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.30, float)
+ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.70, float)
 SYMBOL_WHITELIST = _env_csv("SYMBOL_WHITELIST", [])
 SYMBOL_WHITELIST_MIN_TRADES = _env("SYMBOL_WHITELIST_MIN_TRADES", 20, int)
 
@@ -118,6 +118,10 @@ DASHBOARD_REFRESH_SECONDS = _env("DASHBOARD_REFRESH_SECONDS", 300, int)
 
 # ── Social Data ──────────────────────────────────────────────────────────
 SOCIAL_COLLECTION_INTERVAL_HOURS = _env("SOCIAL_COLLECTION_INTERVAL_HOURS", 1, int)
+DISABLE_SOCIAL_FEATURES = _env(
+    "DISABLE_SOCIAL_FEATURES", False,
+    lambda v: str(v).lower() in {"1", "true", "yes", "on"},
+)
 FEAR_GREED_URL = "https://api.alternative.me/fng/"
 COINGECKO_TRENDING_URL = "https://api.coingecko.com/api/v3/search/trending"
 RSS_FEEDS = [

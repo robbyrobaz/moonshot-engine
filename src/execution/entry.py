@@ -12,6 +12,7 @@ import joblib
 import config
 from config import log
 from src.features.compute import compute_features
+from src.scoring.thresholds import effective_entry_threshold
 
 
 def _get_symbol_whitelist(db: sqlite3.Connection) -> set[str]:
@@ -190,7 +191,10 @@ def score_and_enter(
         model = champion["model"]
         model_id = champion["model_id"]
         feature_set = champion["feature_set"]
-        entry_threshold = float(champion["entry_threshold"])
+        entry_threshold = effective_entry_threshold(
+            champion["entry_threshold"],
+            champion.get("invalidation_threshold"),
+        )
 
         # Compute features and score all symbols
         scored = []

@@ -9,6 +9,7 @@ import numpy as np
 from config import (
     BOOTSTRAP_PF_LOWER_BOUND,
     BOOTSTRAP_RESAMPLES,
+    DISABLE_SOCIAL_FEATURES,
     MIN_BT_PF,
     MIN_BT_PRECISION,
     MIN_BT_TRADES,
@@ -19,6 +20,7 @@ from config import (
     TOURNAMENT_DIR,
     log,
 )
+from src.features.registry import FEATURE_REGISTRY
 from src.tournament.challenger import FEATURE_SUBSETS
 
 
@@ -38,6 +40,13 @@ def _detect_xgb_gpu_device():
 
 XGB_DEVICE = _detect_xgb_gpu_device()
 LABEL_LOAD_BATCH_SIZE = 100_000
+
+
+def _feature_value(name_to_val: dict, feature_name: str):
+    reg = FEATURE_REGISTRY.get(feature_name)
+    if DISABLE_SOCIAL_FEATURES and reg and reg.get("category") == "social":
+        return reg["neutral"]
+    return name_to_val.get(feature_name)
 
 
 def _get_rss_mb() -> float:
@@ -181,7 +190,7 @@ def _load_labeled_data(db, direction: str, feature_names: list[str]):
             feat_vec = []
             skip = False
             for fn in feature_names:
-                val = name_to_val.get(fn)
+                val = _feature_value(name_to_val, fn)
                 if val is None:
                     skip = True
                     break

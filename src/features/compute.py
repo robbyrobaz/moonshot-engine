@@ -14,7 +14,7 @@ import sqlite3
 import time
 from functools import lru_cache
 
-from config import log
+from config import DISABLE_SOCIAL_FEATURES, log
 from src.features.registry import FEATURE_REGISTRY
 
 
@@ -948,6 +948,9 @@ def compute_features(symbol, ts_ms, db, feature_names=None):
         if reg is None:
             log.warning("Unknown feature: %s", name)
             values[name] = 0.0
+            continue
+        if DISABLE_SOCIAL_FEATURES and reg.get("category") == "social":
+            values[name] = reg["neutral"]
             continue
 
         fn_name = reg["fn"]

@@ -29,6 +29,7 @@ from config import (
     TRAIL_DISTANCE_PCT,
 )
 from src.db.schema import get_db
+from src.scoring.thresholds import effective_entry_threshold
 from src.tournament.challenger import FEATURE_SUBSETS
 from src.tournament.forward_test import (
     _compute_exit_pnl,
@@ -132,9 +133,9 @@ def _check_exit_conditions_fast(position, ts_ms, current_price, current_score, i
 
     if (
         invalidation_threshold is not None
-        and current_score is not None
+        and position["entry_ml_score"] is not None
         and bars_elapsed >= INVALIDATION_GRACE_BARS
-        and current_score < invalidation_threshold
+        and position["entry_ml_score"] < invalidation_threshold
     ):
         return "invalidation"
 
@@ -149,8 +150,11 @@ def _replay_model(db, model_row, ts_list, all_symbols):
 
     feature_names = _resolve_feature_names(model_row["feature_set"])
     direction = model_row["direction"]
-    entry_threshold = float(model_row["entry_threshold"])
     invalidation_threshold = model_row["invalidation_threshold"]
+    entry_threshold = effective_entry_threshold(
+        model_row["entry_threshold"],
+        invalidation_threshold,
+    )
 
     open_positions = []
     closed_positions = []

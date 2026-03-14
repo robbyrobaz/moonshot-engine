@@ -52,6 +52,7 @@ from config import (
     log,
 )
 from src.db.schema import get_db
+from src.scoring.thresholds import effective_entry_threshold
 from src.tournament.backtest import backtest_challenger
 from src.tournament.champion import crown_champion_if_ready
 from src.tournament.challenger import FEATURE_SUBSETS
@@ -90,9 +91,9 @@ def _check_exit(position, ts_ms, current_price, current_score, inv_threshold):
 
     if (
         inv_threshold is not None
-        and current_score is not None
+        and position["entry_ml_score"] is not None
         and bars_elapsed >= INVALIDATION_GRACE_BARS
-        and current_score < inv_threshold
+        and position["entry_ml_score"] < inv_threshold
     ):
         return "invalidation"
 
@@ -102,6 +103,7 @@ def _check_exit(position, ts_ms, current_price, current_score, inv_threshold):
 def _replay_14d(db, model_id, model_obj, feature_names, direction,
                 entry_threshold, inv_threshold, ts_list, all_symbols):
     """Simulate trades over ts_list using the freshly-trained model_obj."""
+    entry_threshold = effective_entry_threshold(entry_threshold, inv_threshold)
     open_positions = []
     closed_positions = []
 

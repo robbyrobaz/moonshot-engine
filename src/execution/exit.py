@@ -4,14 +4,10 @@ Checked every 4h cycle. Evaluates all open positions against six exit
 conditions in strict priority order (first match wins).
 """
 
-import json
 import sqlite3
-
-import joblib
 
 import config
 from config import log
-from src.features.compute import compute_features
 
 
 # ── Helper functions ─────────────────────────────────────────────────────────
@@ -149,40 +145,16 @@ def _close_position(
     )
 
 
-def _load_model_for_invalidation(db: sqlite3.Connection, model_id: str):
-    """Load a tournament model by model_id for invalidation re-scoring.
-
-    Returns (model_object, feature_set, invalidation_threshold) or None.
-    """
+def _load_invalidation_threshold(db: sqlite3.Connection, model_id: str):
+    """Load the model's invalidation threshold."""
     row = db.execute(
-        "SELECT feature_set, invalidation_threshold FROM tournament_models WHERE model_id = ?",
+        "SELECT invalidation_threshold FROM tournament_models WHERE model_id = ?",
         (model_id,),
     ).fetchone()
     if row is None:
-        log.warning("_load_model_for_invalidation: model %s not found in DB", model_id)
+        log.warning("_load_invalidation_threshold: model %s not found in DB", model_id)
         return None
-
-    feature_set_str = row["feature_set"]
-    inv_threshold = row["invalidation_threshold"]
-
-    try:
-        feature_set = json.loads(feature_set_str)
-    except (json.JSONDecodeError, TypeError):
-        log.warning("_load_model_for_invalidation: bad feature_set JSON for %s", model_id)
-        return None
-
-    model_path = config.TOURNAMENT_DIR / f"{model_id}.pkl"
-    if not model_path.exists():
-        log.warning("_load_model_for_invalidation: pkl not found at %s", model_path)
-        return None
-
-    try:
-        model = joblib.load(model_path)
-    except Exception as e:
-        log.warning("_load_model_for_invalidation: load failed for %s: %s", model_id, e)
-        return None
-
-    return model, feature_set, inv_threshold
+    return row["invalidation_threshold"]
 
 
 # ── Main exit check ──────────────────────────────────────────────────────────
@@ -317,29 +289,19 @@ def check_exits(
 
         # ── 5. INVALIDATION ──────────────────────────────────────────────
         if bars_since_entry >= config.INVALIDATION_GRACE_BARS:
-            loaded = _load_model_for_invalidation(db, model_id)
-            if loaded is not None:
-                model, feature_set, inv_threshold = loaded
-                try:
-                    features = compute_features(
-                        symbol, ts_ms, db, feature_names=feature_set
-                    )
-                    fv_dict = features["feature_values"]
-                    feature_values = [fv_dict.get(f) for f in feature_set]
-                    if all(v is not None for v in feature_values):
-                        score = model.predict_proba([feature_values])[0][1]
-                        if score < inv_threshold:
-                            pnl = compute_pnl_pct(entry_price, current_price, direction)
-                            _close_position(
-                                db, pos, current_price, "INVALIDATION", pnl, ts_ms
-                            )
-                            counts["exits_invalidation"] += 1
-                            continue
-                except Exception as e:
-                    log.warning(
-                        "check_exits: invalidation scoring failed for %s/%s: %s",
-                        symbol, model_id, e,
-                    )
+            inv_threshold = _load_invalidation_threshold(db, model_id)
+            entry_score = pos["entry_ml_score"]
+            if (
+                inv_threshold is not None
+                and entry_score is not None
+                and entry_score < inv_threshold
+            ):
+                pnl = compute_pnl_pct(entry_price, current_price, direction)
+                _close_position(
+                    db, pos, current_price, "INVALIDATION", pnl, ts_ms
+                )
+                counts["exits_invalidation"] += 1
+                continue
 
         # ── 6. REGIME_EXIT ───────────────────────────────────────────────
         if regime == "bear" and direction == "long":
