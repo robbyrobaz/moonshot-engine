@@ -60,7 +60,8 @@ MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.20, float)  # Lowered: PF matters 
 MAX_FT_MODELS = _env("MAX_FT_MODELS", 10, int)
 # 2026-03-06: Relaxed thresholds — keep models in FT longer to collect more data.
 # Only retire clear losers (PF < 0.8) after substantial sample (200+ trades).
-MIN_FT_TRADES_EVAL = _env("MIN_FT_TRADES_EVAL", 500, int)  # only eval after 500 FT trades
+# 2026-03-14: Lowered to 150 to clear FT backlog — retire after 150 trades if PF < 0.5.
+MIN_FT_TRADES_EVAL = _env("MIN_FT_TRADES_EVAL", 150, int)  # only eval after 150 FT trades
 MIN_FT_PF_KEEP = _env("MIN_FT_PF_KEEP", 0.5, float)  # only demote catastrophic losers
 MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 0.5, float)  # same - FT is free data
 CHALLENGER_COUNT_PER_HOUR = _env("CHALLENGER_COUNT_PER_HOUR", 10, int)

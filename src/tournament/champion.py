@@ -26,7 +26,7 @@ def demote_underperformers(db):
     """Demote FT models that fail performance gates.
 
     POLICY: FT is FREE data. Only demote truly catastrophic performers.
-    - Must have 500+ trades (statistically significant)
+    - Must have 150+ trades (statistically significant)
     - Must have PF < 0.5 (clearly no edge)
     - Everything else keeps running to collect data
     """
@@ -36,9 +36,9 @@ def demote_underperformers(db):
     demoted = db.execute(
         """UPDATE tournament_models
            SET stage = 'retired', retired_at = ?,
-               retire_reason = 'ft_catastrophic_pf_below_0.5_after_500_trades'
+               retire_reason = 'ft_catastrophic_pf_below_0.5_after_150_trades'
            WHERE stage IN ('forward_test', 'ft')
-             AND ft_trades >= 500
+             AND ft_trades >= 150
              AND ft_pf < 0.5
              AND ft_pf IS NOT NULL""",
         (now_ms,),
@@ -46,7 +46,7 @@ def demote_underperformers(db):
 
     db.commit()
     if demoted > 0:
-        log.info("demote_underperformers: retired %d catastrophic models (PF < 0.5 after 500+ trades)", demoted)
+        log.info("demote_underperformers: retired %d catastrophic models (PF < 0.5 after 150+ trades)", demoted)
     else:
         log.debug("demote_underperformers: no models demoted (good — FT is free data)")
 
