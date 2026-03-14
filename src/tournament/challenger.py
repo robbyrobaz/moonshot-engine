@@ -124,6 +124,7 @@ def generate_challengers(db, n: int = None) -> list[dict]:
         forced_direction = target_dirs[len(created)] if len(created) < len(target_dirs) else None
         params = _sample_params(forced_direction=forced_direction)
         model_id = _make_model_id(params)
+        feature_set = json.dumps(FEATURE_SUBSETS[params["feature_set"]])
 
         # Check if already exists
         row = db.execute(
@@ -132,6 +133,8 @@ def generate_challengers(db, n: int = None) -> list[dict]:
         ).fetchone()
         if row is not None:
             continue
+
+        json.loads(feature_set)
 
         # Insert new challenger
         db.execute(
@@ -144,7 +147,7 @@ def generate_challengers(db, n: int = None) -> list[dict]:
                 params["direction"],
                 params["model_type"],
                 json.dumps(params, sort_keys=True),
-                params["feature_set"],
+                feature_set,
                 params["confidence_threshold"],
                 now_ms,
             ),

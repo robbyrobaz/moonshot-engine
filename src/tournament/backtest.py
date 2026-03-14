@@ -37,6 +37,17 @@ def _detect_xgb_gpu_device():
         return 'cpu'
 
 XGB_DEVICE = _detect_xgb_gpu_device()
+LABEL_LOAD_BATCH_SIZE = 100_000
+
+
+def _get_rss_mb() -> float:
+    """Return current process RSS in MiB."""
+    with open("/proc/self/status", encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("VmRSS:"):
+                rss_kb = int(line.split()[1])
+                return rss_kb / 1024.0
+    return 0.0
 
 
 def _build_model(params: dict):
@@ -133,7 +144,7 @@ def _load_labeled_data(db, direction: str, feature_names: list[str]):
     Returns (X: np.ndarray, y: np.ndarray, pnl_per_row: np.ndarray, timestamps: list[int]).
     Each row corresponds to a (symbol, ts) with both features and a label.
     """
-    rows = db.execute(
+    cursor = db.execute(
         """SELECT f.symbol, f.ts, f.feature_names, f.feature_values,
                   l.label
            FROM features f
@@ -141,40 +152,58 @@ def _load_labeled_data(db, direction: str, feature_names: list[str]):
            WHERE l.direction = ? AND l.tp_pct = ? AND l.sl_pct = ?
            ORDER BY f.ts ASC""",
         (direction, TP_PCT, SL_PCT),
-    ).fetchall()
-
-    if not rows:
-        return None, None, None, []
+    )
 
     X_rows = []
     y_list = []
     ts_list = []
+    total_rows = 0
+    loaded_rows = 0
+    skipped_rows = 0
 
-    for row in rows:
-        stored_names = json.loads(row["feature_names"])
-        stored_values_raw = json.loads(row["feature_values"])
-        # feature_values may be stored as a dict {name: value} or list [value, ...]
-        if isinstance(stored_values_raw, dict):
-            name_to_val = stored_values_raw
-        else:
-            name_to_val = dict(zip(stored_names, stored_values_raw))
+    while True:
+        rows = cursor.fetchmany(LABEL_LOAD_BATCH_SIZE)
+        if not rows:
+            break
 
-        # Extract only the features this model needs, in order
-        feat_vec = []
-        skip = False
-        for fn in feature_names:
-            val = name_to_val.get(fn)
-            if val is None:
-                skip = True
-                break
-            feat_vec.append(float(val))
+        total_rows += len(rows)
 
-        if skip:
-            continue
+        for row in rows:
+            stored_names = json.loads(row["feature_names"])
+            stored_values_raw = json.loads(row["feature_values"])
+            # feature_values may be stored as a dict {name: value} or list [value, ...]
+            if isinstance(stored_values_raw, dict):
+                name_to_val = stored_values_raw
+            else:
+                name_to_val = dict(zip(stored_names, stored_values_raw))
 
-        X_rows.append(feat_vec)
-        y_list.append(int(row["label"]))
-        ts_list.append(int(row["ts"]))
+            # Extract only the features this model needs, in order
+            feat_vec = []
+            skip = False
+            for fn in feature_names:
+                val = name_to_val.get(fn)
+                if val is None:
+                    skip = True
+                    break
+                feat_vec.append(float(val))
+
+            if skip:
+                skipped_rows += 1
+                continue
+
+            X_rows.append(feat_vec)
+            y_list.append(int(row["label"]))
+            ts_list.append(int(row["ts"]))
+            loaded_rows += 1
+
+        log.info(
+            "label load progress: direction=%s rows_seen=%d rows_loaded=%d rows_skipped=%d rss_mb=%.1f",
+            direction,
+            total_rows,
+            loaded_rows,
+            skipped_rows,
+            _get_rss_mb(),
+        )
 
     if not X_rows:
         return None, None, None, []
@@ -253,7 +282,25 @@ def backtest_challenger(db, model_params: dict) -> dict:
         "invalidation_threshold": 0.0,
     }
 
+    rss_before_load_mb = _get_rss_mb()
+    log.info(
+        "backtest label load start: model_id=%s direction=%s feature_set=%s feature_count=%d rss_mb=%.1f",
+        params.get("model_id", "unknown"),
+        direction,
+        feature_set_key,
+        len(feature_names),
+        rss_before_load_mb,
+    )
     X, y, pnl, ts_list = _load_labeled_data(db, direction, feature_names)
+    rss_after_load_mb = _get_rss_mb()
+    log.info(
+        "backtest label load done: model_id=%s direction=%s rows=%d rss_mb=%.1f delta_mb=%.1f",
+        params.get("model_id", "unknown"),
+        direction,
+        0 if X is None else len(X),
+        rss_after_load_mb,
+        rss_after_load_mb - rss_before_load_mb,
+    )
     if X is None or len(X) < 100:
         log.warning("backtest_challenger: insufficient data (%s rows)",
                      0 if X is None else len(X))

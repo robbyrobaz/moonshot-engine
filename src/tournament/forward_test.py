@@ -30,6 +30,19 @@ def _load_model(model_id: str):
     return joblib.load(path)
 
 
+def _resolve_feature_names(feature_set_raw):
+    """Support legacy preset keys and JSON-serialized feature lists."""
+    if not feature_set_raw:
+        return FEATURE_SUBSETS["core_only"]
+    try:
+        parsed = json.loads(feature_set_raw)
+    except Exception:
+        parsed = None
+    if isinstance(parsed, list):
+        return parsed
+    return FEATURE_SUBSETS.get(feature_set_raw, FEATURE_SUBSETS["core_only"])
+
+
 def _get_feature_values(db, symbol: str, ts_ms: int, feature_names: list[str]):
     """Load pre-computed features for a symbol at a timestamp.
 
@@ -240,8 +253,7 @@ def check_ft_exits(db, ts_ms: int):
             model_cache[model_id] = _load_model(model_id)
         model = model_cache[model_id]
 
-        feature_set_key = pos["feature_set"] or "core_only"
-        feature_names = FEATURE_SUBSETS.get(feature_set_key, FEATURE_SUBSETS["core_only"])
+        feature_names = _resolve_feature_names(pos["feature_set"])
 
         exit_reason = _check_exit_conditions(
             db, pos, ts_ms, current_price,
@@ -322,8 +334,7 @@ def score_forward_test_models(db, all_symbols: list[str], ts_ms: int):
     for tm in ft_models:
         model_id = tm["model_id"]
         direction = tm["direction"]
-        feature_set_key = tm["feature_set"] or "core_only"
-        feature_names = FEATURE_SUBSETS.get(feature_set_key, FEATURE_SUBSETS["core_only"])
+        feature_names = _resolve_feature_names(tm["feature_set"])
         entry_threshold = tm["entry_threshold"]
 
         model = _load_model(model_id)

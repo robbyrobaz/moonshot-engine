@@ -12,9 +12,13 @@ import time
 import joblib
 
 from config import (
+    BOOTSTRAP_PF_LOWER_BOUND,
     CHAMPION_BEAT_MARGIN,
     CHAMPION_LONG_PATH,
     CHAMPION_SHORT_PATH,
+    MIN_BT_PF,
+    MIN_BT_PRECISION,
+    MIN_BT_TRADES,
     MIN_FT_PF_KEEP,
     MIN_FT_TRADES_EVAL,
     TOURNAMENT_DIR,
@@ -63,6 +67,10 @@ def crown_champion_if_ready(db):
     - stage = 'forward_test' or 'ft'
     - ft_trades >= 20 (basic minimum for comparison)
     - Must beat current champion's ft_pnl by CHAMPION_BEAT_MARGIN (10%)
+    - MUST pass all backtest gates (dual validation — backtest + forward test)
+      to prevent regime-shift bugs (e.g., FT PF 2.22 but BT PF 0.98).
+      Gates: bt_pf >= MIN_BT_PF, bt_precision >= MIN_BT_PRECISION,
+             bt_trades >= MIN_BT_TRADES, bt_ci_lower >= BOOTSTRAP_PF_LOWER_BOUND
     """
     now_ms = int(time.time() * 1000)
 
@@ -79,31 +87,38 @@ def crown_champion_if_ready(db):
         current_id = current["model_id"] if current else None
 
         # Find best FT candidate (ranked by pnl, then pf, then trades)
+        # Also filter by backtest gates to prevent regime-shift bugs
         candidate = db.execute(
-            """SELECT model_id, ft_pnl, ft_pf, ft_trades FROM tournament_models
+            """SELECT model_id, ft_pnl, ft_pf, ft_trades, bt_pf, bt_precision, bt_trades, bt_ci_lower
+               FROM tournament_models
                WHERE stage IN ('forward_test', 'ft') AND direction = ?
                  AND ft_trades >= 20
                  AND ft_pnl IS NOT NULL
+                 AND bt_pf >= ?
+                 AND bt_precision >= ?
+                 AND bt_trades >= ?
+                 AND bt_ci_lower >= ?
                ORDER BY ft_pnl DESC, ft_pf DESC, ft_trades DESC
                LIMIT 1""",
-            (direction,),
+            (direction, MIN_BT_PF, MIN_BT_PRECISION, MIN_BT_TRADES, BOOTSTRAP_PF_LOWER_BOUND),
         ).fetchone()
 
         if candidate is None:
-            log.debug("crown_champion %s: no qualifying candidates", direction)
+            log.debug("crown_champion %s: no qualifying candidates (failed BT gates)", direction)
             continue
 
         cand_pnl = candidate["ft_pnl"]
         cand_pf = candidate["ft_pf"] or 0
         cand_trades = candidate["ft_trades"]
+        cand_bt_pf = candidate["bt_pf"]
         cand_id = candidate["model_id"]
 
         # Must beat current champion by margin
         required_pnl = current_pnl * (1.0 + CHAMPION_BEAT_MARGIN) if current_pnl > 0 else 0.0
         if cand_pnl <= required_pnl:
-            log.info("crown_champion %s: candidate %s (pnl=%.2f%%, pf=%.2f, trades=%d) "
+            log.info("crown_champion %s: candidate %s (ft_pnl=%.2f%%, ft_pf=%.2f, bt_pf=%.2f, trades=%d) "
                      "does not beat current %s (pnl=%.2f%%, required=%.2f%%)",
-                     direction, cand_id[:12], cand_pnl, cand_pf, cand_trades,
+                     direction, cand_id[:12], cand_pnl, cand_pf, cand_bt_pf, cand_trades,
                      current_id[:12] if current_id else "none", current_pnl, required_pnl)
             continue
 
@@ -136,8 +151,8 @@ def crown_champion_if_ready(db):
                WHERE model_id = ?""",
             (now_ms, cand_id),
         )
-        log.info("crown_champion %s: promoted %s (pnl=%.2f%%, pf=%.2f, trades=%d)",
-                 direction, cand_id[:12], cand_pnl, cand_pf, cand_trades)
+        log.info("crown_champion %s: promoted %s (ft_pnl=%.2f%%, ft_pf=%.2f, bt_pf=%.2f, trades=%d)",
+                 direction, cand_id[:12], cand_pnl, cand_pf, cand_bt_pf, cand_trades)
 
     db.commit()
 
