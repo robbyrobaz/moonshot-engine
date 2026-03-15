@@ -46,7 +46,8 @@ BACKFILL_TARGET_YEARS = _env("BACKFILL_TARGET_YEARS", 4, int)
 
 # ── Labels ───────────────────────────────────────────────────────────────
 # Price targets are defined on the underlying move; leveraged PnL is applied at execution time.
-TP_PCT = _env("TP_PCT", 0.10, float)  # 10% take profit (was 15%)
+# 2026-03-15: Raised TP 10%→30% to hunt bigger spikes (new coin moonshots)
+TP_PCT = _env("TP_PCT", 0.30, float)  # 30% take profit — hunting big moves
 SL_PCT = _env("SL_PCT", 0.05, float)  # 5% stop loss
 LABEL_HORIZON_BARS = _env("LABEL_HORIZON_BARS", 42, int)
 
@@ -56,9 +57,11 @@ LEVERAGE = _env("LEVERAGE", 2, int)  # Default leverage for newly opened paper p
 # ── Tournament ───────────────────────────────────────────────────────────
 MIN_BT_TRADES = _env("MIN_BT_TRADES", 50, int)
 MIN_BT_PF = _env("MIN_BT_PF", 1.0, float)  # For short
-MIN_BT_PF_LONG = _env("MIN_BT_PF_LONG", 0.7, float)  # Lower for long (crypto shorts > longs)
+# 2026-03-15: Lowered long gate 0.7→0.5 — new coin spikes are rare, lower precision expected
+MIN_BT_PF_LONG = _env("MIN_BT_PF_LONG", 0.5, float)  # Lower for long (hunting moonshots)
 MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.20, float)  # For short
-MIN_BT_PRECISION_LONG = _env("MIN_BT_PRECISION_LONG", 0.22, float)  # Slightly higher for long
+# 2026-03-15: Lowered long precision 0.22→0.15 — expect many losers, hunting rare winners
+MIN_BT_PRECISION_LONG = _env("MIN_BT_PRECISION_LONG", 0.15, float)  # Lower for long
 MAX_FT_MODELS = _env("MAX_FT_MODELS", 10, int)
 # 2026-03-06: Relaxed thresholds — keep models in FT longer to collect more data.
 # Only retire clear losers (PF < 0.8) after substantial sample (200+ trades).
@@ -70,19 +73,20 @@ CHALLENGER_COUNT_PER_HOUR = _env("CHALLENGER_COUNT_PER_HOUR", 25, int)  # 100/da
 CHAMPION_BEAT_MARGIN = _env("CHAMPION_BEAT_MARGIN", 0.10, float)
 BOOTSTRAP_RESAMPLES = _env("BOOTSTRAP_RESAMPLES", 1000, int)
 BOOTSTRAP_PF_LOWER_BOUND = _env("BOOTSTRAP_PF_LOWER_BOUND", 0.8, float)  # For short
-BOOTSTRAP_PF_LOWER_BOUND_LONG = _env("BOOTSTRAP_PF_LOWER_BOUND_LONG", 0.6, float)  # For long
+# 2026-03-15: Lowered long bootstrap 0.6→0.4 — asymmetric payoff (lose 5%, win 30%+)
+BOOTSTRAP_PF_LOWER_BOUND_LONG = _env("BOOTSTRAP_PF_LOWER_BOUND_LONG", 0.4, float)  # For long
 
 # ── PnL Weights (from NQ pipeline) ──────────────────────────────────────
 PNL_WEIGHT_TP = _env("PNL_WEIGHT_TP", 1.0, float)
 PNL_WEIGHT_SL = _env("PNL_WEIGHT_SL", 0.50, float)  # (SL/TP) × 1.5 = 0.5
 
 # ── Execution ────────────────────────────────────────────────────────────
-LONG_DISABLED = _env("LONG_DISABLED", True, lambda v: str(v).lower() in {"1", "true", "yes", "on"})
-MAX_LONG_POSITIONS = _env("MAX_LONG_POSITIONS", 3, int)
-# 2026-03-11: Increased 3→6 to expand entry volume. Signal supply is abundant
-# (419/468 coins score ≥0.40 per cycle) but positions were filling to capacity
-# and blocking all new entries until exits occurred.
-MAX_SHORT_POSITIONS = _env("MAX_SHORT_POSITIONS", 6, int)
+# 2026-03-15: ENABLE LONGS — primary mission now (hunting new coin spikes)
+LONG_DISABLED = _env("LONG_DISABLED", False, lambda v: str(v).lower() in {"1", "true", "yes", "on"})
+# 2026-03-15: Raised long positions 3→10 — need more lottery tickets for rare spikes
+MAX_LONG_POSITIONS = _env("MAX_LONG_POSITIONS", 10, int)
+# 2026-03-15: Lowered short positions 6→2 — backup only, longs are primary
+MAX_SHORT_POSITIONS = _env("MAX_SHORT_POSITIONS", 2, int)
 BASE_POSITION_PCT = _env("BASE_POSITION_PCT", 0.02, float)
 MAX_POSITION_PCT = _env("MAX_POSITION_PCT", 0.05, float)
 # 2026-03-15: Raised new listing boost 1.5x→5x — prioritize coins <30d old
@@ -92,12 +96,14 @@ TIME_STOP_DAYS = _env("TIME_STOP_DAYS", 7, int)
 TIME_STOP_BARS = _env("TIME_STOP_BARS", 42, int)  # 7d at 4h
 TRAIL_ACTIVATE_PCT = _env("TRAIL_ACTIVATE_PCT", 0.20, float)
 TRAIL_DISTANCE_PCT = _env("TRAIL_DISTANCE_PCT", 0.10, float)
-INVALIDATION_GRACE_BARS = _env("INVALIDATION_GRACE_BARS", 2, int)
+# 2026-03-15: Raised invalidation grace 2→20 bars (80h = 3.3d) — let longs run longer
+INVALIDATION_GRACE_BARS = _env("INVALIDATION_GRACE_BARS", 20, int)
 PAPER_ACCOUNT_SIZE = _env("PAPER_ACCOUNT_SIZE", 100_000.0, float)
 # 2026-03-11: Increased 2→5 so that when position slots are available, up to 5
 # signals are taken per 4h cycle instead of just 2.
 TOP_N_SIGNALS = _env("TOP_N_SIGNALS", 5, int)
-ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.70, float)
+# 2026-03-15: Lowered entry threshold 0.70→0.50 for longs (need more lottery tickets)
+ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.50, float)
 SYMBOL_WHITELIST = _env_csv("SYMBOL_WHITELIST", [])
 SYMBOL_WHITELIST_MIN_TRADES = _env("SYMBOL_WHITELIST_MIN_TRADES", 20, int)
 
