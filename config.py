@@ -149,6 +149,3 @@ LOG_FORMAT = "%(asctime)s %(levelname)-8s %(name)s  %(message)s"
 
 logging.basicConfig(level=getattr(logging, LOG_LEVEL), format=LOG_FORMAT)
 log = logging.getLogger("moonshot")
-"moonshot")
-l=getattr(logging, LOG_LEVEL), format=LOG_FORMAT)
-log = logging.getLogger("moonshot")
