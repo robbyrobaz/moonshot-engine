@@ -8,10 +8,13 @@ import numpy as np
 
 from config import (
     BOOTSTRAP_PF_LOWER_BOUND,
+    BOOTSTRAP_PF_LOWER_BOUND_LONG,
     BOOTSTRAP_RESAMPLES,
     DISABLE_SOCIAL_FEATURES,
     MIN_BT_PF,
+    MIN_BT_PF_LONG,
     MIN_BT_PRECISION,
+    MIN_BT_PRECISION_LONG,
     MIN_BT_TRADES,
     PNL_WEIGHT_SL,
     PNL_WEIGHT_TP,
@@ -356,11 +359,17 @@ def backtest_challenger(db, model_params: dict) -> dict:
         )
 
         # Track per-fold gate pass/fail (fold 3 = most recent data is the hard gate)
+        # Use direction-specific gates for PF, precision, and bootstrap CI
+        direction = params.get("direction", "short")
+        min_pf = MIN_BT_PF_LONG if direction == "long" else MIN_BT_PF
+        min_prec = MIN_BT_PRECISION_LONG if direction == "long" else MIN_BT_PRECISION
+        min_ci = BOOTSTRAP_PF_LOWER_BOUND_LONG if direction == "long" else BOOTSTRAP_PF_LOWER_BOUND
+        
         fold_gate_ok = (
             metrics["trades"] >= MIN_BT_TRADES
-            and metrics["pf"] >= MIN_BT_PF
-            and metrics["precision"] >= MIN_BT_PRECISION
-            and metrics["ci_lower"] >= BOOTSTRAP_PF_LOWER_BOUND
+            and metrics["pf"] >= min_pf
+            and metrics["precision"] >= min_prec
+            and metrics["ci_lower"] >= min_ci
         )
         if fold_idx == 2 and not fold_gate_ok:
             # Fold 3 (most recent data) must pass — hard requirement

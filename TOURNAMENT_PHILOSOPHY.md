@@ -23,15 +23,25 @@
 - Random feature subsets (see Feature Diversity below)
 - Goal: Maximum diversity = more lottery tickets
 
-### 2. Backtest Gate (Strict)
+### 2. Backtest Gate (Direction-Specific)
 - 3-fold walk-forward (60/20/10/10 expanding windows)
 - Fold 3 (most recent 10% of data) MUST pass:
-  - PF ≥ 1.0 (was 2.0, lowered to let more models through)
-  - Precision ≥ 0.20 (was 0.40)
+  
+**SHORT models:**
+  - PF ≥ 1.0
+  - Precision ≥ 0.20
+  - Bootstrap CI lower bound ≥ 0.8
+  
+**LONG models** (crypto longs harder — relaxed gates):
+  - PF ≥ 0.7
+  - Precision ≥ 0.22
+  - Bootstrap CI lower bound ≥ 0.6
+  
+**Both directions:**
   - Trades ≥ 50
-  - Bootstrap CI lower bound ≥ 1.0
+  
 - Folds 1-2 are soft (crypto regimes shift — older data can underperform)
-- **Pass rate target: 10-20% of challengers**
+- **Pass rate target: 10-20% of challengers (each direction)**
 
 ### 3. Forward Test (Max 15 models)
 - Paper trading on live data
@@ -40,11 +50,15 @@
 - Demotion: ONLY if catastrophic (PF < 0.5 after 150 trades)
 - **Invalidation should NOT kill models early** — see Invalidation Philosophy below
 
-### 4. Champion Promotion
-- Best FT PnL with ≥20 trades (separate long/short)
+### 4. Champion Promotion (Separate Long/Short)
+- **One champion per direction** (long champion + short champion)
+- Best FT PnL with ≥20 trades within that direction
 - Must beat current champion's ft_pnl by 10% margin
 - Must ALSO pass backtest gates (dual validation — prevents regime-shift bugs)
 - Old champion demoted back to FT (keeps running, doesn't retire)
+
+**Why separate champions?**  
+Crypto has directional bias (shorts work better for mean reversion). Running both long + short models captures different market conditions.
 
 ## Feature Diversity Strategy
 

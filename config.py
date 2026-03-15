@@ -55,8 +55,10 @@ LEVERAGE = _env("LEVERAGE", 2, int)  # Default leverage for newly opened paper p
 
 # ── Tournament ───────────────────────────────────────────────────────────
 MIN_BT_TRADES = _env("MIN_BT_TRADES", 50, int)
-MIN_BT_PF = _env("MIN_BT_PF", 1.0, float)  # Lowered: FT is FREE, test everything
-MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.20, float)  # Lowered: PF matters more than precision
+MIN_BT_PF = _env("MIN_BT_PF", 1.0, float)  # For short
+MIN_BT_PF_LONG = _env("MIN_BT_PF_LONG", 0.7, float)  # Lower for long (crypto shorts > longs)
+MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.20, float)  # For short
+MIN_BT_PRECISION_LONG = _env("MIN_BT_PRECISION_LONG", 0.22, float)  # Slightly higher for long
 MAX_FT_MODELS = _env("MAX_FT_MODELS", 10, int)
 # 2026-03-06: Relaxed thresholds — keep models in FT longer to collect more data.
 # Only retire clear losers (PF < 0.8) after substantial sample (200+ trades).
@@ -67,7 +69,8 @@ MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 0.5, float)  # same - FT is free d
 CHALLENGER_COUNT_PER_HOUR = _env("CHALLENGER_COUNT_PER_HOUR", 25, int)  # 100/day = 25 per 4h cycle
 CHAMPION_BEAT_MARGIN = _env("CHAMPION_BEAT_MARGIN", 0.10, float)
 BOOTSTRAP_RESAMPLES = _env("BOOTSTRAP_RESAMPLES", 1000, int)
-BOOTSTRAP_PF_LOWER_BOUND = _env("BOOTSTRAP_PF_LOWER_BOUND", 0.8, float)
+BOOTSTRAP_PF_LOWER_BOUND = _env("BOOTSTRAP_PF_LOWER_BOUND", 0.8, float)  # For short
+BOOTSTRAP_PF_LOWER_BOUND_LONG = _env("BOOTSTRAP_PF_LOWER_BOUND_LONG", 0.6, float)  # For long
 
 # ── PnL Weights (from NQ pipeline) ──────────────────────────────────────
 PNL_WEIGHT_TP = _env("PNL_WEIGHT_TP", 1.0, float)
