@@ -22,7 +22,7 @@
 
 ### Coins
 - 471 total, 3 ≤7 days old
-- Open positions: monitoring (auto-entry active)
+- Open positions: 954 (auto-entry active)
 - `days_since_listing` computed each cycle (fixed Mar 16)
 
 ### Direction-Specific Gates (Mar 14 2026)
@@ -102,3 +102,4 @@ t
 - ⛔ Moonshot: champion = best FT PnL (≥20 trades), NEVER AUC
 - ⛔ 95% retirement rate is GOOD (tournament philosophy)
 - ⛔ Data migration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
+12)
