@@ -50,9 +50,10 @@ def run_cycle():
 
     # ── 1. Discovery ─────────────────────────────────────────────────────
     try:
-        from src.data.discovery import discover_coins
+        from src.data.discovery import discover_coins, update_days_since_listing
         all_symbols = discover_coins(db)
         log.info("Discovery: %d active coins", len(all_symbols))
+        update_days_since_listing(db)
     except Exception as e:
         log.error("Discovery failed: %s", e)
         errors.append(f"discovery: {e}")

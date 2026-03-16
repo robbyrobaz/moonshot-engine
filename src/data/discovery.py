@@ -61,3 +61,28 @@ def discover_coins(db) -> list[str]:
     db.commit()
     log.info("discover_coins: %d active USDT swap pairs", len(active_symbols))
     return active_symbols
+
+
+def update_days_since_listing(db) -> int:
+    """Update days_since_listing for all coins based on first_seen_ts.
+
+    Returns:
+        Number of coins updated.
+    """
+    now_ms = int(time.time() * 1000)
+    rows = db.execute(
+        "SELECT symbol, first_seen_ts FROM coins WHERE first_seen_ts IS NOT NULL"
+    ).fetchall()
+
+    updated = 0
+    for row in rows:
+        days = int((now_ms - row["first_seen_ts"]) / (24 * 3600 * 1000))
+        db.execute(
+            "UPDATE coins SET days_since_listing = ? WHERE symbol = ?",
+            (days, row["symbol"]),
+        )
+        updated += 1
+
+    db.commit()
+    log.debug("update_days_since_listing: updated %d coins", updated)
+    return updated
