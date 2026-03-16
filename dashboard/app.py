@@ -7,6 +7,7 @@ All data sourced from SQLite at config.DB_PATH in read-only mode.
 import json
 import os
 import sqlite3
+import struct
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -661,6 +662,13 @@ def api_positions():
             direction = p["direction"]
             leverage = p["leverage"] if "leverage" in p.keys() else config.LEVERAGE
             upnl, tp_dist, sl_dist = _compute_unrealized_pnl(entry, current, direction, leverage)
+
+            # Handle entry_ml_score which may be bytes or float
+            ml_score = p["entry_ml_score"]
+            if isinstance(ml_score, bytes):
+                # Convert bytes to float (little-endian 32-bit float)
+                ml_score = struct.unpack('<f', ml_score)[0] if len(ml_score) == 4 else None
+
             result.append({
                 "id": p["id"],
                 "symbol": p["symbol"],
@@ -673,7 +681,7 @@ def api_positions():
                 "sl_distance_pct": round(sl_dist, 4) if sl_dist is not None else None,
                 "entry_ts": _ts_to_str(p["entry_ts"]),
                 "entry_ts_ms": p["entry_ts"],
-                "entry_ml_score": p["entry_ml_score"],
+                "entry_ml_score": ml_score,
                 "size_usd": p["size_usd"],
             })
         return jsonify({"positions": result, "count": len(result)})
