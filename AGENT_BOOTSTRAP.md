@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-16 11:24 MST
+> Last updated: 2026-03-16 11:45 MST
 
 ## Moonshot v2 — Tournament Status
 
@@ -35,15 +35,11 @@
 - `days_since_listing` computed at start of each cycle via `update_days_since_listing()`
 - FK constraint required dummy model entry in tournament_models
 
-### Known Issue: Cycles Hanging
-- Cycles 117-119+ started but NONE completed (Mar 15-16)
-- Timer keeps firing while old cycles never exit
-- Needs investigation — possible OOM or infinite loop in backtest_new_challengers
-
 ### Services
-- `moonshot-v2.timer` — 4h cycle (currently cycles are hanging)
+- `moonshot-v2.timer` — 4h cycle (running normally, 2500MB RAM backtest load)
 - `moonshot-v2-social.timer` — 1h social signals
 - `moonshot-v2-dashboard.service` — ACTIVE (port 8893)
+- Dashboard: http://127.0.0.1:8893/ (HTTP 200)
 
 ## Blofin v1 Stack
 
@@ -79,6 +75,10 @@
 ## Critical Rules
 - ⛔ Never restart blofin-stack-pipeline.timer without Rob's approval
 - ⛔ Never aggregate performance — filter to top performers first
+- ⛔ Moonshot: champion = best FT PnL (≥20 trades), NEVER AUC
+- ⛔ 95% retirement rate is GOOD (tournament philosophy)
+- ⛔ Data migration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
+t
 - ⛔ Moonshot: champion = best FT PnL (≥20 trades), NEVER AUC
 - ⛔ 95% retirement rate is GOOD (tournament philosophy)
 - ⛔ Data migration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
