@@ -2,15 +2,15 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-16 16:15 MST (Heartbeat)
+> Last updated: 2026-03-16 16:21 MST (Champion Promotion)
 
 ## Session Summary (Mar 16 2026)
 
-**Heartbeat 16:15:**
-- ✅ All services active (Blofin stack, Moonshot dashboard, HTTP 200)
-- ✅ Moonshot cycle 124 completed at 14:39 (105min ago, 0 errors)
-- ⚠️ **CHAMPION UNDERPERFORMING:** de44f72dbb01 (PF=0.98, 388 trades) — BELOW 1.0 THRESHOLD
-- 🔧 **NEW promotion card dispatched:** c_a7e748bdedcf3_19cf8f03382 (promote 1e5f3a28123b, PF=1.48, 344 trades) — builder running (pid 2590555)
+**Champion Promotion 16:21:**
+- ✅ **SHORT champion promoted:** 1e5f3a28123b (XGBoost, BT_PF=1.02, FT_PF=1.48, 344 trades)
+- ✅ **OLD champion demoted:** de44f72dbb01 (CatBoost, BT_PF=0.98 FAILED gate) → forward_test
+- ✅ Manual intervention successful (regime shift fix — old champ had FT_PF=2.22 but BT_PF=0.98)
+- ✅ Cycle 126 running, new champion verified active
 - 📊 FT backlog: 259 models (draining 20/cycle)
 - 📊 Open positions: 953
 - ✅ Blofin FT early stage: no data available (query schema changed)
@@ -31,8 +31,9 @@
 ## Moonshot v2 — Tournament Status
 
 ### Champions (3 active, separate long/short + new_listing)
-- **SHORT Champion:** de44f72dbb01, BT_PF=0.98, FT_trades=388, FT_PnL=0.68%, FT_PF=2.22 — UNDERPERFORMING (PF<1.0 gate)
-  - **NEW challenger (better):** 1e5f3a28123b (FT_PF=1.48, 344 trades, FT_PnL=0.12%) — card c_a7e748bdedcf3_19cf8f03382 dispatched 16:15
+- **SHORT Champion:** 1e5f3a28123b (XGBoost), BT_PF=1.02, BT_precision=0.254, BT_CI=1.01, FT_trades=344, FT_PF=1.48, FT_PnL=0.12%
+  - Promoted: 2026-03-16 16:19 (manual intervention — regime shift fix)
+  - Previous: de44f72dbb01 (CatBoost) demoted to FT (BT_PF=0.98 failed gate, FT_PF=2.22)
 - **LONG Champion:** 6b3cef1bb7e4, BT_PF=0.58, FT_trades=0 — never fired (under investigation)
 - **New Listing:** new_listing (rule-based), BT_PF=7.53, FT_trades=0 — waiting for next ≤7 day coin
 
