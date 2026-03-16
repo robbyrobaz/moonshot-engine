@@ -422,17 +422,27 @@ def backtest_challenger(db, model_params: dict) -> dict:
     return result
 
 
-def backtest_new_challengers(db):
-    """Find all models with stage='backtest', run backtest, promote or retire."""
+def backtest_new_challengers(db, max_batch=20):
+    """Find all models with stage='backtest', run backtest, promote or retire.
+    
+    Args:
+        db: Database connection
+        max_batch: Maximum models to process per cycle (default 20)
+    """
     rows = db.execute(
-        "SELECT model_id, params FROM tournament_models WHERE stage = 'backtest'"
+        "SELECT model_id, params FROM tournament_models WHERE stage = 'backtest' LIMIT ?",
+        (max_batch,)
     ).fetchall()
 
     if not rows:
         log.info("backtest_new_challengers: no pending challengers")
         return
 
-    log.info("backtest_new_challengers: %d challengers to evaluate", len(rows))
+    total_pending = db.execute(
+        "SELECT COUNT(*) as cnt FROM tournament_models WHERE stage = 'backtest'"
+    ).fetchone()["cnt"]
+    log.info("backtest_new_challengers: %d challengers to evaluate (%d total pending)", 
+             len(rows), total_pending)
     now_ms = int(time.time() * 1000)
 
     for row in rows:
