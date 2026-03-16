@@ -1,0 +1,4 @@
+2026-03-16 16:20:21,807 INFO     moonshot  Database initialized at /home/rob/.openclaw/workspace/blofin-moonshot-v2/data/moonshot_v2.db
+2026-03-16 16:20:21,811 INFO     moonshot  ═══ Cycle 126 started ═══
+2026-03-16 16:20:22,020 INFO     moonshot  discover_coins: 470 active USDT swap pairs
+2026-03-16 16:20:22,021 INFO     moonshot  Discovery: 470 active coins
