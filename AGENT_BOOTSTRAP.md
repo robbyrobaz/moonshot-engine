@@ -41,6 +41,18 @@
 - `moonshot-v2-dashboard.service` — ACTIVE (port 8893)
 - Dashboard: http://127.0.0.1:8893/ (HTTP 200)
 
+### Cycle Performance (Mar 16 12:03 MST)
+**Backtest queue buildup — FIXED:**
+- 224 models accumulated, `backtest_new_challengers()` processed ALL serially
+- Added batch limit (20/cycle) — commit 4cd2f59
+- Prevents infinite backtest loops
+
+**Extended data fetch — EXPECTED SLOW:**
+- 470 symbols × 4 endpoints × 2.5 req/sec = 10+ min/cycle
+- Cycle 121: 11:49 start → 11:55 candles → 12:00 funding (5min) → killed 12:03
+- NOT a bug — rate limits force serial fetching
+- Cycle 122 running since 12:03, should complete naturally
+
 ## Blofin v1 Stack
 
 ### Status
