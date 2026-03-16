@@ -6,14 +6,15 @@
 
 ## Session Summary (Mar 16 2026)
 
-**Champion Promotion 16:21:**
-- ✅ **SHORT champion promoted:** 1e5f3a28123b (XGBoost, BT_PF=1.02, FT_PF=1.48, 344 trades)
-- ✅ **OLD champion demoted:** de44f72dbb01 (CatBoost, BT_PF=0.98 FAILED gate) → forward_test
-- ✅ Manual intervention successful (regime shift fix — old champ had FT_PF=2.22 but BT_PF=0.98)
-- ✅ Cycle 126 running, new champion verified active
+**Heartbeat 16:45:**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, both dashboards HTTP 200)
+- ✅ Moonshot Cycle 124 complete @ 14:39 (64min, 0 errors)
+- ✅ SHORT champion: 1e5f3a28 (XGBoost, BT_PF=1.02, FT_PF=1.48, FT_PnL=11.81%, 344 trades)
+- ⚠️ LONG champion: 6b3cef1b (CatBoost, BT_PF=0.58, 0 FT trades) — never fired, under investigation
 - 📊 FT backlog: 259 models (draining 20/cycle)
 - 📊 Open positions: 953
-- ✅ Blofin FT early stage: no data available (query schema changed)
+- 📊 Blofin v1: top 5 FT performers have <2 trades each (early stage), 0 ready for promotion
+- 🔧 Dispatched 2 NQ builders: create ML strategy wrappers + load 5 ML-optimized strategies
 - ✅ No critical alerts from monitor
 
 **Major fixes deployed:**
