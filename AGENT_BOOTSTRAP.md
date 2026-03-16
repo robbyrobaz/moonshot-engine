@@ -41,20 +41,17 @@
 - `moonshot-v2-dashboard.service` — ACTIVE (port 8893)
 - Dashboard: http://127.0.0.1:8893/ (HTTP 200)
 
-### Cycle Performance (Mar 16 12:05 MST — FINAL)
+### Cycle Performance (Mar 16 12:15 MST)
 
-**Root cause of "hangs":** Crypto agent kept KILLING cycles mid-run to "investigate"
-- Killed Cycle 120 at 100% CPU (was in backtest, working normally)
-- Killed Cycle 121 at 12:03 (was fetching funding data, working normally)
-- Result: looks like cycles never complete, but that's because they keep getting killed
+**Current cycle:** 122 (started 12:03, in progress — extended data fetch stage)
+**Expected completion:** ~12:20 (15-20 min normal for 470 symbols)
 
-**Real issues FIXED:**
-1. Backtest queue: 224 models, batch limit (20/cycle) added — commit 4cd2f59
+**Recent fixes:**
+1. FT backlog reduction: Two-tier retirement (PF<0.9 at 50 trades) — commit c7c71b3
 2. Extended data fetch: 10+ min/cycle expected (470 symbols × rate limits)
+3. Batch limit: 20 models/cycle for backtest (prevents RAM overload)
 
 **Lesson:** LET CYCLES COMPLETE. They're slow (15-20 min) but not broken.
-- Cycle 122 started 12:03, running uninterrupted
-- Stop investigating, stop killing — just monitor completion
 
 ## Blofin v1 Stack
 
@@ -93,6 +90,11 @@
 - ⛔ Moonshot: champion = best FT PnL (≥20 trades), NEVER AUC
 - ⛔ 95% retirement rate is GOOD (tournament philosophy)
 - ⛔ Data migration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
+t
+- ⛔ Moonshot: champion = best FT PnL (≥20 trades), NEVER AUC
+- ⛔ 95% retirement rate is GOOD (tournament philosophy)
+- ⛔ Data migration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
+only (107GB loss Mar 12)
 t
 - ⛔ Moonshot: champion = best FT PnL (≥20 trades), NEVER AUC
 - ⛔ 95% retirement rate is GOOD (tournament philosophy)
