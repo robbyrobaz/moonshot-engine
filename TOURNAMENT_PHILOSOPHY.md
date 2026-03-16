@@ -60,24 +60,32 @@
 **Why separate champions?**  
 Crypto has directional bias (shorts work better for mean reversion). Running both long + short models captures different market conditions.
 
-## Feature Diversity Strategy
+## Feature Diversity Strategy ✅ IMPLEMENTED
 
-**Current (4 presets):**
+**Preset feature sets (5 options):**
 - `core_only` (25 features)
 - `price_volume` (core + volume)
-- `no_social` (core + extended, 39 features)
-- `all` (core + extended + social, 52 features)
+- `no_social` (core + extended, 37 features)
+- `extended_only` (core + extended, 37 features)
+- `all` (core + extended + social, 50 features)
 
-**New (random subsets):**
-- `price_heavy` (80% price action, 20% other)
-- `volume_heavy` (80% volume, 20% other)
-- `volatility_heavy` (80% volatility, 20% other)
-- `regime_aware` (50% regime, 50% price/volume)
+**Random subset focus areas (7 strategies):**
+- `price_heavy` (80% price action, 20% other, 14-24 features)
+- `volume_heavy` (80% volume, 20% other, 14-24 features)
+- `volatility_heavy` (80% volatility, 20% other, 12-22 features)
+- `regime_aware` (regime + price/volume mix, 5-9 features)
 - `social_boost` (core + social only, skip extended)
-- `minimal` (10-15 features only — test if simpler is better)
-- `maximal` (all 52 features)
+- `minimal` (10-15 features — test if simpler is better)
+- `maximal` (all 50 features)
 
 **Implementation:** 50% of challengers use presets, 50% use random subsets → 10x more feature combinations tested
+
+**Current distribution (as of Mar 16):**
+- Total tournament models: 477 (backtest + FT + champion)
+- Preset: 286 (60%) — evenly split across 5 presets
+- Random: 191 (40%) — distributed across feature count buckets
+- Feature lists stored in `params` column for reproducibility
+- Dashboard tracks feature subset distribution via `/api/feature-subsets`
 
 ## Invalidation Philosophy (Updated Mar 14 2026)
 
@@ -149,6 +157,8 @@ Crypto has directional bias (shorts work better for mean reversion). Running bot
 - [x] Lower BT gates (PF 2.0→1.0, prec 0.40→0.20) to let more models through
 - [x] FT demotion: only PF<0.5 after 150 trades (not early kills)
 - [ ] Fix invalidation (lock features at entry OR 50-trade grace period)
-- [ ] Add random feature subset generator to challenger.py
+- [x] Add random feature subset generator to challenger.py (7 focus areas, 50/50 preset/random split)
+- [x] Track feature subsets in tournament_models.params (JSON storage for reproducibility)
+- [x] Dashboard API endpoint for feature subset distribution (`/api/feature-subsets`)
 - [ ] Update Auto Card Generator to include feature experimentation cards
-- [ ] Track which feature subsets produce champions (dashboard metric)
+- [ ] Dashboard UI visualization of feature subset winners (which combinations produce champions)

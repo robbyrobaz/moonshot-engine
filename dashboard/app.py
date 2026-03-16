@@ -1095,6 +1095,83 @@ def api_model_comparison():
         conn.close()
 
 
+@app.route("/api/feature-subsets")
+@cached(cache=_api_cache, key=lambda: hashkey("feature_subsets"))
+def api_feature_subsets():
+    """Feature subset distribution across tournament models."""
+    try:
+        conn = _ro_db()
+    except sqlite3.OperationalError:
+        return jsonify({"error": "database not found"}), 503
+
+    try:
+        # Get all FT + champion models with their params
+        sql = """
+            SELECT model_id, direction, stage, params, feature_set
+            FROM tournament_models
+            WHERE stage IN ('forward_test', 'champion', 'backtest')
+            ORDER BY created_at DESC
+        """
+        rows = _safe_query(conn, sql)
+
+        # Categorize by preset vs random
+        preset_counts = {}
+        random_counts = {}
+        ft_champion_subsets = []
+
+        for r in rows:
+            try:
+                params = json.loads(r["params"])
+                fs_type = params.get("feature_set", "unknown")
+
+                # Determine if preset or random
+                if isinstance(fs_type, str):
+                    # Preset
+                    preset_counts[fs_type] = preset_counts.get(fs_type, 0) + 1
+                    subset_type = f"preset:{fs_type}"
+                    feature_count = None
+                elif isinstance(fs_type, list):
+                    # Random subset
+                    feature_count = len(fs_type)
+                    bucket = f"{feature_count // 10 * 10}-{feature_count // 10 * 10 + 9}"
+                    random_counts[bucket] = random_counts.get(bucket, 0) + 1
+                    subset_type = "random"
+                else:
+                    subset_type = "unknown"
+                    feature_count = None
+
+                # Track FT/champion models separately for detailed view
+                if r["stage"] in ("forward_test", "champion"):
+                    ft_champion_subsets.append({
+                        "model_id": r["model_id"],
+                        "direction": r["direction"],
+                        "stage": r["stage"],
+                        "subset_type": subset_type,
+                        "feature_count": feature_count,
+                    })
+            except (json.JSONDecodeError, TypeError, KeyError):
+                continue
+
+        total_preset = sum(preset_counts.values())
+        total_random = sum(random_counts.values())
+        total = total_preset + total_random
+
+        return jsonify({
+            "summary": {
+                "total_models": total,
+                "preset_count": total_preset,
+                "random_count": total_random,
+                "preset_pct": round(total_preset / total * 100, 1) if total > 0 else 0,
+                "random_pct": round(total_random / total * 100, 1) if total > 0 else 0,
+            },
+            "presets": preset_counts,
+            "random_buckets": random_counts,
+            "ft_champion_models": ft_champion_subsets,
+        })
+    finally:
+        conn.close()
+
+
 # ── Entry Point ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
