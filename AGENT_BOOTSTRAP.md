@@ -2,13 +2,14 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-16 11:15 MST
+> Last updated: 2026-03-16 11:24 MST
 
 ## Moonshot v2 — Tournament Status
 
 ### Champion
 - **Model:** 2321094c8072 (short)
 - **FT PF:** 1.42, 407 trades, +0.40% FT PnL
+- **Updated:** 2026-03-16 11:24 MST
 
 ### Tournament Numbers
 | Stage | Count |
