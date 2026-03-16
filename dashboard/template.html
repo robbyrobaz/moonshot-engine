@@ -30,6 +30,9 @@ a{color:var(--blue);text-decoration:none}
 .stats .s{color:var(--t2)}.stats .v{color:#fff;font-weight:600}
 .green{color:var(--gbr)!important}.red{color:var(--red)!important}.gold{color:var(--gold)!important}
 
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:8px}
+
 /* Section headers */
 .sec{font-size:15px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;padding:6px 0 3px;border-bottom:1px solid var(--border);margin-bottom:3px}
 
@@ -68,8 +71,14 @@ td.mono{font-family:'Courier New',monospace;font-size:13px}
 .btn:hover{background:rgba(15,52,96,.5)}
 
 /* Grid layout */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media(max-width:768px){.grid2{grid-template-columns:1fr}}
+
+/* Filters */
+.filters{display:flex;gap:6px;flex-wrap:wrap;padding:4px 0;margin-bottom:4px}
+.filter-btn{padding:3px 10px;background:rgba(15,52,96,.2);border:1px solid var(--border);border-radius:3px;color:var(--t2);cursor:pointer;font-size:13px;transition:all .2s}
+.filter-btn:hover{background:rgba(15,52,96,.4)}
+.filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 
 /* Fear & Greed inline */
 .fg-bar{display:inline-block;width:60px;height:6px;background:linear-gradient(90deg,#FF5252,#ff9100,#ffeb3b,#4CAF50,#00e676);border-radius:3px;position:relative;vertical-align:middle}
@@ -98,22 +107,34 @@ td.mono{font-family:'Courier New',monospace;font-size:13px}
 </div>
 
 <!-- Pipeline + Stats bar (inline) -->
-<div id="stats-bar" class="stats"><span class="loading">loading...</span></div>
-<div id="health-row" class="health-row">loading...</div>
+<div class="card">
+  <div id="stats-bar" class="stats"><span class="loading">loading...</span></div>
+  <div id="health-row" class="health-row"><span class="loading">loading...</span></div>
+</div>
 
 <!-- Master Models Table -->
-<div class="sec">All Models — FT &amp; Champion <span id="models-count" style="font-weight:400"></span></div>
-<div class="tw"><table id="models-table"><tbody><tr><td class="loading" colspan="12">loading...</td></tr></tbody></table></div>
-<div style="padding:3px 0" id="models-toggle-wrap"></div>
+<div class="card">
+  <div class="sec">All Models — FT &amp; Champion <span id="models-count" style="font-weight:400"></span></div>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all" onclick="filterModels('all')">All</button>
+    <button class="filter-btn" data-filter="champion" onclick="filterModels('champion')">Champions</button>
+    <button class="filter-btn" data-filter="forward_test" onclick="filterModels('forward_test')">FT Only</button>
+    <button class="filter-btn" data-filter="short" onclick="filterModels('short')">Short</button>
+    <button class="filter-btn" data-filter="long" onclick="filterModels('long')">Long</button>
+    <button class="filter-btn" data-filter="paused" onclick="filterModels('paused')">Paused</button>
+  </div>
+  <div class="tw"><table id="models-table"><tbody><tr><td class="loading" colspan="12">loading...</td></tr></tbody></table></div>
+  <div style="padding:3px 0" id="models-toggle-wrap"></div>
+</div>
 
 <!-- Two-column: Positions + Recent Trades -->
 <div class="grid2">
-  <div>
+  <div class="card">
     <div class="sec">Open Positions <span id="pos-count" style="font-weight:400"></span></div>
     <div class="tw"><table id="pos-table"><tbody><tr><td class="loading" colspan="8">loading...</td></tr></tbody></table></div>
     <div id="pos-toggle-wrap" style="padding:3px 0"></div>
   </div>
-  <div>
+  <div class="card">
     <div class="sec">Recent Trades (48h) <span id="trades-sum" style="font-weight:400"></span></div>
     <div class="tw"><table id="trades-table"><tbody><tr><td class="loading" colspan="7">loading...</td></tr></tbody></table></div>
     <div id="trades-toggle-wrap" style="padding:3px 0"></div>
@@ -140,6 +161,7 @@ async function api(ep){const r=await fetch(ep);if(!r.ok)throw new Error('HTTP '+
 
 // ── State ──────────────────────────────────────────────────────────────────
 let modelsData=[], modelsSortCol='ft_pnl_last_7d', modelsSortDir='desc', modelsShowAll=false;
+let modelsFilter='all';
 let posShowAll=false, tradesShowAll=false;
 
 // ── Header / Market ────────────────────────────────────────────────────────
@@ -195,7 +217,8 @@ async function loadHeader(){
 
     document.getElementById('last-updated').textContent=new Date().toISOString().slice(11,16)+' UTC';
   }catch(e){
-    document.getElementById('stats-bar').innerHTML='<span class="err">'+e.message+'</span>';
+    document.getElementById('stats-bar').innerHTML='<span class="err">Error loading stats: '+e.message+'</span>';
+    document.getElementById('health-row').innerHTML='<span class="err">Error loading health data</span>';
   }
 }
 
@@ -211,8 +234,31 @@ async function loadModels(){
   }
 }
 
+function filterModels(filter){
+  modelsFilter=filter;
+  document.querySelectorAll('.filter-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.filter===filter);
+  });
+  renderModels();
+}
+
 function renderModels(){
-  const sorted=[...modelsData].sort((a,b)=>{
+  let filtered=[...modelsData];
+
+  // Apply filters
+  if(modelsFilter==='champion'){
+    filtered=filtered.filter(m=>m.stage==='champion');
+  }else if(modelsFilter==='forward_test'){
+    filtered=filtered.filter(m=>m.stage==='forward_test');
+  }else if(modelsFilter==='short'){
+    filtered=filtered.filter(m=>m.direction==='short');
+  }else if(modelsFilter==='long'){
+    filtered=filtered.filter(m=>m.direction==='long');
+  }else if(modelsFilter==='paused'){
+    filtered=filtered.filter(m=>m.is_paused);
+  }
+
+  const sorted=filtered.sort((a,b)=>{
     let va=a[modelsSortCol], vb=b[modelsSortCol];
     if(va==null)va=-Infinity;if(vb==null)vb=-Infinity;
     if(modelsSortCol==='model_id'||modelsSortCol==='direction'||modelsSortCol==='stage'){
@@ -265,6 +311,12 @@ function renderModels(){
     </tr>`;
   }).join('');
 
+  if(!show.length){
+    document.getElementById('models-table').innerHTML='<tbody><tr><td colspan="12" style="color:var(--t2);padding:8px;text-align:center">No models match the current filter</td></tr></tbody>';
+    document.getElementById('models-toggle-wrap').innerHTML='';
+    return;
+  }
+
   document.getElementById('models-table').innerHTML=`<thead><tr>${ths}</tr></thead><tbody>${trs}</tbody>`;
 
   const wrap=document.getElementById('models-toggle-wrap');
@@ -290,7 +342,7 @@ async function loadPositions(){
     const pos=resp.positions||[];
     cnt.textContent='('+pos.length+')';
 
-    if(!pos.length){el.innerHTML='<tbody><tr><td class="loading" colspan="8">No open positions</td></tr></tbody>';return}
+    if(!pos.length){el.innerHTML='<tbody><tr><td colspan="8" style="color:var(--t2);padding:8px;text-align:center">No open positions</td></tr></tbody>';return}
 
     const LIMIT=10;
     const show=posShowAll?pos:pos.slice(0,LIMIT);
@@ -327,7 +379,7 @@ async function loadTrades(){
     const sum=d.summary||{};
     sumEl.innerHTML=`<span class="${pc(sum.total_pnl)}">${fp(sum.total_pnl)}</span> ${sum.wins||0}W/${sum.losses||0}L`;
 
-    if(!trades.length){el.innerHTML='<tbody><tr><td class="loading" colspan="7">No trades in 48h</td></tr></tbody>';return}
+    if(!trades.length){el.innerHTML='<tbody><tr><td colspan="7" style="color:var(--t2);padding:8px;text-align:center">No trades in 48h</td></tr></tbody>';return}
 
     const LIMIT=10;
     const show=tradesShowAll?trades:trades.slice(0,LIMIT);
