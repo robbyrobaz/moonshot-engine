@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-16 13:29 MST
+> Last updated: 2026-03-16 13:45 MST (Heartbeat)
 
 ## Session Summary (Mar 16 2026)
 
@@ -20,23 +20,23 @@
 
 ## Moonshot v2 — Tournament Status
 
-### Champion
-- **Model:** de44f72dbb01 (long)
-- **FT PF:** 2.22, 388 trades
-- **Promoted:** Cycle 122 (13:08 MST)
+### Champions (3 active, separate long/short/new_listing)
+- **SHORT Champion:** de44f72dbb01, PF=2.22, 388 trades (active, promoted Cycle 122)
+- **LONG Champion:** 6409feee2207, PF=0.00, 0 trades (promoted but never fired — under investigation)
+- **New Listing:** new_listing (rule-based), PF=0.00, 0 trades
 
 ### Tournament Numbers (Cycle 122 complete, 13:08 MST)
 | Stage | Count |
 |-------|-------|
-| Champion | 1 |
-| Forward Test | 250 (down from 289) |
+| Champion | 3 (short/long/new_listing) |
+| Forward Test | 250 |
 | Backtest | 239 (draining 20/cycle) |
-| Retired | 1,396 |
-| **Total** | **1,886** |
+| Retired | 1,432 |
+| **Total** | **1,924** |
 
-### Coins
-- 471 total, 3 ≤7 days old
-- Open positions: 954 (auto-entry active)
+### Coins & Positions
+- 471 total symbols tracked
+- Open positions: 954 (auto-entry active for ≤7 day coins)
 - `days_since_listing` computed each cycle (fixed Mar 16)
 
 ### Direction-Specific Gates (Mar 14 2026)
@@ -49,11 +49,12 @@
 - `days_since_listing` computed at start of each cycle via `update_days_since_listing()`
 - FK constraint required dummy model entry in tournament_models
 
-### Services
-- `moonshot-v2.timer` — 4h cycle (ACTIVE, cycle 122 completed 13:08)
-- `moonshot-v2-social.timer` — 1h social signals (ACTIVE)
-- `moonshot-v2-dashboard.service` — ACTIVE (port 8893, HTTP 200)
+### Services (All ACTIVE as of 13:45)
+- `moonshot-v2.timer` — 4h cycle (cycle 122 done 13:08, next ~17:08)
+- `moonshot-v2-social.timer` — 1h social signals (active)
+- `moonshot-v2-dashboard.service` — HTTP 200 on port 8893
 - Dashboard: http://127.0.0.1:8893/
+- **Backfill:** Historical data backfill completed or inactive (moonshot_v2.db is 5.7GB)
 
 ### Cycle Performance — RESOLVED (Mar 16 13:08 MST)
 
@@ -72,11 +73,12 @@
 
 ## Blofin v1 Stack
 
-### Status — LIVE AND WORKING
-- Paper trading active (35K+ paper trades)
+### Status — LIVE AND WORKING (13:45 Mar 16)
+- Paper trading active (35K+ paper trades, BT complete)
 - Services: `blofin-stack-ingestor`, `blofin-stack-paper`, `blofin-dashboard` — ALL ACTIVE
 - Dashboard: http://127.0.0.1:8892 (HTTP 200)
-- Top performers: INJ-USDT (PF 4.41, 5x), AAVE-USDT (PF 3.91, 5x), JTO-USDT (PF 3.80, 5x)
+- **FT status:** Very early (≤3 trades per pair), top 5: DOT-USDT reversal PF=5.06, LINK-USDT reversal PF=3.99, ADA-USDT bb_squeeze PF=2.61
+- Not ready for promotion (need ≥100 trades + PF≥1.35)
 
 ### Parquet Migration (Mar 15 — IN PROGRESS)
 - New ingestor writes to `data/ticks/*.parquet` (NVMe, 12x compression)
