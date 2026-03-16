@@ -7,18 +7,18 @@
 ## Moonshot v2 — Tournament Status
 
 ### Champion
-- **Model:** 2321094c8072 (short)
-- **FT PF:** 1.42, 407 trades, +0.40% FT PnL
-- **Updated:** 2026-03-16 11:24 MST
+- **Model:** de44f72dbb01 (long)
+- **FT PF:** 2.22, 388 trades
+- **Promoted:** Cycle 122 (13:08 MST)
 
-### Tournament Numbers
+### Tournament Numbers (Cycle 122 complete, 13:08 MST)
 | Stage | Count |
 |-------|-------|
 | Champion | 1 |
-| Forward Test | ~241 (improved from 289 via two-tier retirement) |
-| Backtest | ~243 |
-| Retired | ~1,400+ |
-| **Total** | **1,889+** |
+| Forward Test | 250 (down from 289) |
+| Backtest | 239 (draining 20/cycle) |
+| Retired | 1,396 |
+| **Total** | **1,886** |
 
 ### Coins
 - 471 total, 3 ≤7 days old
@@ -36,23 +36,25 @@
 - FK constraint required dummy model entry in tournament_models
 
 ### Services
-- `moonshot-v2.timer` — 4h cycle (ACTIVE, cycle 122 running since 12:03)
+- `moonshot-v2.timer` — 4h cycle (ACTIVE, cycle 122 completed 13:08)
 - `moonshot-v2-social.timer` — 1h social signals (ACTIVE)
 - `moonshot-v2-dashboard.service` — ACTIVE (port 8893, HTTP 200)
 - Dashboard: http://127.0.0.1:8893/
 
-### Cycle Performance (Mar 16 12:45 MST)
+### Cycle Performance — RESOLVED (Mar 16 13:08 MST)
 
-**Current cycle:** 122 (started 12:03, backtest stage in progress, 42min runtime)
-**Expected completion:** ~12:50 (15-20 min normal for backtest + 10-15 min data fetch)
-**Status:** HEALTHY — 2.1GB RAM usage, processing models normally
+**Cycle 122: COMPLETED SUCCESSFULLY ✅**
+- Started: 12:03:19 → Finished: 13:08:10 (64min 51sec)
+- Errors: 0
+- Champion promoted: de44f72dbb01 (PF 2.22, 388 trades)
+- Backtest queue: 239 (draining 20/cycle)
+- FT queue: 250 (down from 289)
 
-**Recent fixes:**
-1. FT backlog reduction: Two-tier retirement (PF<0.9 at 50 trades) — commit c7c71b3 (DEPLOYED)
-2. Extended data fetch: 10+ min/cycle expected (470 symbols × rate limits)
-3. Batch limit: 20 models/cycle for backtest (prevents RAM overload)
+**Fixes deployed:**
+1. Batch limit (20/cycle) prevents backtest infinite loops — commit 4cd2f59
+2. Two-tier FT retirement (PF<0.9 at 50 trades) — commit c7c71b3
 
-**Lesson:** LET CYCLES COMPLETE. They're slow (15-20 min) but not broken.
+**Lesson:** Cycles take 60+ min (not 15-20). Extended data + backtest + FT scoring = slow but working. NEVER kill to investigate.
 
 ## Blofin v1 Stack
 
