@@ -149,20 +149,14 @@ tr.pnl-negative-high td:first-child{background:rgba(255,82,82,.08)!important}
   </div>
 </div>
 
-<!-- Portfolio Summary -->
+<!-- System Health Only -->
 <div class="card">
-  <div id="portfolio-summary" class="portfolio"><span class="loading">loading...</span></div>
-</div>
-
-<!-- Pipeline + Stats bar (inline) -->
-<div class="card">
-  <div id="stats-bar" class="stats"><span class="loading">loading...</span></div>
   <div id="health-row" class="health-row"><span class="loading">loading...</span></div>
 </div>
 
-<!-- Master Models Table -->
+<!-- Top Performers Table -->
 <div class="card">
-  <div class="sec">All Models — FT &amp; Champion <span id="models-count" style="font-weight:400"></span></div>
+  <div class="sec">Top Performers <span id="models-count" style="font-weight:400"></span></div>
   <div class="filters">
     <button class="filter-btn active" data-filter="all" onclick="filterModels('all')">All</button>
     <button class="filter-btn" data-filter="champion" onclick="filterModels('champion')">Champions</button>
@@ -271,55 +265,12 @@ let posShowAll=false, tradesShowAll=false;
 let sparklineCache={}; // Cache sparkline data {model_id: {data: [...], svg: '...'}}
 let sparklineWindow='7d'; // '7d' or '30d'
 
-// ── Portfolio Summary ──────────────────────────────────────────────────────
-async function loadPortfolio(){
-  try{
-    const portfolio=await api('/api/portfolio');
-    const ps=document.getElementById('portfolio-summary');
-
-    // Generate portfolio sparkline
-    const sparkSVG=generateSparklineSVG(portfolio.pnl_series||[]);
-    const sparkHTML=sparkSVG.includes('svg')?sparkSVG.replace('class="spark"','class="p-spark"'):'';
-
-    ps.innerHTML=`
-      <div class="p-item">
-        <div class="p-label">Total Capital</div>
-        <div class="p-value">$${fn(portfolio.total_capital_usd)}</div>
-      </div>
-      <div class="p-item">
-        <div class="p-label">Portfolio PnL</div>
-        <div class="p-value ${pc(portfolio.overall_pnl_pct)}">${fp(portfolio.overall_pnl_pct)}</div>
-      </div>
-      <div class="p-item">
-        <div class="p-label">7D PnL</div>
-        <div class="p-value ${pc(portfolio.overall_pnl_7d_pct)}">${fp(portfolio.overall_pnl_7d_pct)}</div>
-      </div>
-      <div class="p-item">
-        <div class="p-label">PnL/Day</div>
-        <div class="p-value ${pc(portfolio.overall_pnl_per_day_pct)}">${fp(portfolio.overall_pnl_per_day_pct)}</div>
-      </div>
-      <div class="p-item">
-        <div class="p-label">Total Positions</div>
-        <div class="p-value">${fn(portfolio.total_positions)}</div>
-      </div>
-      <div class="p-item">
-        <div class="p-label">Win Rate</div>
-        <div class="p-value">${ff(portfolio.overall_win_rate_pct,1)}%</div>
-      </div>
-      <div class="p-item">
-        <div class="p-label">7D Trend</div>
-        ${sparkHTML}
-      </div>
-    `;
-  }catch(e){
-    document.getElementById('portfolio-summary').innerHTML='<span class="err">Error loading portfolio: '+e.message+'</span>';
-  }
-}
+// Portfolio summary removed - showing only top performers
 
 // ── Header / Market ────────────────────────────────────────────────────────
 async function loadHeader(){
   try{
-    const[mkt,pipe,health]=await Promise.all([api('/api/market'),api('/api/pipeline'),api('/api/health')]);
+    const[mkt,health]=await Promise.all([api('/api/market'),api('/api/health')]);
 
     // Regime badge
     const reg=(mkt.regime||'unknown').toLowerCase();
@@ -339,37 +290,19 @@ async function loadHeader(){
     document.getElementById('fg-inline').innerHTML=fg!=null?
       `F&G:<b style="color:${fg<25?'var(--red)':fg<50?'var(--gold)':fg<75?'#ffeb3b':'var(--green)'}">${Math.round(fg)}</b>`:''
 
-    // Stats bar
-    const sb=document.getElementById('stats-bar');
-    sb.innerHTML=`
-      <span><span class="s">Trained:</span> <span class="v">${fn(pipe.total_ever)}</span></span>
-      <span><span class="s">BT Pass:</span> <span class="v">${fn(pipe.ever_reached_ft)}</span> <span class="s">(${pipe.bt_pass_rate_pct}%)</span></span>
-      <span><span class="s">FT Active:</span> <span class="v">${fn(pipe.forward_test)}</span></span>
-      <span><span class="s">Retired:</span> <span class="v">${fn(pipe.retired_from_ft)}</span></span>
-      <span><span class="s">Champion:</span> <span class="v gold">${pipe.champion}</span></span>
-      <span><span class="s">FT→Champ:</span> <span class="v">${pipe.ft_to_champion_rate_pct}%</span></span>
-      <span><span class="s">DB:</span> <span class="v">${health.db_size_mb!=null?ff(health.db_size_mb/1024,1)+'GB':'—'}</span></span>
-      <span><span class="s">Coins:</span> <span class="v">${fn(health.coin_count)}</span></span>
-      <span><span class="s">Run:</span> <span class="v">#${health.last_run_id||'—'}</span></span>
-      ${health.errors?'<span class="red">ERR: '+health.errors+'</span>':''}
-    `;
-
-    // Health footer
+    // Health row (minimal system info)
     const hf=document.getElementById('health-row');
-    const cycles=health.recent_cycles||[];
-    const avgDur=cycles.length?Math.round(cycles.reduce((a,c)=>a+(c.duration_s||0),0)/cycles.length):null;
     hf.innerHTML=`
-      <span><span class="ok">●</span> ${health.status==='ok'?'Healthy':'Error'}</span>
-      <span>Candles: ${fn(health.candle_count)}</span>
-      <span>FT models: ${health.ft_model_count}</span>
+      <span><span class="ok">●</span> System: ${health.status==='ok'?'Healthy':'Error'}</span>
+      <span>FT: ${health.ft_model_count}</span>
       <span>Champions: ${health.champion_count}</span>
-      ${avgDur!=null?'<span>Avg cycle: '+avgDur+'s</span>':''}
+      <span>Run #${health.last_run_id||'—'}</span>
+      ${health.errors?'<span class="red">ERR: '+health.errors+'</span>':''}
       <span>Updated: ${new Date().toISOString().slice(0,16).replace('T',' ')} UTC</span>
     `;
 
     document.getElementById('last-updated').textContent=new Date().toISOString().slice(11,16)+' UTC';
   }catch(e){
-    document.getElementById('stats-bar').innerHTML='<span class="err">Error loading stats: '+e.message+'</span>';
     document.getElementById('health-row').innerHTML='<span class="err">Error loading health data</span>';
   }
 }
@@ -420,7 +353,7 @@ function renderModels(){
     return modelsSortDir==='asc'?va-vb:vb-va;
   });
 
-  const LIMIT=10;
+  const LIMIT=5;
   const show=modelsShowAll?sorted:sorted.slice(0,LIMIT);
 
   const cols=[
@@ -503,7 +436,7 @@ function renderModels(){
   const wrap=document.getElementById('models-toggle-wrap');
   if(sorted.length>LIMIT){
     wrap.innerHTML=modelsShowAll?
-      `<button class="btn" onclick="modelsShowAll=false;renderModels()">Show top 10</button>`:
+      `<button class="btn" onclick="modelsShowAll=false;renderModels()">Show top 5</button>`:
       `<button class="btn" onclick="modelsShowAll=true;renderModels()">Show all ${sorted.length} models</button>`;
   }else{wrap.innerHTML='';}
 }
@@ -525,7 +458,7 @@ async function loadPositions(){
 
     if(!pos.length){el.innerHTML='<tbody><tr><td colspan="8" style="color:var(--t2);padding:8px;text-align:center">No open positions</td></tr></tbody>';return}
 
-    const LIMIT=10;
+    const LIMIT=5;
     const show=posShowAll?pos:pos.slice(0,LIMIT);
 
     const rows=show.map(p=>`<tr>
@@ -544,7 +477,7 @@ async function loadPositions(){
     const wrap=document.getElementById('pos-toggle-wrap');
     if(pos.length>LIMIT){
       wrap.innerHTML=posShowAll?
-        `<button class="btn" onclick="posShowAll=false;loadPositions()">Show 10</button>`:
+        `<button class="btn" onclick="posShowAll=false;loadPositions()">Show top 5</button>`:
         `<button class="btn" onclick="posShowAll=true;loadPositions()">Show all ${pos.length}</button>`;
     }else{wrap.innerHTML='';}
   }catch(e){el.innerHTML='<tbody><tr><td class="err" colspan="8">'+e.message+'</td></tr></tbody>';}
@@ -562,7 +495,7 @@ async function loadTrades(){
 
     if(!trades.length){el.innerHTML='<tbody><tr><td colspan="7" style="color:var(--t2);padding:8px;text-align:center">No trades in 48h</td></tr></tbody>';return}
 
-    const LIMIT=10;
+    const LIMIT=5;
     const show=tradesShowAll?trades:trades.slice(0,LIMIT);
 
     const rows=show.map(t=>`<tr>
@@ -579,7 +512,7 @@ async function loadTrades(){
     const wrap=document.getElementById('trades-toggle-wrap');
     if(trades.length>LIMIT){
       wrap.innerHTML=tradesShowAll?
-        `<button class="btn" onclick="tradesShowAll=false;loadTrades()">Show 10</button>`:
+        `<button class="btn" onclick="tradesShowAll=false;loadTrades()">Show top 5</button>`:
         `<button class="btn" onclick="tradesShowAll=true;loadTrades()">Show all ${trades.length}</button>`;
     }else{wrap.innerHTML='';}
   }catch(e){el.innerHTML='<tbody><tr><td class="err" colspan="7">'+e.message+'</td></tr></tbody>';}
@@ -587,7 +520,7 @@ async function loadTrades(){
 
 // ── Orchestrate ────────────────────────────────────────────────────────────
 async function refreshAll(){
-  await Promise.allSettled([loadPortfolio(),loadHeader(),loadModels(),loadPositions(),loadTrades()]);
+  await Promise.allSettled([loadHeader(),loadModels(),loadPositions(),loadTrades()]);
 }
 refreshAll();
 setInterval(refreshAll,5*60*1000);
