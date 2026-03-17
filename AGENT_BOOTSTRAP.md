@@ -4,14 +4,15 @@
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
 > Last updated: 2026-03-17 12:32 MST (Heartbeat — all systems healthy)
 
-## 🚨 SYSTEMD TIMEOUT FIX v2 (Mar 17 10:34) — NOW ACTUALLY FIXED ✅
-- **Issue:** Type=oneshot service was getting SIGTERM killed after ~76min (not 15-20min as thought)
-- **Root cause:** `TimeoutStopSec=120` was 120 **SECONDS** not minutes — cycles need 60-90min
-- **Symptoms:** Cycle 136 killed at 10:21 (ran 09:05-10:21 = 76min), previous "fix" was wrong unit
-- **Fix v1 (Mar 17 07:36):** Added `TimeoutStopSec=120` — **WRONG, should be 120min not 120sec**
-- **Fix v2 (Mar 17 10:34):** Changed to `TimeoutStopSec=infinity` — **NOW CORRECT**
-- **Status:** Cycle 137 running (started 10:21, in progress), will not be killed
-- **Lesson:** Always verify units in systemd config (120 = 120 seconds, not minutes)
+## ✅ WATCHDOG TIMEOUT FIX (Mar 17 14:38) — FIXED
+- **Issue:** Cycles 137, 138, 139 all killed after 104-105min (SIGTERM)
+- **Root cause:** Watchdog script (`scripts/watchdog.sh`) kills cycles >90min, thinking they're hung
+- **Reality:** Extended data + large backtest batches = 105-120min normal runtime
+- **Symptoms:** All 3 cycles actively backtesting when killed (working, not hung)
+- **Fix:** Increased watchdog threshold 90min → 180min (3h), backtest 60min → 120min
+- **Commit:** 64584d1 (deployed to feature/moonshot-2x-leverage)
+- **Status:** Next watchdog check 14:51 will use new 180min threshold
+- **Lesson:** Watchdog thresholds must exceed normal cycle duration (not just "worst case hung")
 
 ## 🚀 PERFORMANCE FIX (Mar 17 05:47) — HOURLY CYCLES + DYNAMIC BACKTESTING
 - **Cycle interval changed:** 4h → **1h** (hourly at :05)
