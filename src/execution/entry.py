@@ -92,6 +92,15 @@ def _get_confidence_multiplier(db: sqlite3.Connection, symbol: str, model_id: st
     return row["confidence_multiplier"] if row else 1.0
 
 
+def _is_model_retired(db: sqlite3.Connection, model_id: str) -> bool:
+    """Check if a model has been retired (retired_at IS NOT NULL)."""
+    row = db.execute(
+        "SELECT retired_at FROM tournament_models WHERE model_id = ?",
+        (model_id,),
+    ).fetchone()
+    return row is not None and row["retired_at"] is not None
+
+
 def _get_symbol_ft_pnl_ranks(db: sqlite3.Connection, direction: str) -> dict[str, int]:
     """Rank symbols by cumulative closed champion-trade pnl_pct (best first)."""
     rows = db.execute(
@@ -267,6 +276,14 @@ def score_and_enter(
             size_usd = _compute_position_size(
                 signal["days_since_listing"], confidence_mult, symbol_mult
             )
+
+            # Verify model not retired before marking as champion trade
+            if _is_model_retired(db, model_id):
+                log.warning(
+                    "score_and_enter: model %s is retired, skipping entry for %s",
+                    model_id[:12], symbol
+                )
+                continue
 
             # Snapshot entry features as JSON
             entry_features_json = json.dumps(signal["features"])

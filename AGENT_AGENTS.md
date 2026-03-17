@@ -4,7 +4,7 @@
 1. Read `SOUL.md` — who you are
 2. Read `BOOTSTRAP.md` — current state (symlinked from `blofin-moonshot-v2/AGENT_BOOTSTRAP.md`)
 3. Read `MEMORY.md` — learnings (symlinked from `blofin-moonshot-v2/AGENT_MEMORY.md`)
-4. Read workspace daily memory: `/home/rob/.openclaw/workspace/memory/YYYY-MM-DD.md` (today + yesterday) for crypto-relevant entries
+4. Read daily memory: `memory/YYYY-MM-DD.md` (today + yesterday) — these are in YOUR workspace, not the shared Jarvis workspace
 
 ## ⚠️ Updating Your Own Files (NON-OPTIONAL)
 Your BOOTSTRAP.md and MEMORY.md are **symlinked to files in the repo**. When you learn something new or state changes:

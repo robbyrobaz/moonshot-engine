@@ -108,7 +108,7 @@ def crown_champion_if_ready(db):
         current = db.execute(
             """SELECT model_id, ft_pnl, ft_pnl_per_day, ft_pnl_last_7d, ft_pf, ft_trades
                FROM tournament_models
-               WHERE stage = 'champion' AND direction = ?""",
+               WHERE stage = 'champion' AND direction = ? AND retired_at IS NULL""",
             (direction,),
         ).fetchone()
 
@@ -225,7 +225,7 @@ def load_champions(db) -> tuple:
         row = db.execute(
             "SELECT model_id, ft_pnl, ft_trades, ft_pf, entry_threshold, invalidation_threshold, "
             "feature_set, feature_version "
-            "FROM tournament_models WHERE stage = 'champion' AND direction = ?",
+            "FROM tournament_models WHERE stage = 'champion' AND direction = ? AND retired_at IS NULL",
             (direction,),
         ).fetchone()
 
