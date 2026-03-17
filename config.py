@@ -63,11 +63,13 @@ LEVERAGE = _env("LEVERAGE", 2, int)  # Default leverage for newly opened paper p
 # ── Tournament ───────────────────────────────────────────────────────────
 MIN_BT_TRADES = _env("MIN_BT_TRADES", 30, int)  # 2026-03-16: Lowered 50→30 to widen net
 MIN_BT_PF = _env("MIN_BT_PF", 0.6, float)  # For short (lowered 1.0→0.6)
-# 2026-03-16: Lowered long gate 0.5→0.3 — REALLY widen the net, expect 95% losers
-MIN_BT_PF_LONG = _env("MIN_BT_PF_LONG", 0.3, float)  # Very low bar — let lottery tickets through
+# 2026-03-16: Raised long gate 0.3→1.5 — lottery tickets must be PROFITABLE (PF>1.0)
+# A model with PF=0.79 loses money (spend $1.27 on losses per $1 won), not a lottery ticket
+MIN_BT_PF_LONG = _env("MIN_BT_PF_LONG", 1.5, float)  # Require profitable backtest
 MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.12, float)  # For short (lowered 0.20→0.12)
-# 2026-03-16: Lowered long precision 0.15→0.08 — hunting rare spikes, not accuracy
-MIN_BT_PRECISION_LONG = _env("MIN_BT_PRECISION_LONG", 0.08, float)  # Extremely low — quantity over quality
+# 2026-03-16: Raised long precision 0.08→0.20 — still loose but prevents garbage models
+# At TP=15%/SL=5% (3:1 ratio), need ~25% precision for PF=1.0, 30% for PF=1.5
+MIN_BT_PRECISION_LONG = _env("MIN_BT_PRECISION_LONG", 0.20, float)  # Loose but realistic
 MAX_FT_MODELS = _env("MAX_FT_MODELS", 20, int)  # 2026-03-16: Raised 10→20 to allow more FT runners
 # 2026-03-06: Relaxed thresholds — keep models in FT longer to collect more data.
 # 2026-03-14: Lowered to 150 to clear FT backlog — retire after 150 trades if PF < 0.5.
@@ -82,8 +84,8 @@ CHALLENGER_COUNT_PER_HOUR = _env("CHALLENGER_COUNT_PER_HOUR", 25, int)  # 100/da
 CHAMPION_BEAT_MARGIN = _env("CHAMPION_BEAT_MARGIN", 0.10, float)
 BOOTSTRAP_RESAMPLES = _env("BOOTSTRAP_RESAMPLES", 1000, int)
 BOOTSTRAP_PF_LOWER_BOUND = _env("BOOTSTRAP_PF_LOWER_BOUND", 0.5, float)  # For short (lowered 0.8→0.5)
-# 2026-03-16: Lowered long bootstrap 0.4→0.2 — asymmetric payoff (lose 5%, win 30%+)
-BOOTSTRAP_PF_LOWER_BOUND_LONG = _env("BOOTSTRAP_PF_LOWER_BOUND_LONG", 0.2, float)  # Very low CI requirement
+# 2026-03-16: Raised long bootstrap 0.2→0.7 — CI lower bound must be profitable
+BOOTSTRAP_PF_LOWER_BOUND_LONG = _env("BOOTSTRAP_PF_LOWER_BOUND_LONG", 0.7, float)  # Confidence interval must be near breakeven
 
 # ── PnL Weights (from NQ pipeline) ──────────────────────────────────────
 PNL_WEIGHT_TP = _env("PNL_WEIGHT_TP", 1.0, float)
