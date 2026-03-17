@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-16 21:15 MST (Heartbeat Scan)
+> Last updated: 2026-03-16 22:30 MST (LONG Pipeline Investigation Complete)
 
 ## Session Summary (Mar 16 2026)
 
@@ -33,6 +33,52 @@
 - ⛔ Blofin v1 is LIVE — never claim "pipeline stopped" without checking services first
 - ⛔ Always verify current state before making claims about what's running/broken
 
+## LONG Pipeline Investigation (Mar 16 22:30) — ROOT CAUSE FOUND
+
+**TL;DR: LONG ML models fundamentally don't work. Only 0.2% profitable (2/1,013). Keep strict gates, accept no champion.**
+
+### Why Champion 9b842069b20d Failed
+- **Promoted with LOSING backtest:** BT PF=0.79 (loses $1.27 per $1 won)
+- **Gates too loose at promotion time:** MIN_BT_PF_LONG=0.3 (commit 905b3bf, Mar 16)
+- **Catastrophic FT failure:** PF=0.22, 39 trades, 20k% drawdown
+- **Fix deployed:** Gates tightened to MIN_BT_PF_LONG=1.5 (commit 03609b1, Mar 16)
+
+### Why 0% Pass Rate (0/1,013 Models)
+**Current gates (config.py):**
+- MIN_BT_PF_LONG = 1.5 (require profitable backtest)
+- MIN_BT_PRECISION_LONG = 0.20
+- BOOTSTRAP_PF_LOWER_BOUND_LONG = 0.7
+
+**PF Distribution across 1,013 LONG models:**
+- PF ≥ 1.5 (current gate): **0 models (0.0%)**
+- PF 1.0-1.5 (marginal profit): **2 models (0.2%)** — best is 1.26
+- PF 0.7-1.0 (losing): 24 models (2.4%)
+- PF 0.5-0.7 (bad): 615 models (60.7%)
+- PF < 0.5 (catastrophic): 202 models (19.9%)
+- **Average PF: 0.53** (lose $1.88 per $1 won)
+- **Max PF: 1.26** (only one model, already retired)
+
+### Fundamental Problem: No Edge in LONG Direction
+- **99.8% of LONG models lose money** (PF < 1.0)
+- Best model ever: PF=1.26, precision=0.17, trades=2556 (retired)
+- 29 LONG models in FT, best has only 3 trades
+- Market condition: altcoin longs struggle in neutral/bear regime (Q3-Q4 2025)
+
+### Recommendation: Accept Reality ✅
+**KEEP current strict gates (MIN_BT_PF_LONG=1.5):**
+- ✅ Prevents unprofitable champion disasters (like 9b842069b20d)
+- ✅ Accept 0% promotion rate until market changes
+- ✅ Keep generating LONG challengers (data collection for regime shifts)
+- ✅ Rule-based `new_listing` strategy works (484 LONG positions open)
+- ✅ Aligned with tournament philosophy: "find models that ARE profitable"
+
+**DO NOT lower gates to allow losing models through:**
+- ❌ Philosophy gates (PF≥0.7) only pass 2 models, both LOSE money (PF 0.79, 0.70)
+- ❌ Lowering to PF≥1.0 allows 2 marginal models (PF 1.08, 1.26) — high failure risk
+- ❌ Widening gates caused 9b842069b20d disaster (PF 0.79→0.22 catastrophic failure)
+
+**Status:** LONG ML pipeline on hold (by design). No champion until profitable model found.
+
 ## Moonshot v2 — Tournament Status
 
 ### Champions (2 active — SHORT + new_listing only)
@@ -40,8 +86,10 @@
   - Promoted: 2026-03-16 18:51 (Cycle 127) — **HEALTHY ✅** (best FT performer)
   - Status: Excellent performance, no action needed
 - **LONG Champion:** **NONE** (9b842069b20d retired at 18:45 after 20,062% drawdown)
-  - Status: **PIPELINE DEAD** — only 29 LONG models in FT, best has 3 trades
-  - **RECOVERY DISPATCHED:** Builder c_03cb53ba2a54_19cfa03e44f investigating (21:15)
+  - **Root cause identified:** Model promoted with LOSING backtest (PF=0.79) due to loose gates
+  - **Status: NO ML EDGE IN LONG DIRECTION** — 99.8% of models lose money (avg PF=0.53)
+  - **Action: KEEP strict gates (PF≥1.5), accept no champion until profitable model found**
+  - **Workaround: Rule-based `new_listing` strategy active (484 LONG positions open)**
 - **New Listing:** new_listing (rule-based), BT_PF=7.53, FT_trades=0 — waiting for next ≤7 day coin
 
 ### Tournament Numbers (Cycle 122 complete, 13:08 MST)
