@@ -422,13 +422,16 @@ def backtest_challenger(db, model_params: dict) -> dict:
     return result
 
 
-def backtest_new_challengers(db, max_batch=20):
+def backtest_new_challengers(db, max_batch=None):
     """Find all models with stage='backtest', run backtest, promote or retire.
     
     Args:
         db: Database connection
-        max_batch: Maximum models to process per cycle (default 20)
+        max_batch: Maximum models to process per cycle (None = use config.BACKTEST_BATCH_SIZE)
     """
+    if max_batch is None:
+        from config import BACKTEST_BATCH_SIZE
+        max_batch = BACKTEST_BATCH_SIZE
     rows = db.execute(
         "SELECT model_id, params FROM tournament_models WHERE stage = 'backtest' LIMIT ?",
         (max_batch,)
