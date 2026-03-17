@@ -2,23 +2,24 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-16 20:45 MST (Heartbeat Scan)
+> Last updated: 2026-03-16 21:15 MST (Heartbeat Scan)
 
 ## Session Summary (Mar 16 2026)
 
-**Heartbeat 20:45:**
+**Heartbeat 21:15:**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
 - ✅ Moonshot Cycle 129 COMPLETE (finished 20:35, 61min runtime, 0 errors)
 - ✅ SHORT champion: de44f72dbb01 | BT_PF=0.98, FT: 388 trades, PF=2.22, PnL=68.37% — **HEALTHY ✅**
-- 🚨 **LONG champion BROKEN:** 9b842069b20d | BT_PF=0.79, FT: 39 trades, PF=0.22, PnL=-200.63% — **BUILDER DISPATCHED** (PID 2952504)
+- 🚨 **LONG champion RETIRED:** 9b842069b20d retired at 18:45 (20k% drawdown, PF=0.22) — **NO REPLACEMENT**
+- 🚨 **LONG pipeline DEAD:** Only 29 LONG models in FT, best has 3 trades (PF=0.00, PnL=-41%)
 - ✅ New listing: 0 trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 273 models (down from 285, draining 20/cycle)
+- 📊 FT backlog: 269 models (draining 20/cycle)
 - 📊 Open positions: 963
 - 📊 Blofin v1: 0 FT trades with ≥10 completed (paper engine running, very early)
 - 📊 Blofin v1: 0 ready for promotion (need ≥100 trades + PF≥1.35)
-- 🔧 Builders running: 1 (Moonshot LONG fix, just dispatched)
+- 🔧 Builders running: 1 (Moonshot LONG recovery card dispatched, PID 2990906)
 - ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 1 In Progress
+- ✅ Kanban: 0 Planned, 1 In Progress (LONG recovery)
 
 **Major fixes deployed:**
 1. ✅ Moonshot cycle hangs RESOLVED — batch limit (20 models/cycle) prevents backtest infinite loops
@@ -34,14 +35,13 @@
 
 ## Moonshot v2 — Tournament Status
 
-### Champions (3 active, separate long/short + new_listing)
-- **SHORT Champion:** de44f72dbb01 (XGBoost), BT_PF=0.98, BT_precision=0.246, FT_trades=388, FT_PF=2.22, FT_PnL=0.68%
+### Champions (2 active — SHORT + new_listing only)
+- **SHORT Champion:** de44f72dbb01 (XGBoost), BT_PF=0.98, BT_precision=0.246, FT_trades=388, FT_PF=2.22, FT_PnL=68.37%
   - Promoted: 2026-03-16 18:51 (Cycle 127) — **HEALTHY ✅** (best FT performer)
   - Status: Excellent performance, no action needed
-- **LONG Champion:** 9b842069b20d (CatBoost), BT_PF=0.79, BT_precision=0.282, FT_trades=39, FT_PF=0.22, FT_PnL=-2.01%
-  - Promoted: (timestamp unknown)
-  - Status: **BROKEN** — FT PF 0.22 vs BT 0.79 = likely feature drift or regime bug
-  - **FIX DISPATCHED:** Builder c_359ae9805aaf1_19cf995ff2c investigating (19:15)
+- **LONG Champion:** **NONE** (9b842069b20d retired at 18:45 after 20,062% drawdown)
+  - Status: **PIPELINE DEAD** — only 29 LONG models in FT, best has 3 trades
+  - **RECOVERY DISPATCHED:** Builder c_03cb53ba2a54_19cfa03e44f investigating (21:15)
 - **New Listing:** new_listing (rule-based), BT_PF=7.53, FT_trades=0 — waiting for next ≤7 day coin
 
 ### Tournament Numbers (Cycle 122 complete, 13:08 MST)
