@@ -6,17 +6,24 @@
 
 ## Session Summary (Mar 16 2026)
 
-**Heartbeat 18:15:**
+**Heartbeat 18:45:**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ Moonshot Cycle 127 running (started 17:49, 28min in, normal)
-- ✅ SHORT champion: 1e5f3a28 (XGBoost, BT_PF=1.02, FT_PF=1.48, FT_PnL=0%, 344 trades)
-- ⏳ LONG champion: 6b3cef1b (CatBoost, BT_PF=0.58, 0 FT entries) — diagnosis complete, fix deployed (commit 072d65c), waiting for Cycle 127 to complete
-- 📊 FT backlog: 263 models (draining 20/cycle)
-- 📊 Open positions: 904
+- ✅ Moonshot Cycle 127 COMPLETE (17:49 → 18:45, 55min runtime, 0 errors)
+- 🚨 **CRITICAL BUG DETECTED:** SHORT champion demoted from PF 1.48 → 1.04 (WRONG)
+  - Old: 1e5f3a28 (XGBoost, BT_PF=1.02, FT_PF=1.48, 344 trades) — demoted to FT
+  - New: 3c905c7a (XGBoost, BT_PF=1.04, FT_PF=1.04, 349 trades) — promoted (worse!)
+  - Root cause: champion.py ranks by `ft_pnl_last_7d` (NULL < 0.06%) instead of `ft_pf`
+  - **FIX IN PROGRESS:** Builder dispatched (c_ccca1d013b83f_19cf97a9fb6)
+- ⏳ LONG champion: 6b3cef1b (CatBoost, BT_PF=0.58, 0 FT entries) — still broken
+- 📊 FT backlog: 266 models (draining 20/cycle)
+- 📊 Open positions: 956
 - 📊 Blofin v1: top 5 FT performers have ≤3 trades each (early stage), 0 ready for promotion
-- 🔧 Builders running: 1 NQ (ML training scripts)
+  - reversal-DOT: 3 trades, PF=5.06, PnL=5.04%
+  - reversal-LINK: 3 trades, PF=3.99, PnL=4.04%
+- 🔧 Builders running: 3 (2 NQ ML, 1 Moonshot champion fix)
 - ✅ No critical alerts from monitor
-- ✅ Kanban: 1 In Progress (NQ), 0 Planned
+- ✅ Kanban: 0 Planned, 3 In Progress
+- 📦 Blofin backfill: 136.8K candles (batch 95, Dec 12 2025, 6h 9min runtime)
 
 **Major fixes deployed:**
 1. ✅ Moonshot cycle hangs RESOLVED — batch limit (20 models/cycle) prevents backtest infinite loops
@@ -33,9 +40,9 @@
 ## Moonshot v2 — Tournament Status
 
 ### Champions (3 active, separate long/short + new_listing)
-- **SHORT Champion:** 1e5f3a28123b (XGBoost), BT_PF=1.02, BT_precision=0.254, BT_CI=1.01, FT_trades=344, FT_PF=1.48, FT_PnL=0.12%
-  - Promoted: 2026-03-16 16:19 (manual intervention — regime shift fix)
-  - Previous: de44f72dbb01 (CatBoost) demoted to FT (BT_PF=0.98 failed gate, FT_PF=2.22)
+- **SHORT Champion:** 3c905c7a9f91 (XGBoost), BT_PF=1.04, BT_precision=0.258, BT_CI=1.03, FT_trades=349, FT_PF=1.04, FT_PnL=NULL
+  - Promoted: 2026-03-16 18:45 (Cycle 127) — **WRONG PROMOTION** (demoted better model)
+  - Previous: 1e5f3a28123b (XGBoost, FT_PF=1.48, 344 trades) demoted to FT — **BUG IN PROGRESS**
 - **LONG Champion:** 6b3cef1bb7e4, BT_PF=0.58, FT_trades=0 — never fired (under investigation)
 - **New Listing:** new_listing (rule-based), BT_PF=7.53, FT_trades=0 — waiting for next ≤7 day coin
 
