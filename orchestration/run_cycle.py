@@ -221,6 +221,18 @@ def run_cycle():
         from src.tournament.forward_test import score_forward_test_models
         score_forward_test_models(db, all_symbols, ts_ms)
         log.info("Forward test scoring complete")
+
+        # BUG FIX 2026-03-16: Update ft_stats for ALL FT models after each cycle
+        # Previously only updated when positions closed in that specific cycle,
+        # causing stats to be stale if cycles were interrupted or crashed.
+        from src.tournament.forward_test import _update_model_ft_stats
+        ft_models = db.execute(
+            'SELECT model_id FROM tournament_models WHERE stage IN ("forward_test", "ft")'
+        ).fetchall()
+        for m in ft_models:
+            _update_model_ft_stats(db, m["model_id"])
+        db.commit()
+        log.info("FT stats updated for %d models", len(ft_models))
     except Exception as e:
         log.error("FT scoring failed: %s", e)
         errors.append(f"ft_scoring: {e}")

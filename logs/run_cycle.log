@@ -2,3 +2,12 @@
 2026-03-16 16:20:21,811 INFO     moonshot  ═══ Cycle 126 started ═══
 2026-03-16 16:20:22,020 INFO     moonshot  discover_coins: 470 active USDT swap pairs
 2026-03-16 16:20:22,021 INFO     moonshot  Discovery: 470 active coins
+2026-03-16 16:25:29,546 INFO     moonshot  fetch_latest_candles: 0 rows inserted across 470 symbols
+2026-03-16 16:25:29,547 INFO     moonshot  Candles updated for 470 coins
+2026-03-16 16:25:30,502 INFO     moonshot  backfill_candles: BTC-USDT — 0 rows inserted
+2026-03-16 16:25:31,392 INFO     moonshot  backfill_candles: ETH-USDT — 0 rows inserted
+2026-03-16 16:25:31,651 INFO     moonshot  backfill_candles: KAT-USDT — 0 rows inserted
+2026-03-16 16:25:31,898 INFO     moonshot  backfill_candles: ROBO-USDT — 0 rows inserted
+2026-03-16 16:25:32,143 INFO     moonshot  backfill_candles: OPN-USDT — 0 rows inserted
+2026-03-16 16:25:32,143 INFO     moonshot  Opportunistic backfill: 5 coins
+2026-03-16 16:25:32,144 INFO     moonshot  fetch_all_extended: starting for 470 symbols
