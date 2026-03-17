@@ -26,7 +26,8 @@
 
 **Heartbeat 15:33 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- 🔄 Moonshot Cycle 139 IN PROGRESS (started 13:51, 1h 42min runtime) — backtesting model b2d83e85a97a (long), fold 1, normal progress
+- 🔄 Moonshot Cycle 139 IN PROGRESS (started 13:51, 1h 43min runtime) — backtesting, normal progress
+- ✅ **WATCHDOG FIX VERIFIED:** Cycle 139 survived 103min (old threshold=90min, new=180min) — fix WORKING ✅
 - ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE**
 - 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
 - ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
@@ -39,7 +40,7 @@
 - 🔧 Git: moonshot clean (catboost logs only), blofin 1 modified (today's parquet), 4 unpushed commits
 - 📊 Blofin v1 Top 5 BT: reversal+BTC PF=2.23 (395), high_volume_reversal+ETH PF=1.26 (118), reversal+MATIC PF=1.85 (364), mtf_ensemble+LINK PF=3.28 (455), macd_divergence+DOGE PF=1.83 (286)
 - 📊 Blofin v1 Top 5 FT: reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
-- 🚨 Cycle completion issue: Cycle 138 (started 12:06) never completed, Cycle 139 running 1h 42min — INVESTIGATING (but working normally, not hung)
+- 🎯 **Cycle 138 resolution:** Killed at 13:51:48 by OLD watchdog threshold (105min runtime, threshold was 90min). Script updated 14:38 → new 180min threshold deployed. Cycle 139 is first to run under new threshold.
 
 **Heartbeat 15:02 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
