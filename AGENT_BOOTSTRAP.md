@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 08:32 MST (Heartbeat — all systems healthy)
+> Last updated: 2026-03-17 09:32 MST (Heartbeat — all systems healthy, Cycle 136 starting)
 
 ## 🚨 SYSTEMD TIMEOUT FIX (Mar 17 07:36) — HOLDING ✅
 - **Issue:** Type=oneshot service was getting SIGTERM killed after ~15min
@@ -22,6 +22,23 @@
 - **Result:** Queue drains 75/hour when CPU idle (was growing +5/4h)
 
 ## Session Summary (Mar 17 2026)
+
+**Heartbeat 09:32 (Mar 17):**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- 🔄 Moonshot Cycle 136 STARTING (09:32, last cycle 135 finished 08:26)
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (21 open)
+- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: 324 models (draining 20-75/cycle depending on CPU)
+- 📊 BT backlog: 248 models (draining 20-75/cycle depending on CPU)
+- 📊 Open positions: 958 (21 champion, 937 non-champion)
+- 📊 Blofin v1: Top 5 BT: macd_divergence+DOT PF=3.42 (212 trades), rsi_divergence+ETH PF=3.40 (291), macd_divergence+LINK PF=3.39 (303), vwap_reversion+DOGE PF=3.38 (233), ema_crossover+SOL PF=3.37 (440)
+- 🔧 Historical backfill: RUNNING (started 07:29, 2h3m runtime)
+- 🔧 Builders running: 0
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
+- 🔧 Git: moonshot clean (catboost logs only), blofin clean
+- ⏰ Timer: Cycle 136 in progress — systemd timeout fix HOLDING ✅
 
 **Heartbeat 09:03 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
