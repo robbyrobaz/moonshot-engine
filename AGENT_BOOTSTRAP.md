@@ -2,16 +2,16 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 10:03 MST (Heartbeat — all systems healthy, Cycle 135 complete)
+> Last updated: 2026-03-17 10:34 MST (Heartbeat — CRITICAL FIX: systemd timeout corrected)
 
-## 🚨 SYSTEMD TIMEOUT FIX (Mar 17 07:36) — HOLDING ✅
-- **Issue:** Type=oneshot service was getting SIGTERM killed after ~15min
-- **Root cause:** No `TimeoutStopSec` set → systemd default 90sec timeout
-- **Symptoms:** Cycle 133 killed at 07:21 (started 07:05, ran 16min, then TERM signal)
-- **Fix:** Added `TimeoutStopSec=120` to moonshot-v2.service, daemon-reload + timer restart
-- **Status:** Timer active, next cycle 09:05 (30min away) — **FIX HOLDING ✅**
-- **Last cycle:** Cycle 135 completed 08:26, 20min runtime, 4 errors (normal)
-- **Lesson:** Type=oneshot services need explicit timeout or they get killed mid-run
+## 🚨 SYSTEMD TIMEOUT FIX v2 (Mar 17 10:34) — NOW ACTUALLY FIXED ✅
+- **Issue:** Type=oneshot service was getting SIGTERM killed after ~76min (not 15-20min as thought)
+- **Root cause:** `TimeoutStopSec=120` was 120 **SECONDS** not minutes — cycles need 60-90min
+- **Symptoms:** Cycle 136 killed at 10:21 (ran 09:05-10:21 = 76min), previous "fix" was wrong unit
+- **Fix v1 (Mar 17 07:36):** Added `TimeoutStopSec=120` — **WRONG, should be 120min not 120sec**
+- **Fix v2 (Mar 17 10:34):** Changed to `TimeoutStopSec=infinity` — **NOW CORRECT**
+- **Status:** Cycle 137 running (started 10:21, in progress), will not be killed
+- **Lesson:** Always verify units in systemd config (120 = 120 seconds, not minutes)
 
 ## 🚀 PERFORMANCE FIX (Mar 17 05:47) — HOURLY CYCLES + DYNAMIC BACKTESTING
 - **Cycle interval changed:** 4h → **1h** (hourly at :05)
