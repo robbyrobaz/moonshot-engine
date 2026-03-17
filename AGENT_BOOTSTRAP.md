@@ -2,25 +2,29 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-16 23:32 MST (Heartbeat — All Systems Healthy)
+> Last updated: 2026-03-17 00:02 MST (Heartbeat — All Systems Healthy)
 
 ## Session Summary (Mar 16-17 2026)
 
-**Heartbeat 23:32 (Mar 16):**
+**Heartbeat 00:02 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ Moonshot Cycle 130 COMPLETE (finished 21:53, 51min runtime, 0 errors)
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=68.37% — **HEALTHY ✅**
+- ✅ Moonshot Cycle 130 COMPLETE (finished 21:53, 51min runtime, 0 errors, 2h10min ago)
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=0.68% — **ACTIVE** (6 open, 6 closed as champ)
 - ✅ **RETIRED CHAMPION BUG RESOLVED** — no trades from 9b842069b20d or 1e5f3a28123b in last 4h
 - 🚨 **LONG champion:** NONE (9b842069b20d retired at 18:45, no replacement — by design, no profitable LONG models)
 - ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
 - 📊 FT backlog: 279 models (draining 20/cycle)
 - 📊 BT backlog: 279 models (draining 20/cycle)
-- 📊 Open positions: 961
+- 📊 Open positions: 961 (6 champion, 955 non-champion)
 - 📊 Blofin v1: 0 strategies with ≥10 FT trades (very early, paper engine running)
 - 📊 Blofin v1: 0 ready for promotion (need ≥100 trades + PF≥1.35)
+- 🔧 Historical backfill: batch 62, ~89K candles (ongoing since Mar 15)
 - 🔧 Builders running: 0
 - ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 crypto builders active
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed, 0 crypto builders active
+
+**Heartbeat 23:32 (Mar 16):**
+- ✅ All systems healthy (same status as above, pre-cycle-130 completion)
 
 **Major fixes deployed:**
 1. ✅ Moonshot cycle hangs RESOLVED — batch limit (20 models/cycle) prevents backtest infinite loops
