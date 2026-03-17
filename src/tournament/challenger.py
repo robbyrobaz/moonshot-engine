@@ -227,7 +227,7 @@ def generate_challengers(db, n: int = None) -> list[dict]:
     Returns list of param dicts for newly created challengers.
     """
     if n is None:
-        n = CHALLENGER_COUNT_PER_HOUR
+        n = CHALLENGER_COUNT_PER_CYCLE
 
     now_ms = int(time.time() * 1000)
     created = []
