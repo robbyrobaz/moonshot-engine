@@ -6,16 +6,17 @@
 
 ## Session Summary (Mar 16 2026)
 
-**Heartbeat 16:45:**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, both dashboards HTTP 200)
+**Heartbeat 17:15:**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, claw-kanban restarted)
 - ✅ Moonshot Cycle 124 complete @ 14:39 (64min, 0 errors)
 - ✅ SHORT champion: 1e5f3a28 (XGBoost, BT_PF=1.02, FT_PF=1.48, FT_PnL=11.81%, 344 trades)
-- ⚠️ LONG champion: 6b3cef1b (CatBoost, BT_PF=0.58, 0 FT trades) — never fired, under investigation
+- ⚠️ LONG champion: 6b3cef1b (CatBoost, BT_PF=0.58, 0 FT trades) — INVESTIGATION DISPATCHED
 - 📊 FT backlog: 259 models (draining 20/cycle)
 - 📊 Open positions: 953
-- 📊 Blofin v1: top 5 FT performers have <2 trades each (early stage), 0 ready for promotion
-- 🔧 Dispatched 2 NQ builders: create ML strategy wrappers + load 5 ML-optimized strategies
+- 📊 Blofin v1: top 5 FT performers have ≤3 trades each (early stage), 0 ready for promotion
+- 🔧 Builders running: 1 NQ (ML training scripts), 1 Moonshot (LONG champion diagnosis)
 - ✅ No critical alerts from monitor
+- 🔧 Kanban service was slow/hung, restarted successfully
 
 **Major fixes deployed:**
 1. ✅ Moonshot cycle hangs RESOLVED — batch limit (20 models/cycle) prevents backtest infinite loops
