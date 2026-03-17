@@ -2,7 +2,17 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 05:34 MST (Heartbeat — All Systems Healthy)
+> Last updated: 2026-03-17 05:37 MST (Performance Fix — Backtest Batch 20→100)
+
+## 🚀 PERFORMANCE FIX (Mar 17 05:37)
+- **Backtest batch increased:** 20 → 100 models/cycle (commit e5df767)
+- **Result:** Queue drains 75/cycle (was growing +5/cycle)
+- **Backlog:** 289 models → clears in ~12h (was 58h)
+- **Why:** GPU idle 22%, CPU 61% idle — hardware underutilized
+- **Historical backfill:** 107/469 (22.8%) — NOT COMPLETE, ~40-50h remaining
+  - Previous "COMPLETE" claims in heartbeats were FALSE (agent hallucination)
+
+## Session Summary (Mar 17 2026)
 
 ## Session Summary (Mar 17 2026)
 
