@@ -88,15 +88,13 @@ def crown_champion_if_ready(db):
     """Select the best FT model as champion, separately for long and short.
 
     Ranking criteria (in order):
-    1. ft_pnl_last_7d — recent performance window (primary)
-    2. ft_pnl_per_day — normalized all-time pace (secondary)
-    3. ft_pf — profit factor (tertiary)
-    4. ft_trades — more trades = more confidence (tiebreaker)
+    1. ft_pf — profit factor (primary, always populated, robust metric)
+    2. ft_trades — more trades = more confidence (tiebreaker)
 
     Champion requirements:
     - stage = 'forward_test' or 'ft'
     - ft_trades >= 20 (basic minimum for comparison)
-    - Must beat current champion's ft_pnl_last_7d by CHAMPION_BEAT_MARGIN (10%)
+    - Must beat current champion's ft_pf by CHAMPION_BEAT_MARGIN (10%)
     - MUST pass all backtest gates (dual validation — backtest + forward test)
       to prevent regime-shift bugs (e.g., FT PF 2.22 but BT PF 0.98).
       Gates: bt_pf >= MIN_BT_PF, bt_precision >= MIN_BT_PRECISION,
@@ -114,7 +112,7 @@ def crown_champion_if_ready(db):
             (direction,),
         ).fetchone()
 
-        current_recent_pnl = current["ft_pnl_last_7d"] if current else 0.0
+        current_pf = current["ft_pf"] if current else 0.0
         current_id = current["model_id"] if current else None
 
         # Select direction-specific gates
@@ -122,7 +120,7 @@ def crown_champion_if_ready(db):
         min_bt_precision = MIN_BT_PRECISION_LONG if direction == "long" else MIN_BT_PRECISION
         min_bootstrap = BOOTSTRAP_PF_LOWER_BOUND_LONG if direction == "long" else BOOTSTRAP_PF_LOWER_BOUND
 
-        # Find best FT candidate (ranked by recent pnl, then pnl/day, then pf, then trades)
+        # Find best FT candidate (ranked by profit factor, then trades for confidence)
         # Also filter by backtest gates to prevent regime-shift bugs
         candidate = db.execute(
             """SELECT model_id, ft_pnl, ft_pnl_per_day, ft_pnl_last_7d, ft_pf,
@@ -130,12 +128,11 @@ def crown_champion_if_ready(db):
                FROM tournament_models
                WHERE stage IN ('forward_test', 'ft') AND direction = ?
                  AND ft_trades >= 20
-                 AND ft_pnl_last_7d IS NOT NULL
                  AND bt_pf >= ?
                  AND bt_precision >= ?
                  AND bt_trades >= ?
                  AND bt_ci_lower >= ?
-               ORDER BY ft_pnl_last_7d DESC, ft_pnl_per_day DESC, ft_pf DESC, ft_trades DESC
+               ORDER BY ft_pf DESC, ft_trades DESC
                LIMIT 1""",
             (direction, min_bt_pf, min_bt_precision, MIN_BT_TRADES, min_bootstrap),
         ).fetchone()
@@ -154,27 +151,23 @@ def crown_champion_if_ready(db):
         cand_id = candidate["model_id"]
 
         # Must beat current champion by margin
-        required_recent_pnl = (
-            current_recent_pnl * (1.0 + CHAMPION_BEAT_MARGIN)
-            if current_recent_pnl > 0
-            else current_recent_pnl
+        required_pf = (
+            current_pf * (1.0 + CHAMPION_BEAT_MARGIN)
+            if current_pf > 0
+            else current_pf
         )
-        if cand_recent_pnl <= required_recent_pnl:
+        if cand_pf <= required_pf:
             log.info(
-                "crown_champion %s: candidate %s (ft_7d=%.2f%%, ft/day=%.2f%%, ft_pnl=%.2f%%, "
-                "ft_pf=%.2f, bt_pf=%.2f, trades=%d) does not beat current %s "
-                "(ft_7d=%.2f%%, required=%.2f%%)",
+                "crown_champion %s: candidate %s (ft_pf=%.2f, ft_trades=%d, bt_pf=%.2f) "
+                "does not beat current %s (ft_pf=%.2f, required_pf=%.2f)",
                 direction,
                 cand_id[:12],
-                cand_recent_pnl,
-                cand_pnl_per_day,
-                cand_pnl,
                 cand_pf,
-                cand_bt_pf,
                 cand_trades,
+                cand_bt_pf,
                 current_id[:12] if current_id else "none",
-                current_recent_pnl,
-                required_recent_pnl,
+                current_pf,
+                required_pf,
             )
             continue
 
@@ -208,16 +201,12 @@ def crown_champion_if_ready(db):
             (now_ms, cand_id),
         )
         log.info(
-            "crown_champion %s: promoted %s (ft_7d=%.2f%%, ft/day=%.2f%%, ft_pnl=%.2f%%, "
-            "ft_pf=%.2f, bt_pf=%.2f, trades=%d)",
+            "crown_champion %s: promoted %s (ft_pf=%.2f, ft_trades=%d, bt_pf=%.2f)",
             direction,
             cand_id[:12],
-            cand_recent_pnl,
-            cand_pnl_per_day,
-            cand_pnl,
             cand_pf,
-            cand_bt_pf,
             cand_trades,
+            cand_bt_pf,
         )
 
     db.commit()
