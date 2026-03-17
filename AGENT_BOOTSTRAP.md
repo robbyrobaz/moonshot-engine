@@ -2,9 +2,24 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 00:33 MST (Heartbeat — All Systems Healthy)
+> Last updated: 2026-03-17 01:02 MST (Heartbeat — All Systems Healthy)
 
 ## Session Summary (Mar 17 2026)
+
+**Heartbeat 01:02 (Mar 17):**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- ✅ Moonshot Cycle 131 COMPLETE (finished 00:55, 50min runtime, 7min ago)
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=0.68% — **ACTIVE** (15 open, 1 new in 4h)
+- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: 286 models (draining 20/cycle)
+- 📊 BT backlog: 284 models (draining 20/cycle)
+- 📊 Open positions: 962 (15 champion, 947 non-champion)
+- 📊 Blofin v1: Top FT performer: reversal+NEIRO PF=10.06 (5 trades, need 100+ for promotion)
+- 🔧 Historical backfill: batch continuing (ongoing since Mar 15)
+- 🔧 Builders running: 0
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
 
 **Heartbeat 00:33 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
