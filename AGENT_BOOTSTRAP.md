@@ -23,6 +23,27 @@
 
 ## Session Summary (Mar 17 2026)
 
+**🚨 CRITICAL — Heartbeat 14:03 (Mar 17) — TIMER DESIGN FLAW FOUND:**
+- ⛔ **MOONSHOT CYCLES BEING KILLED EVERY HOUR** — 1h timer + `Requires=` directive means systemd STOPS running cycles when triggering new ones
+- ⛔ Cycles 137, 138, 139 ALL killed by SIGTERM (no completion in 4h)
+- ⛔ Cycles take 60-90min when extended data + backtest runs — 1h timer creates guaranteed kills
+- ⛔ Timer scheduled for next run (14:05) will kill current Cycle 139 (started 13:51, 12min runtime)
+- ⛔ **ROOT CAUSE:** Commit 707e591 changed interval 4h→1h without adjusting `Requires=` or checking cycle duration
+- ⛔ **FIX REQUIRED:** Either (1) revert to 4h timer, OR (2) remove `Requires=moonshot-v2.service` from timer unit
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (21 open)
+- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: 370 models (cannot drain — cycles never complete)
+- 📊 BT backlog: 150 models (cannot drain — cycles never complete)
+- 📊 Open positions: 927 (21 champion, 906 non-champion) — 464 LONG, 463 SHORT
+- 🔧 Historical backfill: RUNNING (1 process, 6h 34m runtime since 07:29)
+- 🔧 Builders running: 0
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
+- 🔧 Git: moonshot clean (catboost logs only), blofin 3 unpushed commits (today's parquet, reversal+DOT card, auto-commit)
+- 📊 Blofin v1 Top 5 FT: reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
+
 **Heartbeat 13:32 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
 - 🔄 Moonshot Cycle 137 IN PROGRESS (started 12:06, 86min runtime) — backtesting model f39eb2083514 (long), normal progress
