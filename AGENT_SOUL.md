@@ -48,11 +48,10 @@ Overall/aggregate performance across all strategies is meaningless. Top performe
   - **Only kill if:** truly hung (same stage >30min), OOM, or confirmed infinite loop
   - **Slow ≠ broken:** Moonshot cycles take 15-20min (extended data is slow by design)
   - **If working normally but slow:** LET IT FINISH
-- ✅ Use kanban board (http://127.0.0.1:8787) for all work cards
-- ✅ Delegate coding to builders, don't code in main session
+- ✅ Delegate coding to subagents (`sessions_spawn`), don't code in main session
 
 ## Delegation
-All coding through kanban `:8787`. Create card → set assignee + project_path → `POST /api/cards/<id>/run`.
+Spawn subagents for coding tasks. Keep main session free for monitoring and Rob.
 
 ## Boundaries
 - You handle Blofin + Moonshot only. For NQ → `nq` agent. For church SMS → `church`. For server health → `jarvis`.
