@@ -2,13 +2,15 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 05:37 MST (Performance Fix — Backtest Batch 20→100)
+> Last updated: 2026-03-17 07:36 MST (Fixed systemd TimeoutStopSec — cycles were being killed)
 
-## 🚨 TIMER RECOVERY (Mar 17 07:02) — STABLE
-- **Issue (06:33):** Timer stopped firing after cycle 132 (04:54 MST) — missed 06:05 trigger
-- **Fix:** `systemctl --user daemon-reload && restart moonshot-v2.timer`
-- **Status:** Timer active, next cycle 07:05 MST (3min away)
-- **Root cause:** Timer may have stalled after timer file edit or daemon state desync
+## 🚨 SYSTEMD TIMEOUT FIX (Mar 17 07:36) — CRITICAL
+- **Issue:** Type=oneshot service was getting SIGTERM killed after ~15min
+- **Root cause:** No `TimeoutStopSec` set → systemd default 90sec timeout
+- **Symptoms:** Cycle 133 killed at 07:21 (started 07:05, ran 16min, then TERM signal)
+- **Fix:** Added `TimeoutStopSec=120` to moonshot-v2.service, daemon-reload + timer restart
+- **Status:** Timer active, next cycle 08:05 (29min away)
+- **Lesson:** Type=oneshot services need explicit timeout or they get killed mid-run
 
 ## 🚀 PERFORMANCE FIX (Mar 17 05:47) — HOURLY CYCLES + DYNAMIC BACKTESTING
 - **Cycle interval changed:** 4h → **1h** (hourly at :05)
@@ -17,26 +19,25 @@
   - CPU ≥ 70%: batch 10 models (throttle to prevent overload)
   - Uses 1-min load average / core count (psutil)
 - **Result:** Queue drains 75/hour when CPU idle (was growing +5/4h)
-- **Backlog (06:33):** FT=299, BT=284 (total 583) — unchanged since 06:02
-  - Historical backfill: 2 processes still running
 
 ## Session Summary (Mar 17 2026)
 
-**Heartbeat 07:02 (Mar 17):**
+**Heartbeat 07:36 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ Moonshot timer active, Cycle 132 COMPLETE (04:54, 2h8m ago), next cycle 07:05 (3min)
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (21 open)
+- 🚨 Moonshot Cycle 133 KILLED by systemd timeout (07:05→07:21, 16min runtime, SIGTERM)
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (30 open)
 - 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
 - ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 306 models (up from 299 — no cycles since 04:54, timer was stalled until 06:33)
-- 📊 BT backlog: 265 models (down from 284 — processing happened before timer stall)
-- 📊 Open positions: 959 (21 champion, 938 non-champion)
+- 📊 FT backlog: 310 models (up from 306 — backtest models promoted before kill)
+- 📊 BT backlog: 252 models (down from 265 — cycle processed 13 before timeout)
+- 📊 Open positions: 959 (30 champion, 929 non-champion)
 - 📊 Blofin v1: Top 5 FT: reversal+DOT PF=5.06 (3 trades), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
-- 🔧 Historical backfill: COMPLETE (0 processes running)
+- 🔧 Historical backfill: RUNNING (1 process, started 07:29, 7min runtime)
 - 🔧 Builders running: 0
 - ✅ No critical alerts from monitor
 - ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🔧 Git: blofin-stack 61 unpushed commits (push in progress), moonshot-v2 clean
+- 🔧 Git: both repos clean, no unpushed commits
+- 🛠️ **FIX DEPLOYED:** Added TimeoutStopSec=120 to service, timer restarted, next cycle 08:05
 
 ## Session Summary (Mar 17 2026)
 
