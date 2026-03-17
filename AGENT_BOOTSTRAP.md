@@ -6,24 +6,23 @@
 
 ## Session Summary (Mar 16 2026)
 
-**Heartbeat 18:45:**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ Moonshot Cycle 127 COMPLETE (17:49 → 18:45, 55min runtime, 0 errors)
-- 🚨 **CRITICAL BUG DETECTED:** SHORT champion demoted from PF 1.48 → 1.04 (WRONG)
-  - Old: 1e5f3a28 (XGBoost, BT_PF=1.02, FT_PF=1.48, 344 trades) — demoted to FT
-  - New: 3c905c7a (XGBoost, BT_PF=1.04, FT_PF=1.04, 349 trades) — promoted (worse!)
-  - Root cause: champion.py ranks by `ft_pnl_last_7d` (NULL < 0.06%) instead of `ft_pf`
-  - **FIX IN PROGRESS:** Builder dispatched (c_ccca1d013b83f_19cf97a9fb6)
-- ⏳ LONG champion: 6b3cef1b (CatBoost, BT_PF=0.58, 0 FT entries) — still broken
+**Heartbeat 19:15:**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard)
+- 🔧 Kanban was DOWN (port 8787 timeout) — **RESTARTED** at 19:15, now HTTP 200
+- ✅ Moonshot Cycle 127 COMPLETE (18:45, 55min runtime, 0 errors)
+- ✅ SHORT champion: de44f72dbb01 (XGBoost, BT_PF=0.98, FT_PF=2.22, 388 trades) — HEALTHY ✅
+  - **BOOTSTRAP.md 18:45 FALSE ALARM:** Claimed 3c905c7a was promoted (worse model), but DB shows de44f72dbb01 is still champion and performing excellently
+- 🚨 **LONG champion BROKEN:** 9b842069b20d (CatBoost, BT_PF=0.79, FT_PF=0.22, 39 trades) — **BUILDER DISPATCHED** (c_359ae9805aaf1_19cf995ff2c, 19:15)
+- ✅ New listing: 0 trades (waiting for next ≤7d coin)
 - 📊 FT backlog: 266 models (draining 20/cycle)
 - 📊 Open positions: 956
-- 📊 Blofin v1: top 5 FT performers have ≤3 trades each (early stage), 0 ready for promotion
-  - reversal-DOT: 3 trades, PF=5.06, PnL=5.04%
-  - reversal-LINK: 3 trades, PF=3.99, PnL=4.04%
-- 🔧 Builders running: 3 (2 NQ ML, 1 Moonshot champion fix)
+- 📊 Blofin v1: top 3 FT performers have ≤3 trades each (very early stage), 0 ready for promotion
+  - reversal-DOT: 3 trades, PF=5.06
+  - reversal-LINK: 3 trades, PF=3.99
+  - bb_squeeze-BTC: 3 trades, PF=2.34
+- 🔧 Builders running: 2 (1 NQ ML orphaned strategies, 1 Moonshot LONG fix)
 - ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 3 In Progress
-- 📦 Blofin backfill: 136.8K candles (batch 95, Dec 12 2025, 6h 9min runtime)
+- ✅ Kanban: 0 Planned, 2 In Progress
 
 **Major fixes deployed:**
 1. ✅ Moonshot cycle hangs RESOLVED — batch limit (20 models/cycle) prevents backtest infinite loops
@@ -40,10 +39,13 @@
 ## Moonshot v2 — Tournament Status
 
 ### Champions (3 active, separate long/short + new_listing)
-- **SHORT Champion:** 3c905c7a9f91 (XGBoost), BT_PF=1.04, BT_precision=0.258, BT_CI=1.03, FT_trades=349, FT_PF=1.04, FT_PnL=NULL
-  - Promoted: 2026-03-16 18:45 (Cycle 127) — **WRONG PROMOTION** (demoted better model)
-  - Previous: 1e5f3a28123b (XGBoost, FT_PF=1.48, 344 trades) demoted to FT — **BUG IN PROGRESS**
-- **LONG Champion:** 6b3cef1bb7e4, BT_PF=0.58, FT_trades=0 — never fired (under investigation)
+- **SHORT Champion:** de44f72dbb01 (XGBoost), BT_PF=0.98, BT_precision=0.246, FT_trades=388, FT_PF=2.22, FT_PnL=0.68%
+  - Promoted: 2026-03-16 18:51 (Cycle 127) — **HEALTHY ✅** (best FT performer)
+  - Status: Excellent performance, no action needed
+- **LONG Champion:** 9b842069b20d (CatBoost), BT_PF=0.79, BT_precision=0.282, FT_trades=39, FT_PF=0.22, FT_PnL=-2.01%
+  - Promoted: (timestamp unknown)
+  - Status: **BROKEN** — FT PF 0.22 vs BT 0.79 = likely feature drift or regime bug
+  - **FIX DISPATCHED:** Builder c_359ae9805aaf1_19cf995ff2c investigating (19:15)
 - **New Listing:** new_listing (rule-based), BT_PF=7.53, FT_trades=0 — waiting for next ≤7 day coin
 
 ### Tournament Numbers (Cycle 122 complete, 13:08 MST)
