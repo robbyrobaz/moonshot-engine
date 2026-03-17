@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 10:34 MST (Heartbeat — CRITICAL FIX: systemd timeout corrected)
+> Last updated: 2026-03-17 12:32 MST (Heartbeat — all systems healthy)
 
 ## 🚨 SYSTEMD TIMEOUT FIX v2 (Mar 17 10:34) — NOW ACTUALLY FIXED ✅
 - **Issue:** Type=oneshot service was getting SIGTERM killed after ~76min (not 15-20min as thought)
@@ -22,6 +22,22 @@
 - **Result:** Queue drains 75/hour when CPU idle (was growing +5/4h)
 
 ## Session Summary (Mar 17 2026)
+
+**Heartbeat 12:32 (Mar 17):**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- 🔄 Moonshot Cycle 137 IN PROGRESS (started 12:06, 27min runtime) — backtesting models
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=0.68% — **ACTIVE**
+- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: ~353 models (stable)
+- 📊 BT backlog: ~194 models (draining 100/cycle when CPU<70%)
+- 📊 Open positions: ~927
+- 🔧 Historical backfill: RUNNING (1 process, 5h runtime since 07:29)
+- 🔧 Builders running: 2 (1 NQ card In Progress, 1 crypto card dispatched — reversal+DOT 3x scale)
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 2 In Progress, 0 Failed
+- 🔧 Git: moonshot clean, blofin clean (both repos no uncommitted changes, no unpushed commits)
+- 🎯 **Dispatched:** reversal+DOT 3x leverage scale (FT_PF=5.06) — card c_0d3274eeb9c38_19cfd349bfc
 
 **Heartbeat 12:02 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
