@@ -6,20 +6,15 @@
 
 ## Session Summary (Mar 16 2026)
 
-**Heartbeat 19:45:**
+**Heartbeat 20:15:**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ Moonshot Cycle 127 COMPLETE (18:45, 55min runtime, 0 errors)
+- ✅ Moonshot Cycle 128 IN PROGRESS (started 19:34, backtest stage ~45min in, 0 errors)
 - ✅ SHORT champion: de44f72dbb01 | BT_PF=0.98, FT: 388 trades, PF=2.22, PnL=0.68% — **HEALTHY ✅**
 - 🚨 **LONG champion BROKEN:** 9b842069b20d | BT_PF=0.79, FT: 39 trades, PF=0.22, PnL=-2.01% — **BUILDER RUNNING** (c_359ae9805aaf1_19cf995ff2c)
 - ✅ New listing: 0 trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 266 models (draining 20/cycle)
-- 📊 Open positions: 956
-- 📊 Blofin v1: top 5 FT performers (all ≤2 trades, very early):
-  - reversal-BLAST: 2 trades, PF=89.83, PnL=+3.36%
-  - reversal-SHELL: 2 trades, PF=63.45, PnL=+5.46%
-  - candle_momentum_burst-XMR: 2 trades, PF=30.08, PnL=+1.06%
-  - momentum-ALICE: 2 trades, PF=25.50, PnL=+2.93%
-  - reversal-TRU: 2 trades, PF=25.20, PnL=+1.16%
+- 📊 FT backlog: 285 models (draining 20/cycle)
+- 📊 Open positions: 963
+- 📊 Blofin v1: 0 FT trades yet (paper engine running, waiting for signals)
 - 📊 Blofin v1: 0 ready for promotion (need ≥100 trades + PF≥1.35)
 - 🔧 Builders running: 2 (1 NQ ML orphaned strategies, 1 Moonshot LONG fix)
 - ✅ No critical alerts from monitor
