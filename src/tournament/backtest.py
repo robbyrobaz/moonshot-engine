@@ -430,21 +430,9 @@ def backtest_new_challengers(db, max_batch=None):
         max_batch: Maximum models to process per cycle (None = dynamic based on CPU load)
     """
     if max_batch is None:
-        from config import BACKTEST_BATCH_SIZE_MAX, BACKTEST_BATCH_SIZE_MIN, BACKTEST_CPU_THRESHOLD
-        import psutil
-        
-        # Get 1-min load average as % of CPU cores
-        cpu_count = psutil.cpu_count()
-        load_avg_1min = psutil.getloadavg()[0]  # 1-min load average
-        cpu_load_pct = (load_avg_1min / cpu_count) * 100
-        
-        # Throttle batch size based on CPU load
-        if cpu_load_pct >= BACKTEST_CPU_THRESHOLD:
-            max_batch = BACKTEST_BATCH_SIZE_MIN
-            log.info(f"backtest_new_challengers: CPU load {cpu_load_pct:.1f}% >= {BACKTEST_CPU_THRESHOLD}% — throttling to {max_batch} models")
-        else:
-            max_batch = BACKTEST_BATCH_SIZE_MAX
-            log.info(f"backtest_new_challengers: CPU load {cpu_load_pct:.1f}% < {BACKTEST_CPU_THRESHOLD}% — batching {max_batch} models")
+        from config import BACKTEST_BATCH_SIZE
+        max_batch = BACKTEST_BATCH_SIZE
+        log.info(f"backtest_new_challengers: processing {max_batch} models (fixed batch, no CPU throttling)")
     rows = db.execute(
         "SELECT model_id, params FROM tournament_models WHERE stage = 'backtest' LIMIT ?",
         (max_batch,)
