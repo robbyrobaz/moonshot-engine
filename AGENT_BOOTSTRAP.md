@@ -51,27 +51,28 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 18 11:33)
+## Current Status (Mar 18 12:02)
 
 **Services:**
 - ✅ blofin-stack-ingestor.service (active)
 - ✅ blofin-stack-paper.service (active)
 - ✅ blofin-dashboard.service (active, HTTP 200 on 8892)
 - ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (next fire: 12:05 MST — trigger confirmed)
+- ✅ moonshot-v2.timer (next fire: 12:05 MST — trigger confirmed, 1min away)
 
 **Tournament:**
 - Champions: de44f72dbb01 (short, 388 FT trades, PF 2.22), new_listing (0 trades)
 - FT backlog: 453
 - Stage counts: Champion 2, Forward Test 453, Backtest 3, Retired 1,866
-- Cycle status: NO CYCLE RUNNING (next at 12:05 MST, 32min away)
+- Open positions: 932
+- Cycle status: NO CYCLE RUNNING (next at 12:05 MST, 1min away)
 
 **Blofin v1:**
 - ✅ All services active
 - Dashboard HTTP 200 on 8892
 
 **Git:**
-- moonshot: clean, 1 unpushed commit (<25 threshold, OK)
+- moonshot: clean, 0 unpushed commits
 - blofin-stack: clean, 22 unpushed commits (<25 threshold, OK)
 
 **Kanban:**
