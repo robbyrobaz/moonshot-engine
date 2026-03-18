@@ -10,10 +10,10 @@
 - **Why 25?** All data is committed locally + backed up. Push failures are NON-URGENT until Rob fixes auth.
 - **Git hygiene routine:** Keep running (commit regularly), don't alert on push failures until auth fixed.
 
-## 🚨 HEARTBEAT STATUS (Mar 18 03:32) — ALL SYSTEMS HEALTHY ✅
+## 🚨 HEARTBEAT STATUS (Mar 18 04:04) — ALL SYSTEMS HEALTHY ✅
 - ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard (HTTP 200)
 - ✅ **Moonshot Cycle 143:** COMPLETE at 01:15 (71min runtime, 0 errors) — **HEALTHY ✅**
-- ✅ **Timer:** Active (waiting), next cycle 04:05 MST (33min)
+- ✅ **Timer:** Active (waiting), next cycle 04:05 MST (1min)
 - ✅ **SHORT champion:** de44f72dbb01 (catboost), FT=388 trades, PF=2.22 — **ACTIVE**
 - 🚨 **LONG champion:** NONE (by design — no profitable LONG models found)
 - ✅ **New listing champion:** active, 0 FT trades (waiting for next ≤7d coin)
@@ -24,7 +24,7 @@
 - ✅ **Kanban:** 0 Planned crypto cards, 0 In Progress crypto, 0 Failed crypto
 - ✅ **Critical alerts:** None from monitor
 - 🔧 **Historical backfill:** COMPLETE (not running)
-- 📊 **Blofin v1 Top 5 FT:** reversal+DOT-USDT PF=5.06 (3 trades, tier=2), reversal+LINK-USDT PF=3.99 (3 trades, tier=2), bb_squeeze+ADA-USDT PF=2.61 (3 trades, tier=2), bb_squeeze+BTC-USDT PF=2.34 (3 trades, tier=2), rsi_divergence+DOT-USDT PF=0.04 (3 trades, tier=2)
+- 📊 **Blofin v1 Top 5 FT:** reversal+DOT-USDT PF=5.06 (3 trades, tier=2), reversal+LINK-USDT PF=3.99 (3 trades, tier=2), bb_squeeze+ADA-USDT PF=2.61 (3 trades, tier=2), bb_squeeze+BTC-USDT PF=2.34 (3 trades, tier=2), reversal+AVAX-USDT PF=1.59 (1 trade, tier=2)
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 20:35) — SYSTEMD OnCalendar SYNTAX BUG FIXED
 - **Root cause:** systemd 256+ doesn't parse `00/4` syntax correctly → OnCalendar property empty → timer disabled
