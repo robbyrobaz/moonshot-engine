@@ -4,20 +4,20 @@
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
 > Last updated: 2026-03-17 22:37 MST (Heartbeat Scan)
 
-## 🚨 HEARTBEAT STATUS (Mar 17 23:32) — ALL HEALTHY ✅
+## 🚨 HEARTBEAT STATUS (Mar 18 00:03) — ALL HEALTHY ✅
 - ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
 - ✅ **Moonshot Cycle 142:** COMPLETE at 22:55 (97min runtime, 0 errors) — **HEALTHY ✅**
-- ✅ **Timer HEALTHY:** Next cycle 00:05 MST (32min), "Active: active (waiting)" ✅
-- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22) — HEALTHY ✅
+- ✅ **Timer HEALTHY:** Next cycle 00:05 MST (1s away), "Active: active (waiting)" ✅
+- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22, PnL=0.68%) — **HEALTHY ✅**
 - 🚨 **LONG champion:** NONE (30 LONG FT models, 0 trades — models pass BT but never fire)
 - 📊 **FT backlog:** 440 models total (410 SHORT, 30 LONG dead)
 - 📊 **Backtest queue:** 0 models (drained)
-- 📊 **Open positions:** 968 (605 LONG, 23161 SHORT includes 22798 historical closed)
-- ⚠️ **Git status:** moonshot clean (catboost logs only), blofin-stack 18 commits unpushed (git push HANGS repeatedly, upstream missing)
+- 📊 **Open positions:** 968 (481 LONG, 487 SHORT)
+- ⚠️ **Git status:** moonshot clean (catboost logs only), blofin-stack clean (today's parquet), blofin-stack git CORRUPTED INDEX (escalated Mar 17)
 - ✅ **Kanban:** 0 Planned crypto cards, 0 In Progress crypto, 0 Failed crypto
 - ✅ **Critical alerts:** None from monitor
-- 🔧 **Historical backfill:** RUNNING (PID 982017, started 23:10, 22min runtime, 67% CPU)
-- 📊 **Blofin v1:** 5 enabled pairs (schema changed, FT query needs update)
+- 🔧 **Historical backfill:** RUNNING (PID 1026739, started 23:38, 25min runtime, 77% CPU)
+- 📊 **Blofin v1:** Top 5 FT: reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 20:35) — SYSTEMD OnCalendar SYNTAX BUG FIXED
 - **Root cause:** systemd 256+ doesn't parse `00/4` syntax correctly → OnCalendar property empty → timer disabled
