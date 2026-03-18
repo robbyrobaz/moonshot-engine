@@ -10,20 +10,20 @@
 - **Why 25?** All data is committed locally + backed up. Push failures are NON-URGENT until Rob fixes auth.
 - **Git hygiene routine:** Keep running (commit regularly), don't alert on push failures until auth fixed.
 
-## 🚨 HEARTBEAT STATUS (Mar 18 01:02) — ALL SYSTEMS HEALTHY ✅
+## 🚨 HEARTBEAT STATUS (Mar 18 01:33) — ALL SYSTEMS HEALTHY ✅
 - ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard (HTTP 200)
-- ✅ **Moonshot Cycle 142:** COMPLETE at 22:55 (97min runtime, 0 errors) — **HEALTHY ✅**
-- ✅ **Timer:** Active (waiting), next cycle 04:05 MST (3h 0min)
+- ✅ **Moonshot Cycle 143:** COMPLETE at 01:15 (71min runtime, 0 errors) — **HEALTHY ✅**
+- ✅ **Timer:** Active (waiting), next cycle 04:05 MST (2h 31min)
 - ✅ **SHORT champion:** de44f72dbb01 (catboost), FT=388 trades, PF=2.22, PnL=0.68% — **ACTIVE**
-- 🚨 **LONG champion:** NONE (30 LONG FT models, 0 trades — models pass BT but never fire)
-- 📊 **FT backlog:** 446 models total (416 SHORT, 30 LONG dead)
+- 🚨 **LONG champion:** NONE (by design — no profitable LONG models found)
+- 📊 **FT backlog:** 446 models (stable)
 - 📊 **Backtest queue:** 0 models (clean)
 - 📊 **Open positions:** 968 (481 LONG, 487 SHORT)
-- 🔧 **Git status:** moonshot clean (catboost logs only), blofin-stack 19 UNPUSHED (>25 threshold per Git hygiene rules, not urgent)
+- 🔧 **Git status:** moonshot clean (catboost logs only), blofin-stack 19 UNPUSHED (<25 threshold per Git hygiene rules, not urgent)
 - ✅ **Kanban:** 0 Planned crypto cards, 0 In Progress crypto, 0 Failed crypto
 - ✅ **Critical alerts:** None from monitor
 - 🔧 **Historical backfill:** COMPLETE (not running)
-- 📊 **Blofin v1 Top 5 FT:** reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
+- 📊 **Blofin v1 Top 5 FT:** reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), reversal+AVAX PF=1.59 (1)
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 20:35) — SYSTEMD OnCalendar SYNTAX BUG FIXED
 - **Root cause:** systemd 256+ doesn't parse `00/4` syntax correctly → OnCalendar property empty → timer disabled
