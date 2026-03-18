@@ -10,10 +10,10 @@
 - **Why 25?** All data is committed locally + backed up. Push failures are NON-URGENT until Rob fixes auth.
 - **Git hygiene routine:** Keep running (commit regularly), don't alert on push failures until auth fixed.
 
-## 🚨 HEARTBEAT STATUS (Mar 18 02:31) — ALL SYSTEMS HEALTHY ✅
+## 🚨 HEARTBEAT STATUS (Mar 18 03:03) — ALL SYSTEMS HEALTHY ✅
 - ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard (HTTP 200)
 - ✅ **Moonshot Cycle 143:** COMPLETE at 01:15 (71min runtime, 0 errors) — **HEALTHY ✅**
-- ✅ **Timer:** Active (waiting), next cycle 04:05 MST (1h 31min)
+- ✅ **Timer:** Active (waiting), next cycle 04:05 MST (1h 2min)
 - ✅ **SHORT champion:** de44f72dbb01 (catboost), FT=388 trades, PF=2.22 — **ACTIVE**
 - 🚨 **LONG champion:** NONE (by design — no profitable LONG models found)
 - ✅ **New listing champion:** active, 0 FT trades (waiting for next ≤7d coin)
@@ -24,7 +24,7 @@
 - ✅ **Kanban:** 0 Planned crypto cards, 0 In Progress crypto, 0 Failed crypto
 - ✅ **Critical alerts:** None from monitor
 - 🔧 **Historical backfill:** COMPLETE (not running)
-- 📊 **Blofin v1 Top 4 FT:** reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3)
+- 📊 **Blofin v1 Top 5 FT:** reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 20:35) — SYSTEMD OnCalendar SYNTAX BUG FIXED
 - **Root cause:** systemd 256+ doesn't parse `00/4` syntax correctly → OnCalendar property empty → timer disabled
