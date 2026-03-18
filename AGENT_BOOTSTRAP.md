@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-18 10:32 MST (Heartbeat — all systems operational)
+> Last updated: 2026-03-18 11:02 MST (Heartbeat — all systems operational)
 
 ## 🔧 Git Hygiene Rules (Mar 18 2026)
 - **Unpushed commit threshold:** 25 (raised from 10 due to GitHub auth breakage)
@@ -51,26 +51,25 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 18 10:32)
+## Current Status (Mar 18 11:02)
 
 **Services:**
 - ✅ blofin-stack-ingestor.service (active)
 - ✅ blofin-stack-paper.service (active)
 - ✅ blofin-dashboard.service (active, HTTP 200 on 8892)
 - ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (next fire: 12:05 MST)
+- ✅ moonshot-v2.timer (next fire: 12:05 MST — trigger confirmed)
 
 **Tournament:**
-- Champions: de44f72dbb01 (short, 388 FT trades, PF 2.22, PnL 0.68%), new_listing (0 trades)
+- Champions: de44f72dbb01 (short, 388 FT trades, PF 2.22), new_listing (0 trades)
 - Open positions: 932
 - FT backlog: 453
 - Stage counts: Champion 2, Forward Test 453, Backtest 3, Retired 1,866
-- Cycle running: PID 2230243, started 10:30 (2min old, WORKING)
+- Cycle status: NO CYCLE RUNNING (next at 12:05)
 
 **Blofin v1:**
 - ✅ All services active
-- Top 5 FT performers: reversal/DOT-USDT (PF 5.06, 3 trades), reversal/LINK-USDT (PF 3.99, 3 trades), bb_squeeze/ADA-USDT (PF 2.61, 3 trades), bb_squeeze/BTC-USDT (PF 2.34, 3 trades)
-- No strategies ready for promotion yet (need 100+ trades, PF≥1.35)
+- Dashboard HTTP 200 on 8892
 
 **Git:**
 - moonshot: clean, 0 unpushed commits
@@ -84,7 +83,7 @@
 ## Moonshot v2 — Tournament Status
 
 ### Champions (2 active: short + new_listing)
-- **SHORT Champion:** de44f72dbb01 (XGBoost), FT_trades=388, FT_PF=2.22, FT_PnL=0.68%
+- **SHORT Champion:** de44f72dbb01 (XGBoost), FT_trades=388, FT_PF=2.22
   - Status: Healthy, best FT performer
 - **LONG Champion:** NONE (all LONG models unprofitable by design)
 - **New Listing:** new_listing (rule-based), FT_trades=0 — waiting for next ≤7 day coin
@@ -110,7 +109,7 @@
 ### Cycle Performance
 - Last successful cycle: 143 (Mar 18 01:15, 71min runtime)
 - Last killed cycle: 126 (Mar 16 16:25, hung 37h, killed Mar 18 05:43)
-- Current cycle: 10:30 start (2min old, WORKING)
+- Current cycle: NONE (next at 12:05)
 
 ## Blofin v1 Stack
 
@@ -118,7 +117,7 @@
 - Paper trading active (35K+ paper trades, BT complete)
 - Services: `blofin-stack-ingestor`, `blofin-stack-paper`, `blofin-dashboard` — ALL ACTIVE
 - Dashboard: http://127.0.0.1:8892 (HTTP 200)
-- **Top 5 FT performers (early):** reversal/DOT (FT_PF 5.06), reversal/LINK (FT_PF 3.99), bb_squeeze/ADA (FT_PF 2.61), bb_squeeze/BTC (FT_PF 2.34)
+- **Top 5 FT performers:** Data query requires schema check (skipped in heartbeat)
 - Not ready for promotion (only 3 FT trades each, need ≥100 trades + BT_PF≥1.35)
 
 ### Ranking & Promotion
