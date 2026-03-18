@@ -17,15 +17,16 @@
 - ✅ **Critical alerts:** None
 - 🔧 **Historical backfill:** PID 406340 running since 16:38 (27min runtime, parquet work)
 
-## ✅ WATCHDOG TIMEOUT FIX (Mar 17 14:38) — VERIFIED WORKING
-- **Issue:** Cycles 137, 138, 139 all killed after 104-105min (SIGTERM)
-- **Root cause:** Watchdog script (`scripts/watchdog.sh`) kills cycles >90min, thinking they're hung
-- **Reality:** Extended data + large backtest batches = 105-120min normal runtime
-- **Symptoms:** All 3 cycles actively backtesting when killed (working, not hung)
-- **Fix:** Increased watchdog threshold 90min → 180min (3h), backtest 60min → 120min
-- **Commit:** 64584d1 (deployed to feature/moonshot-2x-leverage)
-- **Status:** Cycle 139 at 192min (3h 12min) and still running — fix WORKING ✅
-- **Lesson:** Watchdog thresholds must exceed normal cycle duration (not just "worst case hung")
+## 🚨 WATCHDOG TIMEOUT FIX (Mar 17 — STILL EVOLVING)
+- **Issue:** Cycles getting killed mid-execution by watchdog (SIGTERM)
+- **Root cause:** Watchdog threshold doesn't account for growing queues + extended data
+- **History:**
+  - Cycle 137, 138: killed at 104-105min (threshold was 90min) — increased to 180min at 14:38
+  - Cycle 139: killed at 195min (threshold was 180min) — increased to 240min at 17:33
+- **Current fix:** Watchdog threshold 180min → 240min (4h), backtest 120min → 150min
+- **Commit:** 88ff10d (deployed Mar 17 17:33)
+- **Status:** Next cycle at 20:05 will be first with new 240min threshold
+- **Lesson:** Cycle duration grows with queue size. 75 BT models × 2-3min each = 150-225min cycle time
 
 ## 🚀 PERFORMANCE FIX (Mar 17 05:47) — HOURLY CYCLES + DYNAMIC BACKTESTING
 - **Cycle interval changed:** 4h → **1h** (hourly at :05)
@@ -36,6 +37,23 @@
 - **Result:** Queue drains 75/hour when CPU idle (was growing +5/4h)
 
 ## Session Summary (Mar 17 2026)
+
+**Heartbeat 17:33 (Mar 17):**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- 🚨 Moonshot Cycle 139: KILLED at 17:06 (195min runtime, threshold was 180min)
+- 🔧 **Watchdog fix deployed:** Threshold raised 180min → 240min (commit 88ff10d)
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=68.37% — **ACTIVE**
+- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: 402 models (+1 from last heartbeat)
+- 📊 BT backlog: 75 models (draining, -2 from last heartbeat)
+- 🔧 Historical backfill: PID 451926 running (started 17:08, 25min, parquet work)
+- 🔧 Builders running: 0
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
+- 🔧 Git: moonshot pushed (88ff10d), blofin 8 unpushed commits (<10 threshold)
+- 📊 Blofin v1 Top 5 BT: reversal+BTC PF=2.23 (395), high_volume_reversal+ETH PF=1.26 (118), reversal+MATIC PF=1.85 (364), mtf_ensemble+LINK PF=3.28 (455), macd_divergence+DOGE PF=1.83 (286)
+- 🎯 **Lesson:** Cycle duration grows with queue size (75 BT models × 2-3min = 150-225min). Next cycle at 20:05 with 240min threshold.
 
 **Heartbeat 17:03 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
@@ -201,5 +219,8 @@
 - ⛔ Moonshot: champion = best FT PnL (≥20 trades), NEVER AUC
 - ⛔ 95% retirement rate is GOOD (tournament philosophy)
 - ⛔ Data migration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
+- ⛔ INVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
+- ⛔ **NEVER kill a running process to "investigate" — that's backwards**
+gration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
 - ⛔ INVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
 - ⛔ **NEVER kill a running process to "investigate" — that's backwards**
