@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-18 11:02 MST (Heartbeat — all systems operational)
+> Last updated: 2026-03-18 11:33 MST (Heartbeat — all systems operational)
 
 ## 🔧 Git Hygiene Rules (Mar 18 2026)
 - **Unpushed commit threshold:** 25 (raised from 10 due to GitHub auth breakage)
@@ -51,7 +51,7 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 18 11:02)
+## Current Status (Mar 18 11:33)
 
 **Services:**
 - ✅ blofin-stack-ingestor.service (active)
@@ -62,23 +62,23 @@
 
 **Tournament:**
 - Champions: de44f72dbb01 (short, 388 FT trades, PF 2.22), new_listing (0 trades)
-- Open positions: 932
 - FT backlog: 453
 - Stage counts: Champion 2, Forward Test 453, Backtest 3, Retired 1,866
-- Cycle status: NO CYCLE RUNNING (next at 12:05)
+- Cycle status: NO CYCLE RUNNING (next at 12:05 MST, 32min away)
 
 **Blofin v1:**
 - ✅ All services active
 - Dashboard HTTP 200 on 8892
 
 **Git:**
-- moonshot: clean, 0 unpushed commits
+- moonshot: clean, 1 unpushed commit (<25 threshold, OK)
 - blofin-stack: clean, 22 unpushed commits (<25 threshold, OK)
 
 **Kanban:**
 - 0 Planned crypto cards
 - 0 In Progress crypto cards
 - 0 Failed crypto cards
+- 0 Recent Done cards (< 1h)
 
 ## Moonshot v2 — Tournament Status
 
