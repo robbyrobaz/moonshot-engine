@@ -4,22 +4,21 @@
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
 > Last updated: 2026-03-17 20:36 MST (Heartbeat Scan)
 
-## 🚨 HEARTBEAT STATUS (Mar 17 20:36) — CYCLE HEALTHY, TIMER NOW FIXED ✅
+## 🚨 HEARTBEAT STATUS (Mar 17 21:04) — CYCLE 140 RUNNING LONG (3H), TIMER HEALTHY ✅
 - ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
-- 🔄 **Moonshot Cycle 140:** Running 2h 32min (started 18:03), backtest stage (fold processing), CPU 1110% (11 cores) — **WORKING ✅**
-- ✅ **Timer FIXED:** Restart at 00:05 MST (3h 29min), systemd now shows proper trigger ✅
-- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22, PnL=0.68%) — HEALTHY ✅
-- 🚨 **LONG PIPELINE BROKEN:** NO champion + ALL 30 LONG FT models have 0 trades — models pass backtest but never generate signals
-- ✅ **New listing champion:** 0 trades (waiting for next ≤7d coin)
-- 📊 **FT backlog:** 427 models total (397 SHORT healthy, 30 LONG dead)
-- 📊 **Backtest queue:** 20 models
-- 📊 **Retired:** 1,792+ models
+- 🔄 **Moonshot Cycle 140:** Running 3h 0min (started 18:03), backtest stage (model e9fd15bc5f46), actively processing — **NORMAL ✅**
+- ✅ **Timer HEALTHY:** Next cycle 00:05 MST (3h 1min), "Active: active (waiting)" ✅
+- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22, PnL=68.37%) — HEALTHY ✅
+- 🚨 **LONG champion:** NONE (30 LONG FT models, 0 trades — models pass BT but never fire)
+- 📊 **FT backlog:** 431 models total (401 SHORT, 30 LONG dead)
+- 📊 **Backtest queue:** 9 models (draining)
+- 📊 **Retired:** 1,807 models
 - 📊 **Open positions:** 884
-- ⚠️ **Git status:** moonshot clean (catboost logs safe), blofin-stack 15 commits unpushed (git push hung, manual push needed)
+- ⚠️ **Git status:** moonshot clean (catboost logs), blofin-stack 16 commits unpushed (git push hung again, killed)
 - ✅ **Kanban:** 0 Planned, 0 In Progress, 0 Failed
 - ✅ **Critical alerts:** None from monitor
-- 🔧 **Historical backfill:** PID 658749 running (started 19:05, ~92 symbols done)
-- 🚨 **TIMER BUG FIXED (Mar 17 20:35):** `OnCalendar=*-*-* 00/4:05:00` syntax broken in systemd 256+, changed to explicit hours `00,04,08,12,16,20:05:00`, restarted timer — now active ✅
+- 🔧 **Historical backfill:** PID 658749 running (1h 58min runtime)
+- 📊 **Cycle 140 progress:** Actively retiring failing BT models (6b8150c03c00 just failed, moving to e9fd15bc5f46)
 - 🚨 **INVESTIGATION NEEDED:** Why do LONG models pass BT gates but never fire in FT?
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 20:35) — SYSTEMD OnCalendar SYNTAX BUG FIXED
