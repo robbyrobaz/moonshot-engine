@@ -2,34 +2,29 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 18:03 MST (Heartbeat — TIMER FIX DEPLOYED, Cycle 140 starting)
+> Last updated: 2026-03-17 19:03 MST (Heartbeat — CYCLE 140 RUNNING, TIMER BROKEN)
 
-## 🚨 HEARTBEAT STATUS (Mar 17 18:31) — CRITICAL: CYCLE DURATION MISMATCH
-- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
-- 🔄 **Moonshot Cycle 140:** Started 18:03, running 28min (backtesting in progress) — HEALTHY SO FAR
-- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PnL=0.68%) — HEALTHY
+## 🚨 HEARTBEAT STATUS (Mar 17 19:03) — CRITICAL: TIMER MISCONFIGURED
+- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper (activating), blofin-dashboard, moonshot-v2-dashboard
+- 🔄 **Moonshot Cycle 140:** Started 18:03, running 60min (backtesting 25/75 done) — HEALTHY
+- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22) — HEALTHY
 - ⚠️ **LONG champion MISSING:** no profitable LONG models (by design)
-- 📊 **Backtest queue:** 93 models (was 75, +18)
-- 📊 **FT queue:** 403 models (was 402, +1)
-- ✅ **Git status:** moonshot clean (catboost logs), blofin-stack 10 unpushed commits (at threshold)
+- 📊 **Backtest queue:** 75 models (stable)
+- 📊 **FT queue:** 410 models (+7 from last heartbeat)
+- ✅ **Git status:** moonshot clean (catboost logs), blofin-stack 12 unpushed commits (>10 threshold, PUSH NEEDED)
 - ✅ **Kanban:** 0 Planned, 0 In Progress, 0 Failed — no work needed
 - ✅ **Critical alerts:** None
-- 🔧 **Historical backfill:** PID 84816 running (started 12:38, parquet ingestor)
-- 🚨 **CRITICAL ISSUE:** Hourly timer + 3-hour cycles = every cycle gets killed at 1 hour mark
+- 🔧 **Historical backfill:** PID 643188 running (started 18:58, 1-worker mode)
+- 🚨 **CRITICAL ISSUE:** Timer has dual OnCalendar (hourly + *:05:00) — systemd disabled it (Trigger: n/a)
 
-## 🚨 TIMER/CYCLE DURATION MISMATCH (Mar 17 18:31) — UNFIXABLE WITH CURRENT DESIGN
-- **ACTUAL root cause:** Cycles take 195+ minutes (3.25 hours), timer fires every 60 minutes
-- **What happens:** Timer fires while previous cycle still running → systemd kills old cycle, starts new one
-- **Cycle 139:** Started 13:51, killed at 17:06 (195min runtime) when 16:05 timer fired, then 17:05 timer fired again → new cycle at 18:03
-- **Cycle 140:** Started 18:03, will be killed at 19:05 when next timer fires (62min from now)
-- **Timer schedule:** Hourly (*:05:00) — CORRECT for 1h cycle design
-- **Actual cycle duration:** 195+ minutes — INCOMPATIBLE with hourly schedule
-- **Why cycles are slow:** Dynamic CPU throttling (commit d71f08c) — batch size drops to 10 when CPU ≥70%, backtest queue grows faster than it drains
-- **Options:**
-  1. Change timer to 4-hour schedule (revert ca4700a) — cycles won't overlap but queue grows +5-10 models/4h
-  2. Remove CPU throttling, lock batch=100 — risk OOM/system instability
-  3. Add cycle timeout detection in timer (skip firing if previous cycle still running)
-- **ESCALATING TO JARVIS** — this needs architectural decision, not agent patch
+## 🚨 TIMER MISCONFIGURATION (Mar 17 19:03) — DUAL OnCalendar BREAKS SYSTEMD
+- **Root cause:** Timer has TWO OnCalendar directives (hourly + *-*-* *:05:00)
+- **Systemd behavior:** Multiple OnCalendar = systemd disables timer (shows "Trigger: n/a")
+- **Result:** No automatic cycles fire — Cycle 140 only started because timer was restarted at 18:03
+- **Fix needed:** Remove `OnCalendar=hourly`, keep only `OnCalendar=*-*-* 00/4:05:00` (4-hour schedule)
+- **Current state:** Cycle 140 running manually, will NOT restart when it finishes
+- **Timer file:** `/home/rob/.config/systemd/user/moonshot-v2.timer`
+- **Previous issue (RESOLVED):** Cycles take 195+ min, hourly timer killed them — now timer just doesn't fire at all
 
 ## 🚀 PERFORMANCE FIX (Mar 17 05:47) — HOURLY CYCLES + DYNAMIC BACKTESTING
 - **Cycle interval changed:** 4h → **1h** (hourly at :05)
