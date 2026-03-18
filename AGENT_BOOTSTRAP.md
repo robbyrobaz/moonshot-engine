@@ -2,28 +2,29 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 16:34 MST (Heartbeat — all healthy, Cycle 139 completing, LONG champion missing)
+> Last updated: 2026-03-17 17:03 MST (Heartbeat — all healthy, Cycle 139 completing 3h+, backfill still running)
 
-## ✅ HEARTBEAT STATUS (Mar 17 16:34)
+## ✅ HEARTBEAT STATUS (Mar 17 17:03)
 - ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
-- ✅ **Moonshot Cycle 139:** Started 13:51 (2h 43min running), backtest stage, 0 errors — HEALTHY
-- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22, PnL=0.68%) — HEALTHY
-- ⚠️ **LONG champion MISSING:** model 9b842069b20d demoted/retired, no replacement promoted yet
-- ✅ **Backtest queue:** 93 models (draining 20/cycle)
-- ✅ **FT queue:** 397 models (growing during cycle)
+- ✅ **Moonshot Cycle 139:** Started 13:51 (3h 12min running), backtest stage, actively working — HEALTHY
+- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22, PnL=68.37%) — HEALTHY
+- ⚠️ **LONG champion MISSING:** model 9b842069b20d demoted/retired, no replacement promoted yet (by design)
+- ✅ **Backtest queue:** 77 models (draining well, -31 from last heartbeat)
+- ✅ **FT queue:** 401 models (+9 from last heartbeat)
 - ✅ **Open positions:** 906
-- ✅ **Git status:** moonshot clean, blofin-stack 6 unpushed commits (<10 threshold)
+- ✅ **Git status:** moonshot clean, blofin-stack 8 unpushed commits (<10 threshold)
 - ✅ **Kanban:** 0 Planned, 0 In Progress, 0 Failed — no work needed
 - ✅ **Critical alerts:** None
+- 🔧 **Historical backfill:** PID 406340 running since 16:38 (27min runtime, parquet work)
 
-## ✅ WATCHDOG TIMEOUT FIX (Mar 17 14:38) — FIXED
+## ✅ WATCHDOG TIMEOUT FIX (Mar 17 14:38) — VERIFIED WORKING
 - **Issue:** Cycles 137, 138, 139 all killed after 104-105min (SIGTERM)
 - **Root cause:** Watchdog script (`scripts/watchdog.sh`) kills cycles >90min, thinking they're hung
 - **Reality:** Extended data + large backtest batches = 105-120min normal runtime
 - **Symptoms:** All 3 cycles actively backtesting when killed (working, not hung)
 - **Fix:** Increased watchdog threshold 90min → 180min (3h), backtest 60min → 120min
 - **Commit:** 64584d1 (deployed to feature/moonshot-2x-leverage)
-- **Status:** Cycle 139 survived 130min (started 13:51, still running 16:01) — fix WORKING ✅
+- **Status:** Cycle 139 at 192min (3h 12min) and still running — fix WORKING ✅
 - **Lesson:** Watchdog thresholds must exceed normal cycle duration (not just "worst case hung")
 
 ## 🚀 PERFORMANCE FIX (Mar 17 05:47) — HOURLY CYCLES + DYNAMIC BACKTESTING
@@ -35,6 +36,21 @@
 - **Result:** Queue drains 75/hour when CPU idle (was growing +5/4h)
 
 ## Session Summary (Mar 17 2026)
+
+**Heartbeat 17:03 (Mar 17):**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- 🔄 Moonshot Cycle 139 IN PROGRESS (started 13:51, 3h 12min runtime) — backtesting model 1dcda8e22eae, normal progress
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=68.37% — **ACTIVE**
+- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: 401 models (+9 from last heartbeat)
+- 📊 BT backlog: 77 models (draining well, -31 from last heartbeat)
+- 🔧 Historical backfill: PID 406340 running (started 16:38, 27min, parquet work)
+- 🔧 Builders running: 0
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
+- 🔧 Git: moonshot clean (catboost logs only), blofin 8 unpushed commits (<10 threshold)
+- 🎯 **Cycle 139 proving watchdog fix:** 192min runtime (3h 12min), no kill → threshold increase VERIFIED ✅
 
 **Heartbeat 16:01 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
@@ -108,11 +124,11 @@
 - FK constraint required dummy model entry in tournament_models
 
 ### Services (All ACTIVE)
-- `moonshot-v2.timer` — 1h cycle (hourly at :05, next 17:05 MST)
+- `moonshot-v2.timer` — 4h cycle (OnCalendar=*-*-* 00/4:05:00)
 - `moonshot-v2-social.timer` — 1h social signals (active)
 - `moonshot-v2-dashboard.service` — HTTP 200 on port 8893
 - Dashboard: http://127.0.0.1:8893/
-- **Backfill:** Historical data backfill COMPLETE (processes ended)
+- **Backfill:** Historical data backfill IN PROGRESS (PID 406340, started 16:38)
 
 ### Cycle Performance — SYSTEMD TIMEOUT FIX HOLDING ✅
 
