@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-18 07:02 MST (Heartbeat check — all systems operational)
+> Last updated: 2026-03-18 09:02 MST (Heartbeat check — all systems operational)
 
 ## 🔧 Git Hygiene Rules (Mar 18 2026)
 - **Unpushed commit threshold:** 25 (raised from 10 due to GitHub auth breakage)
@@ -51,33 +51,33 @@
 
 **Next cycle:** 08:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 18 08:33)
+## Current Status (Mar 18 09:04)
 
 **Services:**
-- ✅ blofin-stack-ingestor.service (SQLite, production)
-- ⚠️ blofin-stack-paper.service (activating)
-- ✅ blofin-dashboard.service (HTTP 200 on 8892)
-- ✅ moonshot-v2-dashboard.service (HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (next fire: 12:05 MST)
+- ✅ blofin-stack-ingestor.service (active)
+- ✅ blofin-stack-paper.service (active)
+- ✅ blofin-dashboard.service (active, HTTP 200 on 8892)
+- ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
+- ✅ moonshot-v2.timer (next fire: 12:05 MST, 3h 1min left)
 
 **Tournament:**
-- Champions: 2 (SHORT + new_listing)
+- Champions: 2 (de44f72dbb01 SHORT + new_listing rule-based)
+  - de44f72dbb01: FT_trades=388, FT_PF=2.22 (best performer)
+  - new_listing: FT_trades=0 (waiting for ≤7 day coin)
 - FT: 453 models
 - BT: 3 models
 - Retired: 1,866
 - Open positions: 932
+- No cycle running (next: 12:05 MST)
 
 **Blofin v1:**
-- Paper trading active (activating state)
-- Top 5 FT performers tracked
+- Paper trading active
+- Top 5 BT performers: macd_divergence/DOT (3.42), rsi_divergence/ETH (3.40), macd_divergence/LINK (3.39), vwap_reversion/DOGE (3.38), ema_crossover/SOL (3.37)
 - No strategies ready for promotion yet (need 100+ trades, PF≥1.35)
 
-**Historical backfill:**
-- Status: COMPLETE (84/467 symbols at last check, not running now)
-
 **Git:**
-- moonshot: clean, 2 unpushed commits (<25 threshold, OK)
-- blofin-stack: 1 uncommitted change (brain/blofin_status.json), 20 unpushed commits (<25 threshold, OK)
+- moonshot: clean, 0 unpushed commits
+- blofin-stack: clean, 21 unpushed commits (<25 threshold, OK)
 
 ## Moonshot v2 — Tournament Status
 
