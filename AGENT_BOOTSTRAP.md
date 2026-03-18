@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-18 05:31 MST (Heartbeat update — timer bug recurrence fixed)
+> Last updated: 2026-03-18 06:32 MST (Heartbeat — social timer hung 38h, killed)
 
 ## 🔧 Git Hygiene Rules (Mar 18 2026)
 - **Unpushed commit threshold:** 25 (raised from 10 due to GitHub auth breakage)
@@ -258,3 +258,4 @@
 - ⛔ INVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
 - ⛔ **NEVER kill a running process to "investigate" — that's backwards**
 - ⛔ **ALWAYS check "Trigger:" line in systemd timer status — "n/a" means timer is disabled**
+" line in systemd timer status — "n/a" means timer is disabled**
