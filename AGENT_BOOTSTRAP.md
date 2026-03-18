@@ -15,7 +15,7 @@
 - ✅ **Kanban:** 0 Planned, 0 In Progress, 0 Failed — no work needed
 - ✅ **Critical alerts:** None
 - 🔧 **Historical backfill:** PID 643188 running (started 18:58, 1-worker mode)
-- 🚨 **CRITICAL ISSUE:** Timer has dual OnCalendar (hourly + *:05:00) — systemd disabled it (Trigger: n/a)
+- ✅ **Timer FIXED:** Removed dual OnCalendar, 4-hour schedule restored, next trigger 20:05
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 19:03) — DUAL OnCalendar BREAKS SYSTEMD
 - **Root cause:** Timer has TWO OnCalendar directives (hourly + *-*-* *:05:00)
@@ -223,3 +223,4 @@
 gration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
 - ⛔ INVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
 - ⛔ **NEVER kill a running process to "investigate" — that's backwards**
+e" — that's backwards**
