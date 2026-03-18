@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-18 00:37 MST (Git hygiene update)
+> Last updated: 2026-03-18 02:31 MST (Heartbeat update)
 
 ## 🔧 Git Hygiene Rules (Mar 18 2026)
 - **Unpushed commit threshold:** 25 (raised from 10 due to GitHub auth breakage)
@@ -10,20 +10,21 @@
 - **Why 25?** All data is committed locally + backed up. Push failures are NON-URGENT until Rob fixes auth.
 - **Git hygiene routine:** Keep running (commit regularly), don't alert on push failures until auth fixed.
 
-## 🚨 HEARTBEAT STATUS (Mar 18 01:33) — ALL SYSTEMS HEALTHY ✅
+## 🚨 HEARTBEAT STATUS (Mar 18 02:31) — ALL SYSTEMS HEALTHY ✅
 - ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard (HTTP 200)
 - ✅ **Moonshot Cycle 143:** COMPLETE at 01:15 (71min runtime, 0 errors) — **HEALTHY ✅**
-- ✅ **Timer:** Active (waiting), next cycle 04:05 MST (2h 31min)
-- ✅ **SHORT champion:** de44f72dbb01 (catboost), FT=388 trades, PF=2.22, PnL=0.68% — **ACTIVE**
+- ✅ **Timer:** Active (waiting), next cycle 04:05 MST (1h 31min)
+- ✅ **SHORT champion:** de44f72dbb01 (catboost), FT=388 trades, PF=2.22 — **ACTIVE**
 - 🚨 **LONG champion:** NONE (by design — no profitable LONG models found)
+- ✅ **New listing champion:** active, 0 FT trades (waiting for next ≤7d coin)
 - 📊 **FT backlog:** 446 models (stable)
 - 📊 **Backtest queue:** 0 models (clean)
-- 📊 **Open positions:** 968 (481 LONG, 487 SHORT)
+- 📊 **Open positions:** 968 (total)
 - 🔧 **Git status:** moonshot clean (catboost logs only), blofin-stack 19 UNPUSHED (<25 threshold per Git hygiene rules, not urgent)
 - ✅ **Kanban:** 0 Planned crypto cards, 0 In Progress crypto, 0 Failed crypto
 - ✅ **Critical alerts:** None from monitor
 - 🔧 **Historical backfill:** COMPLETE (not running)
-- 📊 **Blofin v1 Top 5 FT:** reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), reversal+AVAX PF=1.59 (1)
+- 📊 **Blofin v1 Top 4 FT:** reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3)
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 20:35) — SYSTEMD OnCalendar SYNTAX BUG FIXED
 - **Root cause:** systemd 256+ doesn't parse `00/4` syntax correctly → OnCalendar property empty → timer disabled
@@ -122,28 +123,29 @@
 ## Moonshot v2 — Tournament Status
 
 ### Champions (2 active — SHORT + new_listing only)
-- **SHORT Champion:** de44f72dbb01 (XGBoost), BT_PF=0.98, BT_precision=0.246, FT_trades=388, FT_PF=2.22, FT_PnL=68.37%
+- **SHORT Champion:** de44f72dbb01 (catboost), BT_PF=0.98, BT_precision=0.246, FT_trades=388, FT_PF=2.22
   - Promoted: 2026-03-16 18:51 (Cycle 127) — **HEALTHY ✅** (best FT performer)
   - Status: Excellent performance, no action needed
 - **LONG Champion:** **NONE** (9b842069b20d retired at 18:45 after 20,062% drawdown)
   - **Root cause identified:** Model promoted with LOSING backtest (PF=0.79) due to loose gates
   - **Status: NO ML EDGE IN LONG DIRECTION** — 99.8% of models lose money (avg PF=0.53)
   - **Action: KEEP strict gates (PF≥1.5), accept no champion until profitable model found**
-  - **Workaround: Rule-based `new_listing` strategy active (484 LONG positions open)**
+  - **Workaround: Rule-based `new_listing` strategy active**
 - **New Listing:** new_listing (rule-based), BT_PF=7.53, FT_trades=0 — waiting for next ≤7 day coin
 
-### Tournament Numbers (Latest cycle: 140 in progress)
+### Tournament Numbers (Latest cycle: 143 complete)
 | Stage | Count |
 |-------|-------|
 | Champion | 2 (short/new_listing) |
-| Forward Test | 427 |
-| Backtest | 20 |
+| Forward Test | 446 |
+| Backtest | 0 |
 | Retired | 1,792+ |
-| **Total** | **2,241+** |
+| **Total** | **2,240+** |
 
 ### Coins & Positions
 - 471 total symbols tracked
 - `days_since_listing` computed each cycle (fixed Mar 16)
+- 968 open positions
 
 ### Direction-Specific Gates (Mar 14 2026)
 - SHORT: PF ≥ 1.0, precision ≥ 0.20, bootstrap CI ≥ 0.8
@@ -160,16 +162,16 @@
 - `moonshot-v2-social.timer` — 1h social signals (active)
 - `moonshot-v2-dashboard.service` — HTTP 200 on port 8893
 - Dashboard: http://127.0.0.1:8893/
-- **Backfill:** Historical data backfill IN PROGRESS (PID 658749, started 19:05)
+- **Backfill:** Historical data backfill COMPLETE
 
 ### Cycle Performance — SYSTEMD TIMEOUT FIX HOLDING ✅
 
-**Cycle 140: IN PROGRESS (started 18:03)**
-- Runtime so far: 2h 32min (CPU 1110%, backtest stage)
-- Status: Actively backtesting fold processing (normal progress)
-- **Timer fix:** Syntax bug fixed at 20:35, next cycle 00:05 ✅
-- FT queue: 427
-- BT queue: 20
+**Cycle 143: COMPLETED (01:15)**
+- Started: 21:05 → Finished: 01:15 (71min runtime)
+- Errors: 0
+- FT queue: 446 (stable)
+- BT queue: 0 (clean)
+- **Systemd timeout fix:** No SIGTERM, cycle completed normally ✅
 
 **Cycle 135: COMPLETED (08:26)**
 - Started: 08:05 → Finished: 08:26 (20min 37sec)
@@ -200,7 +202,7 @@
 - Paper trading active (35K+ paper trades, BT complete)
 - Services: `blofin-stack-ingestor`, `blofin-stack-paper`, `blofin-dashboard` — ALL ACTIVE
 - Dashboard: http://127.0.0.1:8892 (HTTP 200)
-- **FT status:** Very early (≤3 trades per pair), top 5 pending DB query completion
+- **FT status:** Very early (≤4 trades per pair), top 4 showing strong performance
 - Not ready for promotion (need ≥100 trades + PF≥1.35)
 
 ### Parquet Migration (Mar 15 — IN PROGRESS)
