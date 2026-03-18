@@ -51,22 +51,26 @@
 
 **Next cycle:** 08:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 18 09:58)
+## Current Status (Mar 18 10:08)
 
 **Services:**
 - ✅ blofin-stack-ingestor.service (active)
-- 🚨 blofin-stack-paper.service (BROKEN — DuckDB schema mismatch, missing "price" column)
+- 🚨 blofin-stack-paper.service (CRASH-LOOPING — DuckDB schema bug, builder dispatched c_e61b084ae690b_19d01ed4062)
 - ✅ blofin-dashboard.service (active, HTTP 200 on 8892)
 - ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (next fire: 12:05 MST, 2h 4min left)
+- ✅ moonshot-v2.timer (next fire: 12:05 MST, 1h 56min left)
 
 **Tournament:**
-- 🚨 Database appears reset (0 models, 0 positions)
+- Champions: de44f72dbb01 (short, 388 FT trades, PF 2.22), new_listing (0 trades)
+- Open positions: 932
+- FT backlog: 453
+- Stage counts: Champion 2, Forward Test 453, Backtest 3, Retired 1,866
 - No cycle running (next: 12:05 MST)
 
 **Blofin v1:**
-- 🚨 Paper engine crashing: `_duckdb.BinderException: Referenced column "price" not found`
-- Top 5 FT performers: momentum/PIPPIN-USDT (33.15%, 5 trades), bb_squeeze_v2/RVN-USDT (13.92%, 3 trades), reversal/ANIME-USDT (12.60%, 3 trades), reversal/FARTCOIN-USDT (12.46%, 6 trades), reversal/G-USDT (11.25%, 4 trades)
+- 🚨 Paper engine crash: restart counter 3053, bug is `price` column should be `last_price` in tick adapter
+- Builder fixing: c_e61b084ae690b_19d01ed4062 (dispatched 10:08)
+- Top 5 FT performers: reversal/DOT-USDT (PF 5.06, 3 trades), reversal/LINK-USDT (PF 3.99, 3 trades), bb_squeeze/ADA-USDT (PF 2.61, 3 trades), bb_squeeze/BTC-USDT (PF 2.34, 3 trades)
 - No strategies ready for promotion yet (need 100+ trades, PF≥1.35)
 
 **Git:**
