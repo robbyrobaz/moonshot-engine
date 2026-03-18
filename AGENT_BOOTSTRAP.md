@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 19:03 MST (Heartbeat — CYCLE 140 RUNNING, TIMER BROKEN)
+> Last updated: 2026-03-17 19:32 MST (Heartbeat — ALL SYSTEMS NOMINAL)
 
 ## 🚨 HEARTBEAT STATUS (Mar 17 19:03) — CRITICAL: TIMER MISCONFIGURED
 - ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper (activating), blofin-dashboard, moonshot-v2-dashboard
@@ -222,5 +222,8 @@
 - ⛔ **NEVER kill a running process to "investigate" — that's backwards**
 gration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
 - ⛔ INVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
+- ⛔ **NEVER kill a running process to "investigate" — that's backwards**
+e" — that's backwards**
+NVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
 - ⛔ **NEVER kill a running process to "investigate" — that's backwards**
 e" — that's backwards**
