@@ -51,14 +51,14 @@
 
 **Next cycle:** 08:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 18 06:51)
+## Current Status (Mar 18 08:33)
 
 **Services:**
 - ✅ blofin-stack-ingestor.service (SQLite, production)
-- ✅ blofin-stack-paper.service
+- ⚠️ blofin-stack-paper.service (activating)
 - ✅ blofin-dashboard.service (HTTP 200 on 8892)
 - ✅ moonshot-v2-dashboard.service (HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (next fire: 08:05 MST)
+- ✅ moonshot-v2.timer (next fire: 12:05 MST)
 
 **Tournament:**
 - Champions: 2 (SHORT + new_listing)
@@ -68,22 +68,16 @@
 - Open positions: 932
 
 **Blofin v1:**
-- Paper trading active
+- Paper trading active (activating state)
 - Top 5 FT performers tracked
 - No strategies ready for promotion yet (need 100+ trades, PF≥1.35)
 
 **Historical backfill:**
-- Status: 84/467 symbols (18% complete)
-- Running since: Mar 18 04:40
-- Workers: 2 (ThreadPoolExecutor)
-- Problem: Script fell back to 50-symbol list (DuckDB couldn't read active parquet file)
-- Currently processing: STX-USDT, INJ-USDT
-- ETA for 50 symbols: ~2 hours remaining
-- **Needs restart with correct symbol list after completion**
+- Status: COMPLETE (84/467 symbols at last check, not running now)
 
 **Git:**
-- moonshot: clean (catboost training logs only)
-- blofin-stack: 19 unpushed commits (<25 threshold)
+- moonshot: clean, 2 unpushed commits (<25 threshold, OK)
+- blofin-stack: 1 uncommitted change (brain/blofin_status.json), 20 unpushed commits (<25 threshold, OK)
 
 ## Moonshot v2 — Tournament Status
 
