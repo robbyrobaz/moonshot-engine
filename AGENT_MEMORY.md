@@ -13,12 +13,39 @@
 - **Lesson:** ALWAYS check "Trigger:" line after each cycle completion — add to heartbeat routine
 - **Permanent fix:** May need `systemctl --user daemon-reload` in heartbeat if stuck repeatedly
 
-## Systemd Service Debugging (Mar 17 2026)
+## Systemd Service Debugging (Mar 17-18 2026)
+
+### The 37-Hour Zombie Bug (Mar 18 — FIXED)
+**Root cause:** `TimeoutStopSec=infinity` in live moonshot-v2.service (appeared TWICE in file)
+- systemd sends SIGTERM when TimeoutStartSec expires (14400s = 4h)
+- But with TimeoutStopSec=infinity, systemd waits FOREVER for process to exit
+- SIGKILL never fires → process becomes permanent zombie
+- Mar 16 16:25 cycle hung until Mar 18 05:43 (37 hours) because of this
+
+**Compounding bugs:**
+1. Reddit 429 infinite retry loop (social.py) — IP-wide rate limit, code retries every symbol (12.5min thrash)
+2. No wall-clock timeout on fetch_all_extended — can run 5.9h if Blofin APIs degrade
+3. TimeoutStopSec=infinity — ensures zombies never get SIGKILL'd
+
+**Fix deployed:**
+- Removed TimeoutStopSec=infinity from live service
+- Set TimeoutStopSec=600 (10min) — future hung processes will be killed after 10min
+- systemctl --user daemon-reload
+
+**Code fixes needed (not deployed yet):**
+- Circuit breaker in collect_reddit() — abort subreddit after 3 consecutive 429s
+- Overall timeout on fetch_all_extended() — max 15min wall clock
+- Per-collector timeout in run_social_collection()
+
+**Full audit report:** blofin-moonshot-v2/HANG_AUDIT_REPORT.md
+
+### Type=oneshot services need explicit `TimeoutStopSec` (Mar 17 2026)
 - **Type=oneshot services need explicit `TimeoutStopSec`** — default is 90sec
 - Without it, long-running jobs get SIGTERM killed mid-execution
 - Symptoms: Process runs 15-20min then gets killed with "code=killed, status=15/TERM"
 - Fix: Add `TimeoutStopSec=<seconds>` to [Service] section (we use 120 for 2h buffer)
 - Moonshot cycles were getting killed at 16min every time (Mar 17 07:05-07:21)
+- **Mar 18 update:** TimeoutStopSec should be SHORT (30-600s), not long/infinity — it's how fast zombies die
 
 ## Performance Tuning (Mar 17 2026)
 - **Backtest batch was hardcoded at 20** — created bottleneck when GPU/CPU had headroom
