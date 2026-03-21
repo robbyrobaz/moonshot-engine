@@ -980,48 +980,90 @@ def compute_features(symbol, ts_ms, db, feature_names=None):
 def compute_all_features(db, symbols, ts_ms, feature_names=None):
     """Compute features for all symbols and store to the features table.
 
+    INCREMENTAL: Only computes features for new candle bars that don't exist
+    in the features table yet. Queries MAX(ts) per symbol and only computes
+    for candles with ts > MAX(ts).
+
     Args:
         db: sqlite3 connection
         symbols: list of symbol strings
-        ts_ms: timestamp in milliseconds
+        ts_ms: timestamp in milliseconds (not used for incremental - we compute all new bars)
         feature_names: optional list of feature names (None = all)
 
     Returns:
-        dict of symbol -> feature_values
+        dict of symbol -> feature_values for the LATEST timestamp per symbol
     """
     _clear_candle_cache()
     _clear_btc_cache()
 
     results = {}
     computed_at = int(time.time() * 1000)
+    total_computed = 0
+    total_skipped = 0
 
     for symbol in symbols:
-        feat = compute_features(symbol, ts_ms, db, feature_names)
-        results[symbol] = feat["feature_values"]
+        # Get the latest feature timestamp for this symbol
+        max_ts_row = db.execute(
+            "SELECT MAX(ts) as max_ts FROM features WHERE symbol = ?",
+            (symbol,)
+        ).fetchone()
+        max_ts = max_ts_row["max_ts"] if max_ts_row and max_ts_row["max_ts"] else None
 
-        # Store to DB
-        db.execute(
-            "INSERT OR REPLACE INTO features "
-            "(symbol, ts, feature_version, feature_names, feature_values, computed_at) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (
-                symbol,
-                ts_ms,
-                feat["feature_version"],
-                json.dumps(feat["feature_names"]),
-                json.dumps(feat["feature_values"]),
-                computed_at,
-            ),
-        )
+        # Get all candle timestamps for this symbol that are newer than max_ts
+        if max_ts is not None:
+            new_candles = db.execute(
+                "SELECT DISTINCT ts FROM candles WHERE symbol = ? AND ts > ? ORDER BY ts",
+                (symbol, max_ts)
+            ).fetchall()
+        else:
+            # No features yet - compute for all available candles
+            new_candles = db.execute(
+                "SELECT DISTINCT ts FROM candles WHERE symbol = ? ORDER BY ts",
+                (symbol,)
+            ).fetchall()
+
+        if not new_candles:
+            total_skipped += 1
+            # Return the latest existing features for this symbol (if any)
+            if max_ts is not None:
+                latest_feat = db.execute(
+                    "SELECT feature_values FROM features WHERE symbol = ? AND ts = ? LIMIT 1",
+                    (symbol, max_ts)
+                ).fetchone()
+                if latest_feat:
+                    results[symbol] = json.loads(latest_feat["feature_values"])
+            continue
+
+        # Compute features for each new candle timestamp
+        for candle_row in new_candles:
+            candle_ts = candle_row["ts"]
+            feat = compute_features(symbol, candle_ts, db, feature_names)
+
+            # Store to DB
+            db.execute(
+                "INSERT OR REPLACE INTO features "
+                "(symbol, ts, feature_version, feature_names, feature_values, computed_at) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (
+                    symbol,
+                    candle_ts,
+                    feat["feature_version"],
+                    json.dumps(feat["feature_names"]),
+                    json.dumps(feat["feature_values"]),
+                    computed_at,
+                ),
+            )
+            total_computed += 1
+
+            # Keep the latest for return value
+            results[symbol] = feat["feature_values"]
 
     db.commit()
     _clear_candle_cache()
     _clear_btc_cache()
 
     log.info(
-        "Computed features for %d symbols at ts=%d (version=%s)",
-        len(symbols), ts_ms,
-        compute_features(symbols[0], ts_ms, db, feature_names)["feature_version"]
-        if symbols else "n/a",
+        "Feature computation: %d symbols, %d new bars computed, %d up-to-date (skipped)",
+        len(symbols), total_computed, total_skipped
     )
     return results
