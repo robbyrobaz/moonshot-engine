@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-20 20:03 MST (Heartbeat — all systems operational)
+> Last updated: 2026-03-21 04:03 MST (Heartbeat — all systems operational)
 
 ## 🔧 Git Hygiene Rules (Mar 18 2026)
 - **Unpushed commit threshold:** 25 (raised from 10 due to GitHub auth breakage)
@@ -51,30 +51,31 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 21 00:03)
+## Current Status (Mar 21 04:03)
 
 **Services:**
 - ✅ blofin-stack-ingestor.service (active)
 - ✅ blofin-stack-paper.service (active)
 - ✅ blofin-dashboard.service (active, HTTP 200 on 8892)
 - ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (normal — run_cycle.py active 3h, making progress)
+- ✅ moonshot-v2.timer (idle — no cycle running, next at 08:05 MST)
 
 **Tournament:**
-- Open positions: 547 (both long + short)
-- Cycle status: run_cycle.py active 3h (normal, recent logs show sklearn warnings — progress)
+- Champion: new_listing (rule-based)
+- FT Backlog: 0
+- Open positions: 942
 
 **Blofin v1:**
 - ✅ All services active
 - Dashboard HTTP 200 on 8892
-- Top 5 FT performers (tier 2): reversal/DOT-USDT (PF=5.06), reversal/LINK-USDT (PF=3.99), bb_squeeze/ADA-USDT (PF=2.61), bb_squeeze/BTC-USDT (PF=2.34), reversal/AVAX-USDT (PF=1.59)
+- Top 5 FT performers: reversal/DOT-USDT (PF=5.06), reversal/LINK-USDT (PF=3.99), bb_squeeze/ADA-USDT (PF=2.61), bb_squeeze/BTC-USDT (PF=2.34), reversal/AVAX-USDT (PF=1.59)
 
 **Backfill:**
-- Historical 1min backfill: running (PID 1312047, started Mar 19, ~62h CPU time, normal)
+- No backfill process running
 
 **Git:**
 - moonshot: clean, 0 unpushed commits
-- blofin-stack: clean, 6 unpushed commits (<25 threshold, OK)
+- blofin-stack: clean, 7 unpushed commits (<25 threshold, OK)
 
 ## Moonshot v2 — Tournament Status
 
