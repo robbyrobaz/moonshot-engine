@@ -51,26 +51,26 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 20 20:03)
+## Current Status (Mar 21 00:03)
 
 **Services:**
 - ✅ blofin-stack-ingestor.service (active)
 - ✅ blofin-stack-paper.service (active)
 - ✅ blofin-dashboard.service (active, HTTP 200 on 8892)
 - ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (normal — between 4h cycles)
+- ✅ moonshot-v2.timer (normal — run_cycle.py active 3h, making progress)
 
 **Tournament:**
-- Open positions: 942
-- Cycle status: NO CYCLE RUNNING (normal between timer fires)
+- Open positions: 547 (both long + short)
+- Cycle status: run_cycle.py active 3h (normal, recent logs show sklearn warnings — progress)
 
 **Blofin v1:**
 - ✅ All services active
 - Dashboard HTTP 200 on 8892
-- Top FT performers: Schema check required (sqlite3 not found)
+- Top 5 FT performers (tier 2): reversal/DOT-USDT (PF=5.06), reversal/LINK-USDT (PF=3.99), bb_squeeze/ADA-USDT (PF=2.61), bb_squeeze/BTC-USDT (PF=2.34), reversal/AVAX-USDT (PF=1.59)
 
 **Backfill:**
-- Historical 1min backfill: running (PID 1312047, started Mar 19, ~51h CPU time, normal)
+- Historical 1min backfill: running (PID 1312047, started Mar 19, ~62h CPU time, normal)
 
 **Git:**
 - moonshot: clean, 0 unpushed commits
