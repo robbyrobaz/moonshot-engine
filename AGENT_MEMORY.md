@@ -137,6 +137,17 @@ Entry/exit used different feature sets. exit.py called predict_proba() without s
 - Said "database corrupted" because builder said so, without checking myself first
 - **RULE: VERIFY EVERYTHING YOURSELF. Don't trust subagent claims about data.**
 
+### 6. CHECK YOURSELF BEFORE YOU WRECK YOURSELF (Mar 21 2026 — CRITICAL)
+- **CONSTANT PROBLEM:** Acting too quickly before understanding what's already running
+- Spawned multiple API-hitting processes simultaneously → 429 rate limits
+- Killed running processes without checking if they were making progress
+- Started new scripts while old ones were still running against the same API
+- **RULE: BEFORE ANY ACTION, RUN `ps aux | grep` TO SEE WHAT'S ALREADY RUNNING**
+- **RULE: BEFORE hitting any API, check if something else is already hitting it**
+- **RULE: If something is running and making progress (even slowly), LET IT FINISH**
+- **RULE: Research first, understand the state, THEN act. Not the other way around.**
+- **RULE: One process per external API at a time. Period.**
+
 ## Lessons
 - Haiku WILL hallucinate if not forced to call APIs explicitly
 - Subagents die on heavy data tasks — multi-GB loads run in main session
