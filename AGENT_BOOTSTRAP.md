@@ -51,14 +51,14 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 21 09:50 MST)
+## Current Status (Mar 21 12:03 MST)
 
 ### 🚨 ACTIVE WORK IN PROGRESS — DO NOT DISRUPT
 
 **1. OHLCV Backfill RUNNING (PID 701299):**
 - Script: `blofin-stack/scripts/ohlcv_backfill_v2.py`
 - Output: `/mnt/data/blofin_ohlcv/1m/{SYMBOL}.parquet`
-- Progress: 16/473 symbols done so far, ~457 remaining
+- Progress: 16/473 symbols done so far, ~457 remaining (last update 09:50)
 - Rate: 1 symbol every ~18 min (3-sec delay between API requests)
 - ETA: ~140 hours at current pace (single worker, safe rate)
 - **DO NOT start additional API-hitting processes — will cause 429 rate limits**
@@ -124,14 +124,14 @@ Full report: `blofin-stack/STRATEGY_RECOVERY_REPORT.md`
 **Tournament:**
 - Champions: 2 (short + new_listing)
 - FT Backlog: 0
-- Open positions: 942
+- Open positions: 943
 
 **Blofin v1:**
 - ❌ All services RETIRED (Mar 21)
 
 **Candle Data:**
-- 938,207 rows across 472 symbols in DB
-- Coverage: Oct 2025 - Mar 2026
+- 938,674 rows across 472 symbols in DB
+- Coverage: Jul 2024 - Mar 2026 (current)
 
 **Git:**
 - moonshot: clean, 0 unpushed commits
