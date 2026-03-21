@@ -1,0 +1,27 @@
+{
+  "model_id": "9b7f05d5392c",
+  "name": "oi-divergence-short",
+  "direction": "short",
+  "model_type": "lightgbm",
+  "feature_set": [
+    "oi_price_divergence",
+    "oi_change_24h",
+    "oi_change_7d",
+    "oi_percentile_90d",
+    "price_change_24h_pct"
+  ],
+  "params": {
+    "max_depth": 10,
+    "learning_rate": 0.01,
+    "n_estimators": 500,
+    "num_leaves": 63,
+    "model_type": "lightgbm",
+    "direction": "short",
+    "feature_set": "custom_oi-divergence-short",
+    "confidence_threshold": 0.6,
+    "neg_class_weight": 5
+  },
+  "confidence_threshold": 0.6,
+  "created_at": 1774053494,
+  "source": "moonshot_scout_2026-03-20"
+}

@@ -1,0 +1,27 @@
+{
+  "model_id": "506971c0592e",
+  "name": "volume-spike-reversal-long",
+  "direction": "long",
+  "model_type": "xgboost",
+  "feature_set": [
+    "volume_spike",
+    "volume_ratio_3d",
+    "consec_down_bars",
+    "obv_slope",
+    "price_vs_24h_low"
+  ],
+  "params": {
+    "max_depth": 4,
+    "learning_rate": 0.1,
+    "n_estimators": 200,
+    "num_leaves": 31,
+    "model_type": "xgboost",
+    "direction": "long",
+    "feature_set": "custom_volume-spike-reversal-long",
+    "confidence_threshold": 0.5,
+    "neg_class_weight": 5
+  },
+  "confidence_threshold": 0.5,
+  "created_at": 1774053494,
+  "source": "moonshot_scout_2026-03-20"
+}

@@ -1,0 +1,28 @@
+{
+  "model_id": "db41140e2f04",
+  "name": "regime-filter-long",
+  "direction": "long",
+  "model_type": "lightgbm",
+  "feature_set": [
+    "btc_30d_return",
+    "btc_vol_percentile",
+    "market_breadth",
+    "momentum_8w",
+    "volume_ratio_7d",
+    "price_vs_52w_low"
+  ],
+  "params": {
+    "max_depth": 6,
+    "learning_rate": 0.01,
+    "n_estimators": 300,
+    "num_leaves": 31,
+    "model_type": "lightgbm",
+    "direction": "long",
+    "feature_set": "custom_regime-filter-long",
+    "confidence_threshold": 0.6,
+    "neg_class_weight": 5
+  },
+  "confidence_threshold": 0.6,
+  "created_at": 1774053494,
+  "source": "moonshot_scout_2026-03-20"
+}

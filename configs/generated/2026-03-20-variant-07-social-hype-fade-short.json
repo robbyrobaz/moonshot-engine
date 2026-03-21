@@ -1,0 +1,28 @@
+{
+  "model_id": "d0096c7d1ce3",
+  "name": "social-hype-fade-short",
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": [
+    "is_coingecko_trending",
+    "trending_rank",
+    "hours_on_trending",
+    "news_velocity_ratio",
+    "reddit_velocity_ratio",
+    "price_vs_52w_high"
+  ],
+  "params": {
+    "max_depth": 4,
+    "learning_rate": 0.01,
+    "n_estimators": 300,
+    "num_leaves": 31,
+    "model_type": "catboost",
+    "direction": "short",
+    "feature_set": "custom_social-hype-fade-short",
+    "confidence_threshold": 0.7,
+    "neg_class_weight": 5
+  },
+  "confidence_threshold": 0.7,
+  "created_at": 1774053494,
+  "source": "moonshot_scout_2026-03-20"
+}

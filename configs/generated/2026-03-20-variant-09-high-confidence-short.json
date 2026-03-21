@@ -1,0 +1,21 @@
+{
+  "model_id": "ba97e6be0bf8",
+  "name": "high-confidence-short",
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": "all",
+  "params": {
+    "max_depth": 4,
+    "learning_rate": 0.01,
+    "n_estimators": 500,
+    "num_leaves": 31,
+    "model_type": "catboost",
+    "direction": "short",
+    "feature_set": "all",
+    "confidence_threshold": 0.75,
+    "neg_class_weight": 5
+  },
+  "confidence_threshold": 0.75,
+  "created_at": 1774053494,
+  "source": "moonshot_scout_2026-03-20"
+}

@@ -1,0 +1,26 @@
+{
+  "model_id": "22226465c7f3",
+  "name": "minimal-core-long",
+  "direction": "long",
+  "model_type": "xgboost",
+  "feature_set": [
+    "momentum_8w",
+    "volume_ratio_7d",
+    "btc_30d_return",
+    "market_breadth"
+  ],
+  "params": {
+    "max_depth": 3,
+    "learning_rate": 0.05,
+    "n_estimators": 100,
+    "num_leaves": 31,
+    "model_type": "xgboost",
+    "direction": "long",
+    "feature_set": "custom_minimal-core-long",
+    "confidence_threshold": 0.5,
+    "neg_class_weight": 5
+  },
+  "confidence_threshold": 0.5,
+  "created_at": 1774053494,
+  "source": "moonshot_scout_2026-03-20"
+}

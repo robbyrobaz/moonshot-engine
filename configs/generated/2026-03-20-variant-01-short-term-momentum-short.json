@@ -1,0 +1,28 @@
+{
+  "model_id": "f197f3dd90c3",
+  "name": "short-term-momentum-short",
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": [
+    "price_vs_24h_high",
+    "price_vs_24h_low",
+    "price_change_24h_pct",
+    "bb_position",
+    "consec_down_bars",
+    "consec_up_bars"
+  ],
+  "params": {
+    "max_depth": 4,
+    "learning_rate": 0.01,
+    "n_estimators": 500,
+    "num_leaves": 31,
+    "model_type": "catboost",
+    "direction": "short",
+    "feature_set": "custom_short-term-momentum-short",
+    "confidence_threshold": 0.55,
+    "neg_class_weight": 5
+  },
+  "confidence_threshold": 0.55,
+  "created_at": 1774053494,
+  "source": "moonshot_scout_2026-03-20"
+}

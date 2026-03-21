@@ -1,0 +1,27 @@
+{
+  "model_id": "e0b2ffcf2436",
+  "name": "support-bounce-long",
+  "direction": "long",
+  "model_type": "catboost",
+  "feature_set": [
+    "distance_from_support",
+    "consec_down_bars",
+    "price_vs_52w_low",
+    "momentum_4w",
+    "bb_position"
+  ],
+  "params": {
+    "max_depth": 6,
+    "learning_rate": 0.05,
+    "n_estimators": 300,
+    "num_leaves": 31,
+    "model_type": "catboost",
+    "direction": "long",
+    "feature_set": "custom_support-bounce-long",
+    "confidence_threshold": 0.55,
+    "neg_class_weight": 5
+  },
+  "confidence_threshold": 0.55,
+  "created_at": 1774053494,
+  "source": "moonshot_scout_2026-03-20"
+}
