@@ -109,12 +109,14 @@
 
 ## Blofin v1 Stack
 
-### Status — LIVE AND WORKING
-- Paper trading active (35K+ paper trades, BT complete)
-- Services: `blofin-stack-ingestor`, `blofin-stack-paper`, `blofin-dashboard` — ALL ACTIVE
+### Status — PIPELINE DEAD (Mar 20 21:43)
+- **blofin-stack-pipeline.timer:** STOPPED since Mar 16 08:21 (4d ago)
+- **blofin-stack-pipeline.service:** FAILED (timeout) on Mar 18 14:22
+- Paper trading: Last trade 23h ago (limping on stale data)
 - Dashboard: http://127.0.0.1:8892 (HTTP 200)
-- **Top 5 FT performers:** Data query requires schema check (skipped in heartbeat)
-- Not ready for promotion (only 3 FT trades each, need ≥100 trades + BT_PF≥1.35)
+- **Last backtest update:** Mar 17 19:34 (3.1d ago)
+- **Last FT update:** Mar 16 15:58 (4.2d ago)
+- **Diagnosis:** Timer was stopped, Rob's approval required to restart (BOOTSTRAP rule)
 
 ### Ranking & Promotion
 - Ranking: `bt_pnl_pct` (compounded PnL %)
