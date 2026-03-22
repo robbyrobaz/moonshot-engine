@@ -51,42 +51,52 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 21 12:03 MST)
+## Current Status (Mar 21 18:57 MST)
 
 ### 🚨 ACTIVE WORK IN PROGRESS — DO NOT DISRUPT
 
-**1. OHLCV Backfill RUNNING (PID 701299):**
-- Script: `blofin-stack/scripts/ohlcv_backfill_v2.py`
-- Output: `/mnt/data/blofin_ohlcv/1m/{SYMBOL}.parquet`
-- Progress: 16/473 symbols done so far, ~457 remaining (last update 09:50)
-- Rate: 1 symbol every ~18 min (3-sec delay between API requests)
-- ETA: ~140 hours at current pace (single worker, safe rate)
-- **DO NOT start additional API-hitting processes — will cause 429 rate limits**
-- **DO NOT kill this process — let it run**
-- Check progress: `ls /mnt/data/blofin_ohlcv/1m/ | wc -l` and `ps aux | grep ohlcv`
+**1. THREE PARALLEL OHLCV BACKFILLS RUNNING:**
+All output to `/mnt/data/blofin_ohlcv/1m/{SYMBOL}.parquet` (same schema, same dir)
+No symbol overlap between sources — each handles unique coins only.
+- **Binance.US** (`scripts/ohlcv_backfill_binanceus.py`): ✅ 137/146 DONE, finishing last 9
+  - 16 req/sec (1 weight/req, 1200 weight/min limit). Log: `tail -f logs/ohlcv_backfill_binanceus.log`
+- **OKX** (`scripts/ohlcv_backfill_okx.py`): ~55/121, ETA ~midnight tonight
+  - ~3.5 req/sec (network latency bottleneck). Log: `tail -f logs/ohlcv_backfill_okx.log`
+- **Blofin** (`scripts/ohlcv_backfill_v3.py`): ~17/182, Blofin-exclusive coins only, ETA ~Monday
+  - 0.3 req/sec (strict rate limit). Reads `scripts/symbols_blofin_only.txt`. Log: `tail -f logs/ohlcv_backfill.log`
+- **~244 symbols completed, 1.4GB total so far**
+- Check: `ls /mnt/data/blofin_ohlcv/1m/ | wc -l` and `ps aux | grep ohlcv`
+- Validate: `python3 scripts/validate_ohlcv_data.py`
+- **DO NOT start additional API processes — each source at its rate limit**
 
-**2. ADA-USDT test also running (PID 704064) — will finish soon, then v2 has API alone**
+**2. BACKTEST SWEEP RUNNING (PID 1385735):**
+- Script: `scripts/run_full_backtest_sweep.py`
+- **720 tasks:** 16 strategies × 45 top symbols × 365 days of OHLCV data
+- 12 CPU workers at ~90% each
+- Writing to `strategy_backtest_results` + `strategy_coin_performance` in `/mnt/data/blofin_monitor.db`
+- Promotion gates: PF≥1.35, ≥100 trades, MDD<50%, PnL>0
+- Log: `tail -f logs/backtest_run.log`
+- ETA: ~8 PM MST (1-2 hours)
+- **After complete:** Top performers need manual review, then ML training on GPU
 
-**3. Monitoring Cron active:** `Blofin Recovery Monitor` (every 30 min, Opus, webchat)
+**3. Monitoring Cron:** `Blofin Recovery Monitor` (every 30 min, Opus, webchat)
 - Cron ID: `389c6fbd-d986-4fff-843c-49ffc1bb4d32`
-- Checks backfill progress + reports to Rob
 
 ### Blofin v1 Pipeline Status
 - ❌ Tick ingestor RETIRED (no proven value, 48% CPU, 650GB/mo)
 - ❌ All tick databases DELETED (55GB freed)
 - ✅ blofin-dashboard.service RUNNING (port 8892) — DB has restored strategy data but no live trades yet
 - ❌ blofin-stack-ingestor.service DISABLED (needs new 1-min candle poller, not built yet)
-- ❌ blofin-stack-paper.service DISABLED (code updated, waiting for backfill to complete)
+- ❌ blofin-stack-paper.service DISABLED (code updated, waiting for backtests to identify tier≥2 pairs)
 - ✅ Strategy code + ML models intact in git
-- ✅ Strategy recovery report: `blofin-stack/STRATEGY_RECOVERY_REPORT.md`
 
-### Code Changes Deployed (Mar 21 10:13 — commit e9bd5bc):
-- ✅ DuckDB adapter reads OHLCV from `/mnt/data/blofin_ohlcv/1m/` (falls back to old tickers)
-- ✅ Backtester reads pre-aggregated 1-min OHLCV directly (no tick aggregation)
-- ✅ **Per-coin BT gate fix deployed** — paper engine will ONLY trade tier≥2 symbols (was trading 320+ untested)
-- ✅ Paper engine unchanged (adapter handles data mapping)
-- ✅ All 60+ strategies compatible with OHLCV candles (no changes needed)
-- 📋 Ref: `blofin-stack/TASK_COMPLETION_OHLCV_MIGRATION.md`
+### Code Changes Deployed (Mar 21):
+- ✅ DuckDB adapter reads OHLCV from `/mnt/data/blofin_ohlcv/1m/` (commit e9bd5bc)
+- ✅ Backtester reads 1-min OHLCV directly (no tick aggregation)
+- ✅ **Per-coin BT gate fix** — paper engine ONLY trades tier≥2 symbols
+- ✅ 3 backfill scripts + validator committed (commit 8e1ff05)
+- ✅ Full backtest sweep script (commit by builder)
+- 📋 Refs: `TASK_COMPLETION_OHLCV_MIGRATION.md`, `BACKTEST_SWEEP_STATUS_2026_03_21.md`
 
 ### What Blofin v1 Found (PROFITABLE — don't dismiss!)
 Top performers from Mar 1 report (20+ FT trades each):
@@ -97,18 +107,19 @@ Top performers from Mar 1 report (20+ FT trades each):
 Full report: `blofin-stack/STRATEGY_RECOVERY_REPORT.md`
 
 ### Recovery Plan
-1. ⏳ OHLCV backfill running (proper OHLCV 1-min candles from API) — 17/473 symbols, ~3+ days remaining
-2. ✅ Pipeline code updated for OHLCV (adapter, backtester, eligibility) — commit e9bd5bc
-3. ⏸️ Once backfill has enough symbols: run backtests to rediscover winning strategies
-4. ⏸️ Build new 1-min candle poller (replaces tick ingestor) for live data
-5. ⏸️ Start paper engine → accumulate FT trades → dashboard shows winners
-6. ⏸️ Key plans: `brain/DATA_ARCHITECTURE_FINAL.md`, `docs/FT_PIPELINE_DIAGNOSIS_2026_03_16.md`
+1. ✅ OHLCV backfill: 244/473 done (3 parallel sources), Binance.US nearly complete
+2. ✅ Pipeline code updated for OHLCV (adapter, backtester, eligibility)
+3. ⏳ Backtest sweep RUNNING (720 tasks, 12 workers, ETA ~8 PM)
+4. ⏸️ After backtests: GPU ML training (XGBoost/CatBoost on RTX 2080 Super)
+5. ⏸️ Build new 1-min candle poller (replaces tick ingestor) for live data
+6. ⏸️ Start paper engine → accumulate FT trades → dashboard shows winners
+7. 📋 Key plans: `brain/DATA_ARCHITECTURE_FINAL.md`, `docs/FT_PIPELINE_DIAGNOSIS_2026_03_16.md`
 
-### ⚠️ Backfill Script Needs Fix
-- Script: `blofin-stack/scripts/ohlcv_backfill_v2.py`
-- **PROBLEM:** Output not logging to file (can't tail progress) — MUST fix with proper logging
-- Log should go to `/tmp/ohlcv_backfill.log` or similar, viewable with `tail -f`
-- Fix at next good stopping point (don't kill mid-symbol)
+### GPU Available
+- NVIDIA RTX 2080 Super (8GB VRAM)
+- XGBoost GPU: `{'tree_method': 'hist', 'device': 'cuda'}` ✅
+- CatBoost GPU: `task_type='GPU'` ✅
+- PyTorch 2.10.0 + CUDA 13.1 ✅
 
 ### Data Inventory
 - `/mnt/data/blofin_ohlcv/1m/` — NEW proper OHLCV parquet (backfill in progress)
