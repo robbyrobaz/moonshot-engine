@@ -1,30 +1,45 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORATION
 
-**Last updated:** 2026-03-22 05:36 MST (Autonomous Fix Cycle #8)
+**Last updated:** 2026-03-22 06:42 MST (Autonomous Fix Cycle #10)
 
 ## 🔧 ACTIVE RESTORATION (Mar 12 Data Loss)
 
-### Current Status ⏳ IN PROGRESS
-**RUNNING:** Full backtest sweep v6 (scripts/backtest_sweep_v6.py)
-- Started: 05:33 MST
-- Progress: 500/28,954 tasks (1.7%, 3.6 tasks/sec)
-- First batch saved: 05:35 ✅ (500 results in database)
-- ETA: ~7:45 MST (2.2 hours)
+### Current Status ⏳ IN PROGRESS — CRITICAL BUG FIXED
+**RUNNING:** Full backtest sweep v7 (scripts/backtest_sweep_v7_fixed.py) ✅
+- Started: 06:40 MST
+- Progress: 600/28,954 tasks (2.1%, 4.8 tasks/sec)
+- First batch saved: 06:41 ✅ (500 results with REAL pnl_pct values)
+- ETA: ~8:13 MST (1.5 hours)
 - Strategy: Sequential with INCREMENTAL BATCH SAVES (every 500 results)
 - Coverage: 62 strategies × 467 symbols = 28,954 backtests
 - Timeframe: 15m candles, 90 days lookback
+
+**CRITICAL BUG FOUND & FIXED (v6 → v7):**
+v6 saved 6,049 rows BUT all had bt_pnl_pct=0.0 (worthless data) because:
+```python
+# v6 BUG: looked for final_capital in wrong dict
+metrics = bt_result.get('metrics', {})
+final_capital = metrics.get('final_capital', 10000.0)  # WRONG! Always returned 10000
+pnl_pct = 0%  # No profit/loss calculated
+
+# v7 FIX: final_capital is in bt_result, NOT metrics
+final_capital = bt_result.get('final_capital', initial_capital)  # CORRECT
+pnl_pct = real values (-6.31%, 2.82%, 3.69%)  # ✅
+```
 
 ### Evolution of the Fix (My Mistakes)
 1. **v2 issue:** Multiprocessing workers couldn't handle relative imports (`from .base_strategy`)
 2. **v3 issue:** Tried to fix imports but only loaded 2/62 strategies
 3. **v4 issue:** Sequential execution worked BUT saved results ONLY at the end — 1hr wasted, 0 DB results
 4. **v5 issue:** Added batch saves BUT used wrong schema (column name: `strategy` vs `strategy_name`)
-5. **v6 solution (CURRENT):** Correct schema + incremental batch saves — WORKING, 500 results committed
+5. **v6 issue:** Correct schema + batch saves BUT bt_pnl_pct=0.0 for ALL rows (looked for final_capital in wrong dict)
+6. **v7 solution (CURRENT):** CORRECT final_capital extraction + tier calculation using pnl_pct — WORKING with real values
 
 ### Lessons Learned
 - **INVESTIGATE BEFORE KILLING:** v4 was working but slow — I killed it prematurely instead of checking if results would eventually save
 - **READ THE ACTUAL SCHEMA:** Production table uses `strategy_name` not `strategy` — wasted 2 versions on schema mismatch
 - **BATCH SAVES ARE NON-OPTIONAL:** 3.5hr runs that only save at the end are worthless if killed or interrupted
+- **VALIDATE OUTPUT DATA:** v6 ran for 50min and claimed "500 results committed" BUT all pnl_pct=0 — should have checked database earlier
 
 ### After Backtest Completes
 1. Verify results in database (expect ~1000-2000 strategy/coin pairs passing gates)
