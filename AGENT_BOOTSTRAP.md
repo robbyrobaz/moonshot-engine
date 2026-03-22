@@ -82,13 +82,14 @@ No symbol overlap between sources — each handles unique coins only.
 **3. Monitoring Cron:** `Blofin Recovery Monitor` (every 30 min, Opus, webchat)
 - Cron ID: `389c6fbd-d986-4fff-843c-49ffc1bb4d32`
 
-### Heartbeat (Mar 21 20:03)
+### Heartbeat (Mar 22 00:03)
 - ✅ Moonshot dashboard: HTTP 200
 - ✅ Services healthy
+- ✅ No cycle running (last likely completed normally)
 - 🏆 Champion: de44f72dbb01 (short) — 388 FT trades, PF 2.22, $0.68 PnL
-- 🧪 FT backlog: 609 models
-- 📊 Open positions: 943
-- 📂 Candle files: 473 (complete)
+- 🧪 FT backlog: 0 models
+- 📊 Open positions: 938
+- 📂 Candles: In DB (938,674 rows)
 
 ### Blofin v1 Pipeline Status
 - ❌ Tick ingestor RETIRED (no proven value, 48% CPU, 650GB/mo)
