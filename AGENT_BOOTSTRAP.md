@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap
 
-**Last updated:** 2026-03-23 08:03 MST
+**Last updated:** 2026-03-23 12:03 MST
 
 ## ✅ BLOFIN V1 — LIVE (Restored Mar 22 2026)
 
@@ -24,7 +24,7 @@
 
 ---
 
-## Moonshot v2 — Tournament Status (Mar 23 08:03)
+## Moonshot v2 — Tournament Status (Mar 23 12:03)
 
 ### Champion
 - **SHORT Champion:** de44f72dbb01
@@ -37,12 +37,13 @@
 ### Tournament Numbers
 | Stage | Count |
 |-------|-------|
-| Backtest queue | 8 models |
-| Forward test | 689 models |
+| Backtest queue | 16 models |
+| Backtest | 11 models |
+| Forward test | 695 models |
 | Champion | 2 models (1 active + new_listing) |
-| Retired | 2,401 models (77.5%) |
-| Open positions | 937 |
-| **Total models** | 3,100 |
+| Retired | 2,409 models (77.6%) |
+| Open positions | 836 |
+| **Total models** | 3,133 |
 
 ### Services
 - `moonshot-v2.timer` — ACTIVE (4h cycle)
