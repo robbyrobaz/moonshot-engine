@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap
 
-**Last updated:** 2026-03-23 06:20 MST
+**Last updated:** 2026-03-23 08:03 MST
 
 ## ✅ BLOFIN V1 — LIVE (Restored Mar 22 2026)
 
@@ -24,12 +24,13 @@
 
 ---
 
-## Moonshot v2 — Tournament Status (Mar 23 06:20)
+## Moonshot v2 — Tournament Status (Mar 23 08:03)
 
 ### Champion
 - **SHORT Champion:** de44f72dbb01
   - FT PnL: +0.68% (68.37 basis points)
   - FT trades: 388
+  - FT PF: 2.22
   - Status: HEALTHY ✅
 - **New Listing:** new_listing (placeholder, 0 trades)
 
