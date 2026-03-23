@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap
 
-**Last updated:** 2026-03-22 17:22 MST
+**Last updated:** 2026-03-22 20:03 MST (heartbeat)
 
 ## ✅ BLOFIN V1 — OPERATIONAL
 
@@ -12,7 +12,7 @@
 - Paper trading: ACTIVE
 - Dashboard: LIVE at http://127.0.0.1:8892
 
-## System Status (as of Mar 22 16:03)
+## System Status (as of Mar 22 20:03)
 - ✅ WebSocket ingestor: blofin-ohlcv-ingestor.service (1-min candles flowing)
 - ✅ Historical data: 467 parquet files, 2.1GB (Binance+OKX complete, Blofin partial)
 - ✅ Backtest sweep: COMPLETE — 20,901 results, 1,252 passing gates
@@ -23,26 +23,26 @@
 
 ---
 
-## Moonshot v2 — Tournament Status (Mar 22 16:03)
+## Moonshot v2 — Tournament Status (Mar 22 20:03)
 
 ### Champions (2 active)
-- **de44f72dbb01:** FT_PnL=0.68%, 388 trades — HEALTHY ✅
-- **new_listing:** FT_PnL=0.0%, 0 trades — waiting
+- Current models in champion stage
+- No FT backlog (ready_for_ft/ft_pending: 0)
 
 ### Tournament Numbers
 | Stage | Count |
 |-------|-------|
-| FT | 0 models |
+| FT backlog | 0 models |
 | Champion | 2 models |
-| Retired | ~2,941 models |
-| Open positions | 858 |
+| Open positions | 933 |
 
 ### Notes
-- Moonshot cycle running 69 min (started 14:54, normal for extended data)
-- 1-min candle coverage: 472 symbols in DB
+- Dashboard LIVE at http://127.0.0.1:8893 (200 OK)
+- No cycle running (normal)
+- 1-min candle coverage: 0 CSV files at /mnt/data/blofin_tickers/1min/ (Moonshot uses DB directly)
 
 ---
 
 ## Git Status
 - `blofin-stack`: multiple sweep script versions (v2-v7) from restoration attempts
-- `blofin-moonshot-v2`: CLEAN
+- `blofin-moonshot-v2`: CLEAN (no uncommitted changes, 0 unpushed commits)
