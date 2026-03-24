@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORED
 
-**Last updated:** 2026-03-23 20:03 MST (AUTO)
+**Last updated:** 2026-03-24 00:05 MST (AUTO)
 
 ## ✅ BLOFIN V1 — OPERATIONAL
 
@@ -42,10 +42,11 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 23 20:03 MST)
-- ✅ Cycle 182 complete (fix working clean)
-- ✅ Dashboard: http://127.0.0.1:8893
+### Current Status (Mar 24 00:05 MST)
+- ✅ Dashboard: http://127.0.0.1:8893 — RECOVERED from zombie v1 process
 - ✅ 917 open positions, 2 champions
+- ✅ 467/468 1-min candle backfill complete
+- ⚠️ Dashboard crash-loop fixed — old Moonshot v1 process (PID 1766) was holding port 8893 since Mar 23
 
 ### Critical Fix Deployed (Mar 23 17:47)
 **Bug:** FT invalidation scoring failed with "Feature shape mismatch, expected: 25, got 5"
