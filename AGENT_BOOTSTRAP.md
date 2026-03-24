@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORED
 
-**Last updated:** 2026-03-22 17:22 MST (LIVE)
+**Last updated:** 2026-03-23 20:03 MST (AUTO)
 
 ## ✅ BLOFIN V1 — OPERATIONAL
 
@@ -42,22 +42,21 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 23 17:47 MST)
-- ✅ Cycle 181 running (started 17:47, fix deployed)
+### Current Status (Mar 23 20:03 MST)
+- ✅ Cycle 182 complete (fix working clean)
 - ✅ Dashboard: http://127.0.0.1:8893
-- ✅ 935 open positions, 713 FT models
+- ✅ 917 open positions, 2 champions
 
 ### Critical Fix Deployed (Mar 23 17:47)
 **Bug:** FT invalidation scoring failed with "Feature shape mismatch, expected: 25, got 5"
 **Impact:** Cycles crashed every 4h since ~Mar 17
 **Root cause:** Sparse storage in `entry_features` (only 5 changed features stored), but code didn't fill missing features with neutral values
 **Fix:** Modified `forward_test.py` line 168 to fill missing features from `FEATURE_REGISTRY[fn]["neutral"]`
-**Status:** Deployed in commit 2651270, cycle 181 running clean
+**Status:** ✅ WORKING — cycles running clean since deploy
 
-### Champions (3 active)
-- **SHORT Champion:** de44f72dbb01, FT_PF=2.22, FT_PnL=0.68% — HEALTHY ✅
-- **LONG Champion:** 9b842069b20d, FT_PF=0.22, FT_PnL=-2.01% — needs investigation
-- **New Listing:** new_listing, FT_trades=0 — waiting
+### Champions (2 active)
+- **SHORT Champion:** de44f72dbb01, FT_PF=2.22, FT_PnL=0.68% (388 trades) — HEALTHY ✅
+- **New Listing:** new_listing, FT_trades=0 — waiting for activity
 
 ---
 
