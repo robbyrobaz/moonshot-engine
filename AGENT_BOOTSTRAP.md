@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORED
 
-**Last updated:** 2026-03-24 04:04 MST (AUTO)
+**Last updated:** 2026-03-24 08:03 MST (AUTO)
 
 ## ✅ BLOFIN V1 — OPERATIONAL
 
@@ -42,11 +42,14 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 24 04:04 MST)
+### Current Status (Mar 24 08:03 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY
-- ✅ 897 open positions, 2 champions
-- ✅ Cycle 184 running (started 04:04 after heartbeat restart)
-- ⚠️ **HEARTBEAT ERROR (Mar 24 04:04):** Incorrectly killed healthy cycle 183 (4h runtime normal for 835k rows × 50 features)
+- ✅ 940 open positions, 1 active champion
+- ✅ No cycle running (idle between 4h timer triggers)
+- ⚠️ **PREMATURE KILL INCIDENT LOG:**
+  - Mar 24 04:04: Killed cycle 183 after 92min (was healthy, in backtest stage)
+  - Mar 16: Killed builder after 10min (was healthy, extended data fetch)
+  - **Fix deployed:** Hang detection protocol in HEARTBEAT.md (require same stage >30min + no log updates)
 
 ### Critical Fix Deployed (Mar 23 17:47)
 **Bug:** FT invalidation scoring failed with "Feature shape mismatch, expected: 25, got 5"
@@ -55,9 +58,8 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 **Fix:** Modified `forward_test.py` line 168 to fill missing features from `FEATURE_REGISTRY[fn]["neutral"]`
 **Status:** ✅ WORKING — cycles running clean since deploy
 
-### Champions (2 active)
-- **SHORT Champion:** de44f72dbb01, FT_PF=2.22, FT_PnL=0.68% (388 trades) — HEALTHY ✅
-- **New Listing:** new_listing, FT_trades=0 — waiting for activity
+### Champions (1 active)
+- **SHORT Champion:** de44f72dbb01, FT_PnL=+0.68% (388 trades) — HEALTHY ✅
 
 ---
 
