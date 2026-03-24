@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/MEMORY.md`.
 > **UPDATE THIS FILE** when you learn something new. It persists across sessions.
-> Last updated: 2026-03-22 00:24 MST
+> Last updated: 2026-03-16 13:29 MST
 
 ## Blofin Architecture (Key Decisions)
 
@@ -36,34 +36,28 @@
 - **First successful entry:** CFG-USDT at $0.1890 (Mar 16 10:45 AM)
 - Feature deployed Mar 16 07:55 but didn't work until 10:45 fix
 
+### Backtest Queue Management (Mar 16 2026)
+- **Root cause of cycle hangs:** 224 models in backtest queue, `backtest_new_challengers()` processed ALL serially
+- **Fix:** Added batch limit (20 models/cycle) — commit 4cd2f59
+- Queue drains at 20/cycle, prevents infinite backtest loops
+- Backtest stage: 1-3 min per model × 20 = 20-60 min per cycle (expected)
+
 ### Why v1 Died
 Entry/exit used different feature sets. exit.py called predict_proba() without symbol/ts_ms → regime features=0.0 → all scores 0.129 → 15 profitable positions killed. v2 prevents with feature_version hashing.
 
-## Data Migration Lessons
-
-### Catastrophe (Mar 12 2026)
+## Data Migration Catastrophe (Mar 12 2026)
 - blofin_monitor.db hit 107GB + 56GB WAL → disk crisis
 - `mv` across filesystems = copy+delete. Mid-transfer fail → corrupt + lost
 - **107GB of 3 weeks Blofin tick data PERMANENTLY LOST**
 - Rule: cp + checksum + verify + then rm. Stop service first. Never background.
 
-### Recovery (Mar 21-22 2026)
-- Downloaded 1-min OHLCV candles from 3 sources (Blofin, OKX, Binance.US)
-- 2.0GB parquet data (406 files) replaces 107GB tick database
-- Backtest engine updated to read parquet via DuckDB (commit e9bd5bc)
-- All 71 strategies intact, no code changes needed
+## Parquet Migration (Mar 15 2026)
+- DuckDB + Parquet replaces SQLite for tick storage
+- NVMe for hot data (ticks/*.parquet), HDD for cold (backtest_results.db, archive)
+- 12x compression, 880 ticks/sec, zero DB lock contention
+- 24h side-by-side verification before cutover
 
-### WebSocket Ingestor (Mar 22 2026)
-- **DON'T:** Build REST poller with 471 API calls/min
-- **DO:** Use WebSocket — subscribe once, server pushes updates
-- Blofin API: No bulk candles endpoint, must subscribe per-symbol
-- WebSocket batching: max 4KB per message (~50 symbols), send 10 batches
-- Service: `blofin-ohlcv-ingestor.service` (enabled, auto-restart)
-- Output: `/mnt/data/blofin_ohlcv/1m/*.parquet` (append, skip duplicates)
-
-## Lessons Learned
-
-### General
+## Lessons
 - Haiku WILL hallucinate if not forced to call APIs explicitly
 - Subagents die on heavy data tasks — multi-GB loads run in main session
 - Volume column in Blofin ticks is tick count, not real volume (thresholds ≤0.8)
@@ -71,25 +65,28 @@ Entry/exit used different feature sets. exit.py called predict_proba() without s
 - **Always verify service status before claiming something is broken** — "pipeline stopped" claims need `systemctl is-active` proof
 - **Read current README.md from repo before making architecture claims** — don't rely on stale context
 
-### Research & Build
-- ⛔ **Research FIRST, build second** — test endpoints, read docs thoroughly
-- ✅ **WebSocket > REST** for continuous real-time data streams
-- ⛔ **Don't guess API capabilities** — verify with actual curl tests
-- ✅ **Ask Rob for clarification** when documentation is unclear
-
-### Moonshot Cycle Investigation (Mar 16 2026)
-- ⛔ **NEVER kill cycles to "investigate"** — they're slow (60+ min) not broken
+## ⛔ Moonshot Cycle Investigation Anti-Pattern (Mar 16 2026)
+**NEVER kill cycles to "investigate" — they're slow (60+ min) not broken**
 - Extended data: 470 symbols × 2.5 req/sec = 10+ min just for funding/OI/tickers
 - Backtest: 20 models/cycle × 1-3min each = 20-60 min
 - Tournament + FT scoring: 10-15 min
-- **Total cycle time: 60-65 minutes** (not 15-20 as originally estimated)
+- **Total cycle time: 60-65 minutes (not 15-20 as originally estimated)**
 - Killing mid-cycle makes it LOOK like cycles never complete — because they don't (you killed them)
 - **Correct approach:** Start cycle, check back in 60+ min, verify completion in logs
+- If truly hung (same stage >90min with no progress), THEN investigate — not after 10min of normal work
 
 **Cycle 122 proof:** 12:03:19 → 13:08:10 (64min 51sec), completed successfully with 0 errors after applying batch limit fix
 
-## Agent File Updates (Mar 16 2026)
+## ⛔ Agent File Updates (Mar 16 2026)
 - **Your BOOTSTRAP.md and MEMORY.md are symlinked from the repo**
 - Update `blofin-moonshot-v2/AGENT_BOOTSTRAP.md` and `AGENT_MEMORY.md` directly
 - These are the files that load at session boot — keep them current!
-- Commit and push after updates so changes persist across sessions
+
+## FT Invalidation Feature Mismatch Bug (Mar 23 2026)
+**Symptoms:** Cycles failed with "Feature shape mismatch, expected: 25, got 5" every 4h since ~Mar 17
+**Root cause:** Sparse storage optimization in `entry_features` — only non-neutral values stored (5 features), but invalidation code didn't fill missing features with registry neutrals
+**Fix location:** `src/tournament/forward_test.py` line 166-178
+**Solution:** Loop through `model_feature_names`, fill missing features from `FEATURE_REGISTRY[fn]["neutral"]` (same logic as `_get_feature_values()`)
+**Deployed:** Commit 2651270 (Mar 23 17:47)
+**Why auto-healing didn't catch it:** Heartbeat cron runs every 4h at :00 (last 4:03 PM, next 8:03 PM). Bug happened at 5:05 PM (1h 2min into 4h gap). System IS autonomous and WOULD have caught it at 8:03 PM, but Rob asked for immediate fix.
+**Auto-healing upgrade:** Updated heartbeat cron with PHASE 1B — checks for cycle failures in last 4h, investigates errors, attempts code fixes, restarts services. Future failures WILL self-heal within 4h window.

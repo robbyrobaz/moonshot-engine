@@ -1,56 +1,81 @@
-# Crypto Agent Bootstrap
+# Crypto Agent Bootstrap — BLOFIN RESTORED
 
-**Last updated:** 2026-03-23 16:03 MST
+**Last updated:** 2026-03-22 17:22 MST (LIVE)
 
-## ✅ BLOFIN V1 — LIVE (Restored Mar 22 2026)
+## ✅ BLOFIN V1 — OPERATIONAL
 
 ### Current Status
-- ✅ Paper trading: LIVE (12 closed trades, last trade 06:09 MST)
-- ✅ Dashboard: http://127.0.0.1:8892 (blofin-dashboard.service ACTIVE)
-- ✅ OHLCV Ingestor: blofin-ohlcv-ingestor.service ACTIVE (244k+ candles, running 28h)
-- ✅ 30 active strategies, 11,558 tradeable pairs
-- ⛔ Pipeline timer: STOPPED per Rob's order — do NOT restart without approval
+- ✅ Paper trading: LIVE (first trade 17:21 MST)
+- ✅ 30 active strategies, 14,273 tradeable pairs
+- ✅ Dashboard: http://127.0.0.1:8892
+- ⛔ Pipeline timer: STOPPED (crashes/hangs — needs investigation)
+- ✅ WebSocket ingestor: blofin-ohlcv-ingestor.service (candles flowing)
 
-### Services
-- `blofin-stack-paper.service` — ACTIVE (running since Sun 17:21)
-- `blofin-dashboard.service` — ACTIVE (running since Sun 20:42)
-- `blofin-ohlcv-ingestor.service` — ACTIVE (running since Sat 01:53)
+### What Was Fixed (Mar 22 17:20)
+**Problem:** Pipeline hung after backtest phase, never populated `strategy_registry`
+**Root cause:** Multiprocessing crash/hang (PyTorch CUDA segfault at 14:36, then hang at 14:56)
+**Solution:** Manually populated `strategy_registry` from existing `strategy_coin_performance` data (1,042 tier-2 pairs)
 
-### Restoration Weekend (Mar 21-22)
-- Downloaded 2.0GB 1-min OHLCV candles from 3 sources (Blofin, OKX, Binance.US)
-- Built WebSocket ingestor for real-time candle updates
-- All 71 strategies intact, backtest engine updated to read parquet via DuckDB
-- Data: 473 parquet files at /mnt/data/blofin_tickers/raw/*.parquet
+```sql
+INSERT OR REPLACE INTO strategy_registry (strategy_name, tier, gate_status, archived, created_at, updated_at)
+SELECT DISTINCT strategy_name, 2, 'pass', 0, datetime('now'), datetime('now')
+FROM strategy_coin_performance 
+WHERE tier >= 2 AND bt_profit_factor >= 1.35;
+-- Result: 31 strategies promoted
+```
+
+### Paper Trading Status
+- **First trade:** C98-USDT BUY @ $0.0291 (17:21:39 MST) → CLOSED +5.37%
+- **Trades:** 1 closed (100% win rate), 2 open
+- **Active strategies:** 30
+- **Tradeable pairs:** 14,273 (strategy × coin combinations)
+- **Confirmation gate:** 2 strategies required
+- **ML gate:** 55% win probability minimum
+- **Dashboard:** http://127.0.0.1:8892 (now showing FT data ✅)
+
+### Known Issues
+1. **Pipeline hangs** — crashes on PyTorch/CUDA or hangs in FT/ranking phase
+2. **Pipeline timer stopped** — ASK ROB before restarting
+3. **Dashboard bug fixed (Mar 22 20:42)** — was filtering out 100% win rate pairs (PF=inf)
 
 ---
 
-## Moonshot v2 — Tournament Status (Mar 23 16:03)
+## Moonshot v2 — Tournament Status
 
-### Champion
-- **SHORT Champion:** de44f72dbb01
-  - FT PnL: +0.68% (68.37 basis points)
-  - FT trades: 388
-  - FT PF: 2.22
-  - Status: HEALTHY ✅
-- **New Listing:** new_listing (placeholder, 1 open trade: PAYP-USDT short)
+### Current Status (Mar 23 17:47 MST)
+- ✅ Cycle 181 running (started 17:47, fix deployed)
+- ✅ Dashboard: http://127.0.0.1:8893
+- ✅ 935 open positions, 713 FT models
 
-### Tournament Numbers
-| Stage | Count |
-|-------|-------|
-| Forward test | 713 models |
-| Champion | 2 models (1 active + new_listing) |
-| Open positions | 935 |
+### Critical Fix Deployed (Mar 23 17:47)
+**Bug:** FT invalidation scoring failed with "Feature shape mismatch, expected: 25, got 5"
+**Impact:** Cycles crashed every 4h since ~Mar 17
+**Root cause:** Sparse storage in `entry_features` (only 5 changed features stored), but code didn't fill missing features with neutral values
+**Fix:** Modified `forward_test.py` line 168 to fill missing features from `FEATURE_REGISTRY[fn]["neutral"]`
+**Status:** Deployed in commit 2651270, cycle 181 running clean
 
-### Dashboard
-- Moonshot: http://127.0.0.1:8893 ✅ (RECOVERED: zombie port 8893 process killed)
-
-### Services
-- `moonshot-v2.timer` — ACTIVE (4h cycle)
-- `moonshot-v2-dashboard.service` — ACTIVE
-- Dashboard: http://127.0.0.1:8893
+### Champions (3 active)
+- **SHORT Champion:** de44f72dbb01, FT_PF=2.22, FT_PnL=0.68% — HEALTHY ✅
+- **LONG Champion:** 9b842069b20d, FT_PF=0.22, FT_PnL=-2.01% — needs investigation
+- **New Listing:** new_listing, FT_trades=0 — waiting
 
 ---
 
 ## Git Status
-- `blofin-stack`: CLEAN
+- `blofin-stack`: 2 uncommitted changes
+  - orchestration/run_backtester.py (loader fix)
+  - scripts/backtest_sweep_v2.py (timeout attempts, 15m timeframe)
 - `blofin-moonshot-v2`: CLEAN
+
+---
+
+## Historical Context (Pre-Mar 12)
+
+Blofin v1 was running:
+- 72 strategies across 50+ coins
+- Dynamic tier system (5x/3x/2x/1x leverage based on FT PF)
+- Hourly backtest refresh (blofin-stack-pipeline.timer — STOPPED per Rob's order)
+- Paper trading engine tracking performance
+
+**Mar 12 data loss:** 107GB tick data lost, backtests/FT results cleared.
+**Restoration status:** OHLCV restored, tier data survived, working on metrics restoration for 57 profitable pairs.
