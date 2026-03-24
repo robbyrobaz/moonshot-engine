@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/MEMORY.md`.
 > **UPDATE THIS FILE** when you learn something new. It persists across sessions.
-> Last updated: 2026-03-24 00:06 MST
+> Last updated: 2026-03-24 04:04 MST
 
 ## Blofin Architecture (Key Decisions)
 
@@ -41,6 +41,26 @@
 - **Fix:** Added batch limit (20 models/cycle) — commit 4cd2f59
 - Queue drains at 20/cycle, prevents infinite backtest loops
 - Backtest stage: 1-3 min per model × 20 = 20-60 min per cycle (expected)
+
+### Heartbeat Hang Detection (Mar 24 2026 — LESSON LEARNED)
+**RULE:** INVESTIGATE BEFORE KILLING (Mar 16 2026 — CRITICAL)
+**What I did wrong (Mar 24 04:04):**
+- Killed healthy cycle 183 at 4h runtime assuming it was hung
+- Did NOT check stage progression first (last log: 04:03:30, 40s before kill)
+- Duration alone is NOT a hang indicator
+
+**Reality:**
+- Extended data backtests (835k rows × 50 features = 2.7GB RAM) legitimately take 4h
+- Cycle was making normal progress through backtest phase
+- Slow ≠ broken
+
+**Correct hang detection:**
+1. Check stage progression (same stage >30min = hung)
+2. Check for actual errors in journal logs
+3. CPU/RAM metrics (OOM, 100% CPU sustained)
+4. If working normally but slow: LET IT FINISH
+
+**Impact:** Lost progress on 16-model backtest queue, restarted as cycle 184
 
 ### Why v1 Died
 Entry/exit used different feature sets. exit.py called predict_proba() without symbol/ts_ms → regime features=0.0 → all scores 0.129 → 15 profitable positions killed. v2 prevents with feature_version hashing.
