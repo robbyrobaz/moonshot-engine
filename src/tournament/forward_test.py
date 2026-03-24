@@ -3,6 +3,7 @@
 import json
 import sqlite3
 import time
+import traceback
 
 import joblib
 import numpy as np
@@ -41,8 +42,8 @@ def _resolve_feature_names(feature_set_raw):
 def _get_feature_values(db, symbol: str, ts_ms: int, feature_names: list[str]):
     """Load pre-computed features for a symbol at a timestamp.
 
-    Returns a list of floats in the same order as feature_names, or None if
-    any required feature is missing.
+    Returns a list of floats in the same order as feature_names, using neutral
+    values from the registry for any missing features.
     """
     row = db.execute(
         """SELECT feature_names, feature_values FROM features
@@ -69,11 +70,18 @@ def _get_feature_values(db, symbol: str, ts_ms: int, feature_names: list[str]):
             val = reg["neutral"]
         else:
             val = name_to_val.get(fn)
-        if val is None:
-            return None
+            # Use neutral value from registry if feature is missing
+            if val is None:
+                if reg and "neutral" in reg:
+                    val = reg["neutral"]
+                else:
+                    # Feature not in registry and not in stored data — can't proceed
+                    log.warning("_get_feature_values: missing feature '%s' for %s (not in registry or stored data)", fn, symbol)
+                    return None
         try:
             vec.append(float(val))
         except (TypeError, ValueError):
+            log.warning("_get_feature_values: invalid value for feature '%s' (%s) for %s", fn, val, symbol)
             return None
     return vec
 
@@ -87,8 +95,13 @@ def _score_symbols(db, model, feature_names: list[str], symbols: list[str],
         if vec is None:
             continue
         X = np.array([vec], dtype=np.float32)
-        score = float(model.predict_proba(X)[:, 1][0])
-        results.append((symbol, score))
+        try:
+            score = float(model.predict_proba(X)[:, 1][0])
+            results.append((symbol, score))
+        except ValueError as e:
+            log.error("_score_symbols: prediction failed for %s — vec length=%d, expected=%d features, error: %s",
+                      symbol, len(vec), len(feature_names), e)
+            raise
     return results
 
 
@@ -182,20 +195,26 @@ def _check_exit_conditions(db, pos, ts_ms: int, current_price: float) -> str | N
 
                 # Validate feature count matches model expectation
                 if len(feature_vector) != len(model_feature_names):
-                    log.warning("FT invalidation: feature count mismatch for pos %d (expected %d, got %d), skipping",
-                                pos["id"], len(model_feature_names), len(feature_vector))
+                    log.warning("FT invalidation: feature count mismatch for pos %d model %s symbol %s (expected %d, got %d), skipping",
+                                pos["id"], pos["model_id"], pos["symbol"], len(model_feature_names), len(feature_vector))
                 else:
                     # Load model and re-score with stored features
                     model = _load_model(pos["model_id"])
                     if model is not None:
-                        X = np.array([feature_vector], dtype=np.float32)
-                        current_score = float(model.predict_proba(X)[:, 1][0])
+                        try:
+                            X = np.array([feature_vector], dtype=np.float32)
+                            current_score = float(model.predict_proba(X)[:, 1][0])
 
-                        # Exit if re-scored position is below invalidation threshold
-                        if current_score < inv_row["invalidation_threshold"]:
-                            log.info("FT invalidation: pos %d score %.3f < threshold %.3f (stored features)",
-                                     pos["id"], current_score, inv_row["invalidation_threshold"])
-                            return "invalidation"
+                            # Exit if re-scored position is below invalidation threshold
+                            if current_score < inv_row["invalidation_threshold"]:
+                                log.info("FT invalidation: pos %d score %.3f < threshold %.3f (stored features)",
+                                         pos["id"], current_score, inv_row["invalidation_threshold"])
+                                return "invalidation"
+                        except ValueError as e:
+                            log.error("FT invalidation: prediction failed for pos %d model %s symbol %s — vec length=%d, error: %s",
+                                      pos["id"], pos["model_id"], pos["symbol"], len(feature_vector), e)
+                            log.error("Traceback:\n%s", traceback.format_exc())
+                            raise
             except (json.JSONDecodeError, KeyError, IndexError, ValueError) as e:
                 log.warning("FT invalidation: failed to parse entry_features for pos %d: %s", pos["id"], e)
 
@@ -404,63 +423,69 @@ def score_forward_test_models(db, all_symbols: list[str], ts_ms: int):
             log.warning("score_forward_test_models: no pickle for %s", model_id)
             continue
 
-        # Score all symbols
-        scores = _score_symbols(db, model, feature_names, all_symbols, now_ms)
-        feature_map = {
-            symbol: _get_feature_values(db, symbol, now_ms, feature_names)
-            for symbol, _ in scores
-        }
+        try:
+            # Score all symbols
+            scores = _score_symbols(db, model, feature_names, all_symbols, now_ms)
+            feature_map = {
+                symbol: _get_feature_values(db, symbol, now_ms, feature_names)
+                for symbol, _ in scores
+            }
 
-        # Find signals above threshold
-        signals = [(sym, sc) for sym, sc in scores if sc >= entry_threshold]
+            # Find signals above threshold
+            signals = [(sym, sc) for sym, sc in scores if sc >= entry_threshold]
 
-        # Check which symbols already have open positions for this model
-        open_syms = set()
-        open_rows = db.execute(
-            "SELECT symbol FROM positions WHERE model_id = ? AND status = 'open'",
-            (model_id,),
-        ).fetchall()
-        for r in open_rows:
-            open_syms.add(r["symbol"])
+            # Check which symbols already have open positions for this model
+            open_syms = set()
+            open_rows = db.execute(
+                "SELECT symbol FROM positions WHERE model_id = ? AND status = 'open'",
+                (model_id,),
+            ).fetchall()
+            for r in open_rows:
+                open_syms.add(r["symbol"])
 
-        # Open new paper positions
-        for symbol, score in signals:
-            if symbol in open_syms:
-                continue
+            # Open new paper positions
+            for symbol, score in signals:
+                if symbol in open_syms:
+                    continue
 
-            price = _get_current_price(db, symbol, now_ms)
-            if price is None:
-                continue
+                price = _get_current_price(db, symbol, now_ms)
+                if price is None:
+                    continue
 
-            try:
-                db.execute(
-                    """INSERT INTO positions
-                       (symbol, direction, model_id, is_champion_trade,
-                        entry_ts, entry_price, entry_ml_score, entry_features,
-                        status, high_water_price)
-                       VALUES (?, ?, ?, 0, ?, ?, ?, ?, 'open', ?)""",
-                    (
-                        symbol,
-                        direction,
-                        model_id,
-                        now_ms,
-                        price,
-                        score,
-                        json.dumps({
-                            "feature_version": None,
-                            "feature_names": feature_names,
-                            "feature_values": dict(
-                                zip(feature_names, feature_map.get(symbol) or [])
-                            ),
-                        }),
-                        price,
-                    ),
-                )
-            except sqlite3.IntegrityError:
-                log.debug("FT open skipped: duplicate open for %s %s", direction, symbol)
-                continue
-            log.info("FT open %s %s %s score=%.3f price=%.6f",
-                     model_id, direction, symbol, score, price)
+                try:
+                    db.execute(
+                        """INSERT INTO positions
+                           (symbol, direction, model_id, is_champion_trade,
+                            entry_ts, entry_price, entry_ml_score, entry_features,
+                            status, high_water_price)
+                           VALUES (?, ?, ?, 0, ?, ?, ?, ?, 'open', ?)""",
+                        (
+                            symbol,
+                            direction,
+                            model_id,
+                            now_ms,
+                            price,
+                            score,
+                            json.dumps({
+                                "feature_version": None,
+                                "feature_names": feature_names,
+                                "feature_values": dict(
+                                    zip(feature_names, feature_map.get(symbol) or [])
+                                ),
+                            }),
+                            price,
+                        ),
+                    )
+                except sqlite3.IntegrityError:
+                    log.debug("FT open skipped: duplicate open for %s %s", direction, symbol)
+                    continue
+                log.info("FT open %s %s %s score=%.3f price=%.6f",
+                         model_id, direction, symbol, score, price)
+        except Exception as e:
+            log.error("score_forward_test_models: error processing model %s (feature_set=%s, %d features): %s",
+                      model_id, tm["feature_set"], len(feature_names), e)
+            log.error("Traceback:\n%s", traceback.format_exc())
+            raise
 
     db.commit()
 

@@ -234,7 +234,9 @@ def run_cycle():
         db.commit()
         log.info("FT stats updated for %d models", len(ft_models))
     except Exception as e:
+        import traceback
         log.error("FT scoring failed: %s", e)
+        log.error("Traceback:\n%s", traceback.format_exc())
         errors.append(f"ft_scoring: {e}")
 
     try:
