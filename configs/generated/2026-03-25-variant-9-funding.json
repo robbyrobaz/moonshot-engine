@@ -1,0 +1,23 @@
+{
+  "model_id": "24b9b807abff",
+  "direction": "short",
+  "model_type": "catboost",
+  "params": {
+    "learning_rate": 0.02,
+    "max_depth": 7,
+    "n_estimators": 150,
+    "neg_class_weight": 10
+  },
+  "feature_set": [
+    "funding_rate_current",
+    "funding_rate_7d_avg",
+    "funding_rate_extreme",
+    "oi_change_24h",
+    "oi_change_7d",
+    "oi_price_divergence",
+    "oi_percentile_90d"
+  ],
+  "entry_threshold": 0.65,
+  "invalidation_threshold": 0.45,
+  "created_at": 1774458319047
+}

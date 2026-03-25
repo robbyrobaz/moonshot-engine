@@ -1,0 +1,32 @@
+{
+  "model_id": "f104421bbc6e",
+  "direction": "both",
+  "model_type": "xgboost",
+  "params": {
+    "learning_rate": 0.05,
+    "max_depth": 5,
+    "n_estimators": 100,
+    "neg_class_weight": 6
+  },
+  "feature_set": [
+    "price_vs_52w_high",
+    "price_vs_52w_low",
+    "momentum_4w",
+    "momentum_8w",
+    "bb_squeeze_pct",
+    "bb_position",
+    "volume_ratio_7d",
+    "volume_ratio_3d",
+    "obv_slope",
+    "volume_spike",
+    "volume_trend",
+    "btc_30d_return",
+    "btc_vol_percentile",
+    "market_breadth",
+    "days_since_listing",
+    "is_new_listing"
+  ],
+  "entry_threshold": 0.65,
+  "invalidation_threshold": 0.45,
+  "created_at": 1774458319049
+}

@@ -1,0 +1,29 @@
+{
+  "model_id": "b5d9a878f92a",
+  "direction": "long",
+  "model_type": "catboost",
+  "params": {
+    "learning_rate": 0.02,
+    "max_depth": 7,
+    "n_estimators": 120,
+    "neg_class_weight": 6
+  },
+  "feature_set": [
+    "fear_greed_score",
+    "fear_greed_7d_change",
+    "is_coingecko_trending",
+    "trending_rank",
+    "hours_on_trending",
+    "news_mentions_24h",
+    "news_mentions_7d_avg",
+    "news_velocity_ratio",
+    "reddit_mentions_24h",
+    "reddit_score_24h",
+    "reddit_velocity_ratio",
+    "github_commits_7d",
+    "github_commit_spike"
+  ],
+  "entry_threshold": 0.65,
+  "invalidation_threshold": 0.45,
+  "created_at": 1774458319037
+}

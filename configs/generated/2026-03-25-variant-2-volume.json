@@ -1,0 +1,22 @@
+{
+  "model_id": "a11dba26d727",
+  "direction": "long",
+  "model_type": "lightgbm",
+  "params": {
+    "learning_rate": 0.03,
+    "max_depth": 6,
+    "n_estimators": 200,
+    "num_leaves": 31
+  },
+  "feature_set": [
+    "volume_ratio_7d",
+    "volume_ratio_3d",
+    "obv_slope",
+    "volume_spike",
+    "volume_trend",
+    "vol_24h_vs_7d_avg"
+  ],
+  "entry_threshold": 0.65,
+  "invalidation_threshold": 0.45,
+  "created_at": 1774458319035
+}

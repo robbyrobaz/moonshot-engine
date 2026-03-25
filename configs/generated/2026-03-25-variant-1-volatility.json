@@ -1,0 +1,22 @@
+{
+  "model_id": "2d1854f5b764",
+  "direction": "short",
+  "model_type": "xgboost",
+  "params": {
+    "learning_rate": 0.05,
+    "max_depth": 5,
+    "n_estimators": 150,
+    "neg_class_weight": 8
+  },
+  "feature_set": [
+    "atr_percentile",
+    "atr_compression",
+    "high_low_range_pct",
+    "realized_vol_ratio",
+    "bb_squeeze_pct",
+    "btc_vol_percentile"
+  ],
+  "entry_threshold": 0.65,
+  "invalidation_threshold": 0.45,
+  "created_at": 1774458314194
+}
