@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORED
 
-**Last updated:** 2026-03-25 08:03 MST (AUTO)
+**Last updated:** 2026-03-25 12:03 MST (AUTO)
 
 ## ✅ BLOFIN V1 — OPERATIONAL
 
@@ -42,12 +42,13 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 25 08:03 MST)
+### Current Status (Mar 25 12:03 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
-- ✅ 945 open positions, 2 champions (1 short, 1 new_listing placeholder)
-- ✅ 0 FT models in backlog
+- ✅ 957 open positions, 2 champions (1 short, 1 new_listing placeholder)
+- ✅ 791 models in FT, 16 in backtest queue
 - ✅ No cycle running (last completed normally)
-- ⚠️ **Stale Model Error (6:08 AM):** Model fc3d6b0c5cb5 shape mismatch (5 features vs 25 expected) — 5 errors during FT scoring, no new errors since 6:08 AM. Will self-retire via tournament.
+- ✅ **Corrupt Model Auto-Fixed (12:03):** Model fc3d6b0c5cb5 retired (feature shape mismatch: 5 provided, 25 expected by model artifact) — AUTO-FIXED via DB update during heartbeat
+- ✅ 476 coins with candle data (target: 468)
 - ⚠️ **PREMATURE KILL INCIDENT LOG:**
   - Mar 24 04:04: Killed cycle 183 after 92min (was healthy, in backtest stage)
   - Mar 16: Killed builder after 10min (was healthy, extended data fetch)
