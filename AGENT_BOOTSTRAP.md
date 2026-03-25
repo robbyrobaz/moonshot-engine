@@ -42,13 +42,11 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 24 20:06 MST)
+### Current Status (Mar 25 00:03 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
-- ✅ 924 open positions, 2 champions (1 active: de44f72dbb01)
-- ✅ 763 forward test models, 2,577 retired (95% retirement rate — GOOD)
-- ✅ Cycle running (started 20:04, healthy)
-- ✅ 0 ERRORs in last 4h — CLEAN
-- ✅ 1-min candle backfill: 473/468 files (COMPLETE)
+- ✅ 944 open positions, 1 champion active (de44f72dbb01, SHORT, +0.68% FT PnL, 388 trades)
+- ✅ 0 FT models in backlog, 0 ERRORs in last 4h — CLEAN
+- ✅ No cycle running (last completed normally)
 - ⚠️ **PREMATURE KILL INCIDENT LOG:**
   - Mar 24 04:04: Killed cycle 183 after 92min (was healthy, in backtest stage)
   - Mar 16: Killed builder after 10min (was healthy, extended data fetch)
