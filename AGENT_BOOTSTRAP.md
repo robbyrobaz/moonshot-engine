@@ -42,13 +42,17 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 25 16:03 MST)
+### Current Status (Mar 25 20:05 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
-- ✅ 5 open positions (1 champion trade: CC-USDT short)
-- ✅ 2 champions: de44f72dbb01 (388 FT trades, +0.68% PnL, 2.22 PF), new_listing (0 trades)
-- ✅ 3,500 models in tournament (0 in FT backlog)
-- 🔄 **CYCLE RUNNING:** Started 12:04 PM (4h runtime) — 626% CPU, active ML prediction stage (sklearn warnings at 16:04)
-- ✅ **CRITICAL SAFETY:** Did NOT kill cycle (Prime Directive #7) — process is working normally, high CPU usage expected for ML phase
+- ✅ 923 open positions
+- ✅ 1 active champion: de44f72dbb01 (SHORT, 388 FT trades, +$0.68 PnL, 2.22 PF)
+- ✅ 0 models in FT backlog (all processed)
+- 🔄 **CYCLE 194:** Started 20:05:01 (just restarted after systemd timeout killed cycle 193)
+- ⚠️ **CYCLE 193 TIMEOUT:** Systemd killed at 20:05 after 4h runtime (backtest stage)
+  - Started 16:04, completed data fetch + position management by 16:26
+  - Moved to backtest stage (loading 837K rows), consumed 13h 36min CPU time
+  - **Root cause:** Backtest stage exceeded systemd service timeout
+  - **Action:** Systemd auto-restarted, no manual intervention needed
 - ⚠️ **PREMATURE KILL INCIDENT LOG:**
   - Mar 24 04:04: Killed cycle 183 after 92min (was healthy, in backtest stage)
   - Mar 16: Killed builder after 10min (was healthy, extended data fetch)
