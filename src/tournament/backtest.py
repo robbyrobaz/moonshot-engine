@@ -349,6 +349,24 @@ def backtest_challenger(db, model_params: dict) -> dict:
         model = _build_model(params)
         model.fit(X_train, y_train, sample_weight=sample_weights)
 
+        # Validate feature shape matches model expectation (prevent corruption)
+        # CatBoost doesn't set n_features_in_ properly (it's always 0), so check feature_names_ instead
+        model_feature_count = None
+        if hasattr(model, 'n_features_in_') and model.n_features_in_ > 0:
+            model_feature_count = model.n_features_in_
+        elif hasattr(model, 'feature_names_') and model.feature_names_:
+            model_feature_count = len(model.feature_names_)
+        
+        if model_feature_count is not None and model_feature_count != len(feature_names):
+            log.error(
+                "backtest feature shape mismatch: model_id=%s trained with %d features but feature_set has %d features. "
+                "This indicates a bug in challenger generation or feature resolution.",
+                params.get("model_id", "unknown"),
+                model_feature_count,
+                len(feature_names),
+            )
+            raise ValueError(f"Feature shape mismatch: model expects {model_feature_count}, feature_set has {len(feature_names)}")
+
         metrics = _evaluate_fold(model, X_test, y_test, pnl_test, threshold)
         fold_metrics.append(metrics)
 

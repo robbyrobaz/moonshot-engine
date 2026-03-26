@@ -423,6 +423,34 @@ def score_forward_test_models(db, all_symbols: list[str], ts_ms: int):
             log.warning("score_forward_test_models: no pickle for %s", model_id)
             continue
 
+        # Validate feature shape matches model expectation (detect corrupted models)
+        # CatBoost doesn't set n_features_in_ properly (it's always 0), so check feature_names_ instead
+        model_feature_count = None
+        if hasattr(model, 'n_features_in_') and model.n_features_in_ > 0:
+            model_feature_count = model.n_features_in_
+        elif hasattr(model, 'feature_names_') and model.feature_names_:
+            model_feature_count = len(model.feature_names_)
+        
+        if model_feature_count is not None and model_feature_count != len(feature_names):
+            log.error(
+                "FT feature shape mismatch: model_id=%s expects %d features but feature_set has %d. "
+                "This model is corrupted and will be retired.",
+                model_id,
+                model_feature_count,
+                len(feature_names),
+            )
+            # Retire corrupted model
+            now_ms_retire = int(time.time() * 1000)
+            db.execute(
+                """UPDATE tournament_models
+                   SET stage = 'retired', retired_at = ?, retire_reason = ?
+                   WHERE model_id = ?""",
+                (now_ms_retire, f"feature_shape_mismatch: model expects {model_feature_count}, DB has {len(feature_names)}", model_id),
+            )
+            db.commit()
+            log.info("FT retired corrupted model %s", model_id)
+            continue
+
         try:
             # Score all symbols
             scores = _score_symbols(db, model, feature_names, all_symbols, now_ms)
