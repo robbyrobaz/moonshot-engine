@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORED
 
-**Last updated:** 2026-03-26 16:03 MST (AUTO)
+**Last updated:** 2026-03-26 20:03 MST (AUTO)
 
 ## ✅ BLOFIN V1 — OPERATIONAL
 
@@ -42,12 +42,12 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 26 16:03 MST)
+### Current Status (Mar 26 20:03 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
-- ✅ 1 active champion: 8bcea880b343 (SHORT only)
-- ✅ 841 open positions (paper)
-- ✅ Last cycle: 199 (completed cleanly)
-- ⚠️ 0 1-min candle files (backfill inactive)
+- ✅ 2 active champions (1 SHORT, 1 placeholder)
+- ✅ 868 open positions (paper)
+- ✅ No cycle running (normal between 4h intervals)
+- ✅ 473 1-min candle files (backfill complete, target 468) ✅
 - ⚠️ **HANG INCIDENT LOG:**
   - Mar 26 00:03: Killed cycle 194 after 4h (truly hung, no DB updates for 72h)
   - Mar 25 20:05: Killed cycle 193 after 4h (systemd timeout, backtest stage)
