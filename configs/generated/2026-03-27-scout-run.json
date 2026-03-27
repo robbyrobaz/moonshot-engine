@@ -1,0 +1,309 @@
+[
+  {
+    "model_id": "59e19ff5d43c",
+    "name": "Fast Momentum Scalper",
+    "config": {
+      "model_type": "xgboost",
+      "direction": "short",
+      "feature_set": [
+        "momentum_1d",
+        "momentum_3d",
+        "price_change_24h_pct",
+        "vol_24h_vs_7d_avg",
+        "bb_position",
+        "atr_compression",
+        "volume_spike",
+        "funding_rate_current"
+      ],
+      "confidence_threshold": 0.5,
+      "n_estimators": 150,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "neg_class_weight": 5
+    }
+  },
+  {
+    "model_id": "7210c629b5ca",
+    "name": "Ultra-Minimal Core",
+    "config": {
+      "model_type": "lightgbm",
+      "direction": "short",
+      "feature_set": [
+        "price_vs_52w_high",
+        "momentum_4w",
+        "volume_ratio_7d",
+        "btc_30d_return",
+        "bb_position"
+      ],
+      "confidence_threshold": 0.5,
+      "n_estimators": 50,
+      "max_depth": 2,
+      "num_leaves": 15,
+      "learning_rate": 0.05,
+      "neg_class_weight": 5
+    }
+  },
+  {
+    "model_id": "7c91d9563998",
+    "name": "High-Volatility Hunter",
+    "config": {
+      "model_type": "catboost",
+      "direction": "short",
+      "feature_set": [
+        "atr_percentile",
+        "atr_compression",
+        "realized_vol_ratio",
+        "high_low_range_pct",
+        "bb_squeeze_pct",
+        "volume_spike",
+        "btc_vol_percentile",
+        "price_vs_24h_high",
+        "price_vs_24h_low"
+      ],
+      "confidence_threshold": 0.5,
+      "iterations": 200,
+      "depth": 5,
+      "learning_rate": 0.03,
+      "neg_class_weight": 5
+    }
+  },
+  {
+    "model_id": "8ba831d48dd6",
+    "name": "OI Divergence Specialist",
+    "config": {
+      "model_type": "xgboost",
+      "direction": "short",
+      "feature_set": [
+        "oi_price_divergence",
+        "oi_change_24h",
+        "oi_change_7d",
+        "oi_percentile_90d",
+        "funding_rate_extreme",
+        "mark_index_spread",
+        "price_vs_24h_high",
+        "momentum_4w"
+      ],
+      "confidence_threshold": 0.5,
+      "n_estimators": 120,
+      "max_depth": 4,
+      "learning_rate": 0.04,
+      "neg_class_weight": 5
+    }
+  },
+  {
+    "model_id": "93c90dd26503",
+    "name": "Social Sentiment Contrarian",
+    "config": {
+      "model_type": "lightgbm",
+      "direction": "short",
+      "feature_set": [
+        "is_coingecko_trending",
+        "trending_rank",
+        "hours_on_trending",
+        "news_velocity_ratio",
+        "reddit_velocity_ratio",
+        "github_commit_spike",
+        "fear_greed_score",
+        "price_vs_52w_high",
+        "momentum_4w",
+        "btc_vol_percentile"
+      ],
+      "confidence_threshold": 0.5,
+      "n_estimators": 100,
+      "max_depth": 4,
+      "num_leaves": 63,
+      "learning_rate": 0.05,
+      "neg_class_weight": 5
+    }
+  },
+  {
+    "model_id": "74e729a83cba",
+    "name": "Long Momentum Breakout",
+    "config": {
+      "model_type": "xgboost",
+      "direction": "long",
+      "feature_set": [
+        "momentum_4w",
+        "momentum_8w",
+        "higher_highs",
+        "consec_up_bars",
+        "price_vs_52w_high",
+        "volume_ratio_7d",
+        "btc_30d_return",
+        "market_breadth",
+        "obv_slope"
+      ],
+      "confidence_threshold": 0.5,
+      "n_estimators": 100,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "neg_class_weight": 5
+    }
+  },
+  {
+    "model_id": "eb3bf24cb8fe",
+    "name": "Deep Tree Ensemble",
+    "config": {
+      "model_type": "lightgbm",
+      "direction": "short",
+      "feature_set": [
+        "price_vs_52w_high",
+        "price_vs_52w_low",
+        "momentum_4w",
+        "momentum_8w",
+        "bb_squeeze_pct",
+        "bb_position",
+        "volume_ratio_7d",
+        "volume_ratio_3d",
+        "obv_slope",
+        "volume_spike",
+        "volume_trend",
+        "atr_percentile",
+        "atr_compression",
+        "high_low_range_pct",
+        "realized_vol_ratio",
+        "distance_from_support",
+        "distance_from_resistance",
+        "consec_down_bars",
+        "consec_up_bars",
+        "higher_highs",
+        "btc_30d_return",
+        "btc_vol_percentile",
+        "market_breadth",
+        "days_since_listing",
+        "is_new_listing",
+        "funding_rate_current",
+        "funding_rate_7d_avg",
+        "funding_rate_extreme",
+        "oi_change_24h",
+        "oi_change_7d",
+        "oi_price_divergence",
+        "oi_percentile_90d",
+        "mark_index_spread",
+        "price_vs_24h_high",
+        "price_vs_24h_low",
+        "vol_24h_vs_7d_avg",
+        "price_change_24h_pct",
+        "fear_greed_score",
+        "fear_greed_7d_change",
+        "is_coingecko_trending",
+        "trending_rank",
+        "hours_on_trending",
+        "news_mentions_24h",
+        "news_mentions_7d_avg",
+        "news_velocity_ratio",
+        "reddit_mentions_24h",
+        "reddit_score_24h",
+        "reddit_velocity_ratio",
+        "github_commits_7d",
+        "github_commit_spike"
+      ],
+      "confidence_threshold": 0.5,
+      "n_estimators": 300,
+      "max_depth": 8,
+      "num_leaves": 255,
+      "learning_rate": 0.03,
+      "neg_class_weight": 5
+    }
+  },
+  {
+    "model_id": "1c18c5ff2a3a",
+    "name": "Balanced Class Weights",
+    "config": {
+      "model_type": "catboost",
+      "direction": "short",
+      "feature_set": [
+        "price_vs_52w_high",
+        "price_vs_52w_low",
+        "momentum_4w",
+        "momentum_8w",
+        "bb_squeeze_pct",
+        "bb_position",
+        "volume_ratio_7d",
+        "volume_ratio_3d",
+        "obv_slope",
+        "volume_spike",
+        "volume_trend",
+        "atr_percentile",
+        "atr_compression",
+        "high_low_range_pct",
+        "realized_vol_ratio",
+        "distance_from_support",
+        "distance_from_resistance",
+        "consec_down_bars",
+        "consec_up_bars",
+        "higher_highs",
+        "btc_30d_return",
+        "btc_vol_percentile",
+        "market_breadth",
+        "days_since_listing",
+        "is_new_listing",
+        "funding_rate_current",
+        "funding_rate_7d_avg",
+        "funding_rate_extreme",
+        "oi_change_24h",
+        "oi_change_7d",
+        "oi_price_divergence",
+        "oi_percentile_90d",
+        "mark_index_spread",
+        "price_vs_24h_high",
+        "price_vs_24h_low",
+        "vol_24h_vs_7d_avg",
+        "price_change_24h_pct"
+      ],
+      "confidence_threshold": 0.5,
+      "iterations": 150,
+      "depth": 4,
+      "learning_rate": 0.03,
+      "neg_class_weight": 1.0
+    }
+  },
+  {
+    "model_id": "d769ff381115",
+    "name": "Volume Profile Expert",
+    "config": {
+      "model_type": "xgboost",
+      "direction": "short",
+      "feature_set": [
+        "volume_ratio_7d",
+        "volume_ratio_3d",
+        "volume_spike",
+        "volume_trend",
+        "obv_slope",
+        "vol_24h_vs_7d_avg",
+        "atr_percentile",
+        "price_vs_24h_high",
+        "momentum_4w"
+      ],
+      "confidence_threshold": 0.5,
+      "n_estimators": 100,
+      "max_depth": 4,
+      "learning_rate": 0.04,
+      "neg_class_weight": 5
+    }
+  },
+  {
+    "model_id": "4ec86660c436",
+    "name": "Micro-Cap New Listings",
+    "config": {
+      "model_type": "lightgbm",
+      "direction": "short",
+      "feature_set": [
+        "is_new_listing",
+        "days_since_listing",
+        "volume_spike",
+        "price_vs_24h_high",
+        "momentum_1d",
+        "momentum_3d",
+        "vol_24h_vs_7d_avg",
+        "funding_rate_current"
+      ],
+      "confidence_threshold": 0.5,
+      "n_estimators": 80,
+      "max_depth": 3,
+      "num_leaves": 31,
+      "learning_rate": 0.05,
+      "neg_class_weight": 5
+    }
+  }
+]
