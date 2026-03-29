@@ -1292,9 +1292,18 @@ def api_moonshot_live():
                         
                         # Find matching position on exchange
                         broker_pos = next((p for p in exchange_data['positions'] 
-                                         if p.get('symbol') == symbol_ccxt and p.get('contracts', 0) != 0), None)
+                                         if p.get('symbol') == symbol_ccxt and float(p.get('contracts') or 0) > 0), None)
                         
-                        current_price = broker_pos.get('markPrice', trade['entry_price']) if broker_pos else trade['entry_price']
+                        if broker_pos and broker_pos.get('markPrice'):
+                            current_price = float(broker_pos['markPrice'])
+                        else:
+                            # No broker position — fetch ticker for live price
+                            try:
+                                ex = get_exchange()
+                                ticker = ex.fetch_ticker(symbol_ccxt) if ex else None
+                                current_price = float(ticker['last']) if ticker and ticker.get('last') else trade['entry_price']
+                            except Exception:
+                                current_price = trade['entry_price']
                         
                         # Calculate unrealized PnL
                         if trade['direction'] == 'short':
