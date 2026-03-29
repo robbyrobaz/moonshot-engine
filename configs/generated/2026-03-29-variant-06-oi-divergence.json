@@ -1,0 +1,52 @@
+{
+  "model_id": "edb92aca0c2d",
+  "direction": "short",
+  "model_type": "catboost",
+  "params": {
+    "model_type": "catboost",
+    "direction": "short",
+    "feature_set": [
+      "oi_change_24h",
+      "oi_change_7d",
+      "oi_price_divergence",
+      "oi_percentile_90d",
+      "momentum_4w",
+      "momentum_8w",
+      "volume_spike",
+      "volume_trend",
+      "obv_slope",
+      "price_vs_52w_high",
+      "bb_position",
+      "atr_percentile",
+      "btc_vol_percentile",
+      "market_breadth",
+      "realized_vol_ratio"
+    ],
+    "confidence_threshold": 0.4,
+    "learning_rate": 0.02,
+    "max_depth": 4,
+    "n_estimators": 100,
+    "neg_class_weight": 7
+  },
+  "feature_set": [
+    "oi_change_24h",
+    "oi_change_7d",
+    "oi_price_divergence",
+    "oi_percentile_90d",
+    "momentum_4w",
+    "momentum_8w",
+    "volume_spike",
+    "volume_trend",
+    "obv_slope",
+    "price_vs_52w_high",
+    "bb_position",
+    "atr_percentile",
+    "btc_vol_percentile",
+    "market_breadth",
+    "realized_vol_ratio"
+  ],
+  "feature_version": "v1",
+  "entry_threshold": 0.4,
+  "invalidation_threshold": 0.3,
+  "stage": "backtest_queue"
+}

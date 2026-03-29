@@ -1,0 +1,43 @@
+{
+  "model_id": "851f0a213fb3",
+  "direction": "short",
+  "model_type": "lightgbm",
+  "params": {
+    "model_type": "lightgbm",
+    "direction": "short",
+    "feature_set": [
+      "momentum_1d",
+      "momentum_3d",
+      "momentum_4w",
+      "volume_spike",
+      "volume_ratio_3d",
+      "obv_slope",
+      "atr_percentile",
+      "bb_position",
+      "btc_30d_return",
+      "market_breadth"
+    ],
+    "confidence_threshold": 0.4,
+    "learning_rate": 0.01,
+    "max_depth": 4,
+    "num_leaves": 63,
+    "n_estimators": 100,
+    "neg_class_weight": 8
+  },
+  "feature_set": [
+    "momentum_1d",
+    "momentum_3d",
+    "momentum_4w",
+    "volume_spike",
+    "volume_ratio_3d",
+    "obv_slope",
+    "atr_percentile",
+    "bb_position",
+    "btc_30d_return",
+    "market_breadth"
+  ],
+  "feature_version": "v1",
+  "entry_threshold": 0.4,
+  "invalidation_threshold": 0.3,
+  "stage": "backtest_queue"
+}
