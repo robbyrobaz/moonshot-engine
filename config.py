@@ -82,7 +82,7 @@ MIN_FT_TRADES_EVAL_50 = _env("MIN_FT_TRADES_EVAL_50", 50, int)  # tier 1 eval th
 MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 0.9, float)  # tier 1: unprofitable models
 CHALLENGER_COUNT_PER_CYCLE = _env("CHALLENGER_COUNT_PER_CYCLE", 25, int)  # new challengers per cycle (4h)
 BACKTEST_BATCH_SIZE = _env("BACKTEST_BATCH_SIZE", 10, int)  # models per cycle
-BACKTEST_TIME_BUDGET_MIN = _env("BACKTEST_TIME_BUDGET_MIN", 120, int)  # max minutes for backtest phase
+
 CHAMPION_BEAT_MARGIN = _env("CHAMPION_BEAT_MARGIN", 0.10, float)
 BOOTSTRAP_RESAMPLES = _env("BOOTSTRAP_RESAMPLES", 1000, int)
 BOOTSTRAP_PF_LOWER_BOUND = _env("BOOTSTRAP_PF_LOWER_BOUND", 0.5, float)  # For short (lowered 0.8→0.5)
