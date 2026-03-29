@@ -7,6 +7,8 @@ import joblib
 import numpy as np
 
 from config import (
+    BACKTEST_BATCH_SIZE,
+    BACKTEST_TIME_BUDGET_MIN,
     BOOTSTRAP_PF_LOWER_BOUND,
     BOOTSTRAP_PF_LOWER_BOUND_LONG,
     BOOTSTRAP_RESAMPLES,
@@ -448,7 +450,6 @@ def backtest_new_challengers(db, max_batch=None):
         max_batch: Maximum models to process per cycle (None = dynamic based on CPU load)
     """
     if max_batch is None:
-        from config import BACKTEST_BATCH_SIZE
         max_batch = BACKTEST_BATCH_SIZE
         log.info(f"backtest_new_challengers: processing {max_batch} models (fixed batch, no CPU throttling)")
     rows = db.execute(
@@ -466,6 +467,9 @@ def backtest_new_challengers(db, max_batch=None):
     log.info("backtest_new_challengers: %d challengers to evaluate (%d total pending)", 
              len(rows), total_pending)
     now_ms = int(time.time() * 1000)
+    start_time = time.time()
+    time_budget_sec = BACKTEST_TIME_BUDGET_MIN * 60
+    processed = 0
 
     for row in rows:
         model_id = row["model_id"]
@@ -527,5 +531,15 @@ def backtest_new_challengers(db, max_batch=None):
             log.info("backtest FAILED %s → retired", model_id)
 
         db.commit()
+        processed += 1
+
+        # Check time budget after each model
+        elapsed_min = (time.time() - start_time) / 60
+        if elapsed_min > BACKTEST_TIME_BUDGET_MIN:
+            log.warning(
+                "backtest_new_challengers: time budget exhausted (%.1fmin), stopping with %d/%d models done. FT scoring will proceed.",
+                elapsed_min, processed, len(rows)
+            )
+            break
 
     log.info("backtest_new_challengers: complete")
