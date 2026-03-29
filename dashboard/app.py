@@ -1161,11 +1161,8 @@ def api_model_comparison():
 def api_moonshot_live():
     """Get Moonshot live trading metrics from moonshot_live.db + exchange data"""
     try:
-        # Connect to moonshot live trading DB
-        moonshot_db_path = os.path.join(
-            os.path.dirname(__file__), 
-            "../data/moonshot_live.db"
-        )
+        # Connect to moonshot live trading DB (in blofin-stack)
+        moonshot_db_path = "/home/rob/.openclaw/workspace/blofin-stack/data/moonshot_live.db"
         
         # Check if DB exists
         if not os.path.exists(moonshot_db_path):
