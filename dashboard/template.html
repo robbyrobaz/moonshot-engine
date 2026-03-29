@@ -431,7 +431,7 @@ async function loadMoonshotLive(){
 
         const row=`
           <tr style="background:${rowBg};">
-            <td class="mono">${pos.symbol}</td>
+            <td class="mono" style="background:${rowBg};">${pos.symbol}</td>
             <td style="color:#a892c0;font-weight:600;">${pos.ml_score.toFixed(3)}</td>
             <td>$${pos.entry_price.toFixed(4)}</td>
             <td>$${pos.current_price.toFixed(4)}</td>
