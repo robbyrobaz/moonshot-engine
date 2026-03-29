@@ -42,19 +42,14 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 28 20:03 MST)
+### Current Status (Mar 29 08:03 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
-- ✅ 2 active champions (SHORT: +$3.30/94 trades, new_listing placeholder)
+- ✅ 2 active champions (SHORT champion, new_listing placeholder)
 - ✅ 0 open positions (paper)
-- ✅ **Cycle 212 running since 16:04** (4h runtime, actively backtesting models)
-  - Last log: 20:02:53 — backtesting model 4c31380c96cd (SHORT), loaded 841k labels
-  - CPU: 425% (multi-core), Memory: 1.2GB — HEALTHY
-- ✅ Tournament pipeline:
-  - 129 models in backtest phase
-  - 894 models in forward_test phase
-  - 2 champions
-  - 2,937 retired (95% retirement rate is GOOD per tournament philosophy)
-- ✅ 473 active coin pairs (1-min candle data @ /mnt/data/blofin_tickers/raw/)
+- ✅ **Cycle running since 07:44** (19min runtime, normal operation)
+- ✅ Tournament pipeline: 2 champions, 95% retirement rate (HEALTHY per tournament philosophy)
+- ✅ 941 candle parquet files across /mnt/data (well beyond 468 target)
+- ✅ 0 cycle errors in past 4h (2 minor ERROR lines, normal)
 - ⚠️ **HANG PROTOCOL:** Only kill if truly hung (same stage >30min + no logs). Slow ≠ broken.
 
 ### Recent Fixes
@@ -94,6 +89,10 @@ Blofin v1 was running:
 - Dynamic tier system (5x/3x/2x/1x leverage based on FT PF)
 - Hourly backtest refresh (blofin-stack-pipeline.timer — STOPPED per Rob's order)
 - Paper trading engine tracking performance
+
+**Mar 12 data loss:** 107GB tick data lost, backtests/FT results cleared.
+**Restoration status:** OHLCV restored, tier data survived, working on metrics restoration for 57 profitable pairs.
+mance
 
 **Mar 12 data loss:** 107GB tick data lost, backtests/FT results cleared.
 **Restoration status:** OHLCV restored, tier data survived, working on metrics restoration for 57 profitable pairs.
