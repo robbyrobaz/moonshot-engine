@@ -514,11 +514,18 @@ async function loadHeader(){
 
     // Health row (minimal system info)
     const hf=document.getElementById('health-row');
+    const statusDot = health.status === 'ok' ? '<span class="ok">●</span>' : '<span class="b-neutral">●</span>';
+    const statusText = health.status === 'ok' ? 'Healthy' : 'Stale';
+    const completedInfo = health.last_completed_run_id ? 
+      `Last completed: Run #${health.last_completed_run_id} (${health.last_completed_at||'—'})` :
+      'No completed runs';
+    const inProgressInfo = health.current_run_in_progress ? 
+      ` (Run #${health.last_run_id} in progress)` : '';
     hf.innerHTML=`
-      <span><span class="ok">●</span> System: ${health.status==='ok'?'Healthy':'Error'}</span>
+      <span>${statusDot} System: ${statusText}</span>
       <span>FT: ${health.ft_model_count}</span>
       <span>Champions: ${health.champion_count}</span>
-      <span>Run #${health.last_run_id||'—'}</span>
+      <span>${completedInfo}${inProgressInfo}</span>
       ${health.errors?'<span class="red">ERR: '+health.errors+'</span>':''}
       <span>Updated: ${new Date().toISOString().slice(0,16).replace('T',' ')} UTC</span>
     `;

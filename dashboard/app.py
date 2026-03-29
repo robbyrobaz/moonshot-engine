@@ -993,6 +993,35 @@ def api_health():
         """, fetchone=True)
         champion_count = champ_row["cnt"] if champ_row else 0
 
+        # Last completed run (ended_at IS NOT NULL)
+        last_completed_row = _safe_query(conn, """
+            SELECT run_id, ended_at FROM runs
+            WHERE ended_at IS NOT NULL
+            ORDER BY run_id DESC
+            LIMIT 1
+        """, fetchone=True)
+        last_completed_run_id = last_completed_row["run_id"] if last_completed_row else None
+        last_completed_at = last_completed_row["ended_at"] if last_completed_row else None
+        last_completed_at_str = _ts_to_str(last_completed_at) if last_completed_at else None
+
+        # Current run in progress (latest run_id with ended_at IS NULL)
+        latest_run_row = _safe_query(conn, """
+            SELECT run_id, ended_at FROM runs
+            ORDER BY run_id DESC
+            LIMIT 1
+        """, fetchone=True)
+        current_run_in_progress = False
+        if latest_run_row and latest_run_row["ended_at"] is None:
+            current_run_in_progress = True
+
+        # Determine status: stale if last completed run is >8 hours old (2 missed 4H cycles)
+        status = "ok"
+        now_ms = int(time.time() * 1000)
+        if last_completed_at:
+            hours_since_completion = (now_ms - last_completed_at) / (1000 * 3600)
+            if hours_since_completion > 8:
+                status = "stale"
+
         # Last 5 cycle durations (ended_at - started_at) in seconds
         runs_rows = _safe_query(conn, """
             SELECT run_id, started_at, ended_at, regime, errors
@@ -1015,7 +1044,7 @@ def api_health():
             })
 
         return jsonify({
-            "status": "ok",
+            "status": status,
             "db_size_mb": round(health["db_size_mb"], 2),
             "candle_count": health["candle_count"],
             "coin_count": health["coin_count"],
@@ -1024,6 +1053,9 @@ def api_health():
             "last_run_id": run["run_id"] if run else None,
             "last_run_ended": _ts_to_str(run["ended_at"]) if run else None,
             "last_run_ended_ms": run["ended_at"] if run else None,
+            "last_completed_run_id": last_completed_run_id,
+            "last_completed_at": last_completed_at_str,
+            "current_run_in_progress": current_run_in_progress,
             "errors": run["errors"] if run else None,
             "recent_cycles": recent_cycles,
         })
