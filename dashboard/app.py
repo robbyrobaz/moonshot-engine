@@ -20,10 +20,72 @@ import sys
 sys.path.insert(0, '..')
 import config
 
+# Import ccxt for live trading data
+try:
+    import ccxt
+except ImportError:
+    ccxt = None
+
 app = Flask(__name__)
 
 # Cache with 30s TTL for API endpoints
 _api_cache = TTLCache(maxsize=50, ttl=30)
+
+# Exchange singleton with lazy loading (for live trading data)
+_exchange_instance = None
+_exchange_data_cache = {}
+_exchange_cache_timestamp = 0
+EXCHANGE_CACHE_TTL = 15  # seconds
+
+
+def get_exchange():
+    """Lazy-loaded exchange singleton"""
+    global _exchange_instance
+    if ccxt is None:
+        return None
+    if _exchange_instance is None:
+        try:
+            _exchange_instance = ccxt.blofin({
+                'apiKey': '8ce245f6361d415ca199cd229a1d8360',
+                'secret': '8807534c543b4dc0af9fa9626bade434',
+                'password': 'omen_claw',
+                'enableRateLimit': True,
+                'options': {'brokerId': ''}
+            })
+            _exchange_instance.load_markets()
+        except Exception as e:
+            print(f"ERROR: Failed to initialize exchange: {e}")
+            _exchange_instance = None
+    return _exchange_instance
+
+
+def get_exchange_data():
+    """Get exchange balance and positions with 15s caching"""
+    global _exchange_data_cache, _exchange_cache_timestamp
+    
+    now = time.time()
+    if now - _exchange_cache_timestamp < EXCHANGE_CACHE_TTL and _exchange_data_cache:
+        return _exchange_data_cache
+    
+    try:
+        ex = get_exchange()
+        if ex is None:
+            return None
+        
+        balance = ex.fetch_balance()
+        positions = ex.fetch_positions()
+        
+        _exchange_data_cache = {
+            'balance': balance,
+            'positions': positions,
+            'timestamp': now
+        }
+        _exchange_cache_timestamp = now
+        
+        return _exchange_data_cache
+    except Exception as e:
+        print(f"ERROR: Failed to fetch exchange data: {e}")
+        return None
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1093,6 +1155,230 @@ def api_model_comparison():
         })
     finally:
         conn.close()
+
+
+@app.route("/api/moonshot-live")
+def api_moonshot_live():
+    """Get Moonshot live trading metrics from moonshot_live.db + exchange data"""
+    try:
+        # Connect to moonshot live trading DB
+        moonshot_db_path = os.path.join(
+            os.path.dirname(__file__), 
+            "../data/moonshot_live.db"
+        )
+        
+        # Check if DB exists
+        if not os.path.exists(moonshot_db_path):
+            return jsonify({
+                'error': 'Moonshot live DB not initialized',
+                'summary': {
+                    'starting_balance': 38.87,
+                    'current_balance': 38.87,
+                    'total_pnl_usd': 0,
+                    'total_pnl_pct': 0,
+                    'model_id': '87033f5ca7fe',
+                    'model_type': 'CatBoost SHORT',
+                    'ft_pf': 2.63,
+                    'ft_wr': 75.8,
+                    'open_count': 0,
+                    'closed_count': 0,
+                    'win_rate': 0,
+                },
+                'open_positions': [],
+                'closed_trades': [],
+                'exchange_connected': False,
+            })
+        
+        conn = sqlite3.connect(moonshot_db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Check if table exists
+        try:
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='moonshot_live_trades'")
+            table_exists = cursor.fetchone() is not None
+        except:
+            table_exists = False
+        
+        if not table_exists:
+            conn.close()
+            return jsonify({
+                'error': 'Moonshot live trading not started yet (table not created)',
+                'summary': {
+                    'starting_balance': 38.87,
+                    'current_balance': 38.87,
+                    'total_pnl_usd': 0,
+                    'total_pnl_pct': 0,
+                    'model_id': '87033f5ca7fe',
+                    'model_type': 'CatBoost SHORT',
+                    'ft_pf': 2.63,
+                    'ft_wr': 75.8,
+                    'open_count': 0,
+                    'closed_count': 0,
+                    'win_rate': 0,
+                },
+                'open_positions': [],
+                'closed_trades': [],
+                'exchange_connected': False,
+            })
+        
+        # Get all trades
+        cursor.execute("""
+            SELECT * FROM moonshot_live_trades 
+            ORDER BY entry_time DESC
+        """)
+        all_trades = [dict(row) for row in cursor.fetchall()]
+        
+        # Calculate summary stats from DB
+        cursor.execute("""
+            SELECT 
+                COUNT(*) as total_trades,
+                COUNT(CASE WHEN status = 'OPEN' THEN 1 END) as open_count,
+                COUNT(CASE WHEN status = 'CLOSED' THEN 1 END) as closed_count,
+                COALESCE(SUM(CASE WHEN status = 'CLOSED' THEN pnl_usd ELSE 0 END), 0) as total_realized_pnl,
+                COUNT(CASE WHEN status = 'CLOSED' AND pnl_pct > 0 THEN 1 END) as winning_trades
+            FROM moonshot_live_trades
+        """)
+        stats = dict(cursor.fetchone())
+        
+        win_rate = (stats['winning_trades'] / stats['closed_count'] * 100) if stats['closed_count'] > 0 else 0
+        
+        conn.close()
+        
+        # Get exchange data (balance + live positions)
+        exchange_data = get_exchange_data()
+        current_balance = 38.87  # Default to starting balance
+        open_positions = []
+        
+        if exchange_data:
+            try:
+                # Get USDT balance
+                usdt_balance = exchange_data['balance'].get('USDT', {})
+                current_balance = usdt_balance.get('total', 38.87)
+                
+                # Process open positions from DB
+                for trade in all_trades:
+                    if trade['status'] == 'OPEN':
+                        symbol_ccxt = trade['moonshot_symbol'].replace('-USDT', '/USDT:USDT')
+                        
+                        # Find matching position on exchange
+                        broker_pos = next((p for p in exchange_data['positions'] 
+                                         if p.get('symbol') == symbol_ccxt and p.get('contracts', 0) != 0), None)
+                        
+                        current_price = broker_pos.get('markPrice', trade['entry_price']) if broker_pos else trade['entry_price']
+                        
+                        # Calculate unrealized PnL
+                        if trade['direction'] == 'short':
+                            upnl_pct = ((trade['entry_price'] - current_price) / trade['entry_price']) * 100 * trade['leverage']
+                        else:
+                            upnl_pct = ((current_price - trade['entry_price']) / trade['entry_price']) * 100 * trade['leverage']
+                        
+                        position_size_usd = trade['entry_price'] * trade['contracts']
+                        upnl_usd = position_size_usd * (upnl_pct / 100)
+                        
+                        # Calculate duration
+                        duration = ""
+                        if trade['entry_time']:
+                            try:
+                                entry_dt = datetime.fromisoformat(trade['entry_time'].replace('Z', '+00:00'))
+                                duration_sec = (datetime.now(entry_dt.tzinfo) - entry_dt).total_seconds()
+                                hours = int(duration_sec // 3600)
+                                minutes = int((duration_sec % 3600) // 60)
+                                duration = f"{hours}h {minutes}m"
+                            except:
+                                duration = "N/A"
+                        
+                        open_positions.append({
+                            'symbol': trade['moonshot_symbol'],
+                            'ml_score': trade['ml_score'],
+                            'entry_price': trade['entry_price'],
+                            'current_price': current_price,
+                            'unrealized_pnl_usd': upnl_usd,
+                            'unrealized_pnl_pct': upnl_pct,
+                            'leverage': trade['leverage'],
+                            'sl_price': trade['broker_sl_price'],
+                            'tp_price': trade['broker_tp_price'],
+                            'duration': duration
+                        })
+            except Exception as e:
+                print(f"ERROR processing moonshot exchange data: {e}")
+        
+        # Calculate total P&L
+        total_pnl_usd = stats['total_realized_pnl'] + sum(p['unrealized_pnl_usd'] for p in open_positions)
+        total_pnl_pct = (total_pnl_usd / 38.87) * 100
+        
+        # Format closed trades with duration
+        closed_trades = []
+        for trade in all_trades:
+            if trade['status'] == 'CLOSED':
+                # Calculate duration
+                duration = ""
+                if trade['entry_time'] and trade['exit_time']:
+                    try:
+                        entry_dt = datetime.fromisoformat(trade['entry_time'].replace('Z', '+00:00'))
+                        exit_dt = datetime.fromisoformat(trade['exit_time'].replace('Z', '+00:00'))
+                        duration_sec = (exit_dt - entry_dt).total_seconds()
+                        hours = int(duration_sec // 3600)
+                        minutes = int((duration_sec % 3600) // 60)
+                        duration = f"{hours}h {minutes}m"
+                    except:
+                        duration = "N/A"
+                
+                closed_trades.append({
+                    'id': trade['id'],
+                    'symbol': trade['moonshot_symbol'],
+                    'ml_score': trade['ml_score'],
+                    'entry_price': trade['entry_price'],
+                    'exit_price': trade['exit_price'],
+                    'pnl_usd': trade['pnl_usd'],
+                    'pnl_pct': trade['pnl_pct'],
+                    'leverage': trade['leverage'],
+                    'exit_reason': trade['exit_reason'],
+                    'duration': duration,
+                })
+        
+        return jsonify({
+            'summary': {
+                'starting_balance': 38.87,
+                'current_balance': round(current_balance, 2),
+                'total_pnl_usd': round(total_pnl_usd, 2),
+                'total_pnl_pct': round(total_pnl_pct, 2),
+                'model_id': '87033f5ca7fe',
+                'model_type': 'CatBoost SHORT',
+                'ft_pf': 2.63,
+                'ft_wr': 75.8,
+                'open_count': stats['open_count'],
+                'closed_count': stats['closed_count'],
+                'win_rate': round(win_rate, 1),
+            },
+            'open_positions': open_positions,
+            'closed_trades': closed_trades,
+            'exchange_connected': exchange_data is not None,
+        })
+        
+    except Exception as e:
+        print(f"ERROR in /api/moonshot-live: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'error': str(e),
+            'summary': {
+                'starting_balance': 38.87,
+                'current_balance': 38.87,
+                'total_pnl_usd': 0,
+                'total_pnl_pct': 0,
+                'model_id': '87033f5ca7fe',
+                'model_type': 'CatBoost SHORT',
+                'ft_pf': 2.63,
+                'ft_wr': 75.8,
+                'open_count': 0,
+                'closed_count': 0,
+                'win_rate': 0,
+            },
+            'open_positions': [],
+            'closed_trades': [],
+            'exchange_connected': False,
+        }), 500
 
 
 @app.route("/api/feature-subsets")

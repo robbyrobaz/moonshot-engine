@@ -154,6 +154,107 @@ tr.pnl-negative-high td:first-child{background:rgba(255,82,82,.08)!important}
   <div id="health-row" class="health-row"><span class="loading">loading...</span></div>
 </div>
 
+<!-- Moonshot Live Trading Section -->
+<div id="moonshot-live-section" class="card" style="background: linear-gradient(135deg, #2d1e36 0%, #3d2844 100%); border: 2px solid #6d4976; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 12px;">
+  <h2 style="font-size: 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; color: #e0e6ed;">
+    🚀 Moonshot Live Trading — ML Model 87033f5c <span id="moonshot-balance-header" style="color: #a892c0; font-size: 16px;">— $38.87 → ?</span>
+  </h2>
+  
+  <div id="moonshot-loading" class="loading" style="text-align: center; padding: 20px; color: #a892c0;">Loading Moonshot live data...</div>
+  
+  <div id="moonshot-content" style="display: none;">
+    <!-- Summary Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 15px;">
+      <div style="background: #1e2936; border: 1px solid #6d4976; border-radius: 4px; padding: 10px;">
+        <div style="font-size: 11px; color: #8892a0; text-transform: uppercase;">Starting Balance</div>
+        <div style="font-size: 18px; font-weight: 600; margin-top: 3px; color: #2196F3;">$38.87</div>
+      </div>
+      <div style="background: #1e2936; border: 1px solid #6d4976; border-radius: 4px; padding: 10px;">
+        <div style="font-size: 11px; color: #8892a0; text-transform: uppercase;">Current Balance</div>
+        <div id="moonshot-current-balance" style="font-size: 18px; font-weight: 600; margin-top: 3px; color: #2196F3;">$38.87</div>
+      </div>
+      <div style="background: #1e2936; border: 1px solid #6d4976; border-radius: 4px; padding: 10px;">
+        <div style="font-size: 11px; color: #8892a0; text-transform: uppercase;">Total P&L</div>
+        <div id="moonshot-total-pnl" style="font-size: 18px; font-weight: 600; margin-top: 3px;">$0.00 (0.00%)</div>
+      </div>
+      <div style="background: #1e2936; border: 1px solid #6d4976; border-radius: 4px; padding: 10px;">
+        <div style="font-size: 11px; color: #8892a0; text-transform: uppercase;">Open Positions</div>
+        <div id="moonshot-open-count" style="font-size: 18px; font-weight: 600; margin-top: 3px; color: #2196F3;">0</div>
+      </div>
+      <div style="background: #1e2936; border: 1px solid #6d4976; border-radius: 4px; padding: 10px;">
+        <div style="font-size: 11px; color: #8892a0; text-transform: uppercase;">Closed Trades</div>
+        <div id="moonshot-closed-count" style="font-size: 18px; font-weight: 600; margin-top: 3px; color: #2196F3;">0</div>
+      </div>
+      <div style="background: #1e2936; border: 1px solid #6d4976; border-radius: 4px; padding: 10px;">
+        <div style="font-size: 11px; color: #8892a0; text-transform: uppercase;">Win Rate</div>
+        <div id="moonshot-win-rate" style="font-size: 18px; font-weight: 600; margin-top: 3px; color: #2196F3;">0%</div>
+      </div>
+      <div style="background: #1e2936; border: 1px solid #6d4976; border-radius: 4px; padding: 10px;">
+        <div style="font-size: 11px; color: #8892a0; text-transform: uppercase;">Model Info</div>
+        <div style="font-size: 11px; font-weight: 600; margin-top: 3px; color: #2196F3;">CatBoost SHORT</div>
+        <div style="font-size: 10px; color: #a892c0; margin-top: 2px;">FT PF: 2.63 | WR: 75.8%</div>
+      </div>
+    </div>
+    
+    <!-- Open Positions Table -->
+    <div style="margin-bottom: 15px;">
+      <div style="font-size: 13px; font-weight: 600; color: #a892c0; margin-bottom: 5px;">Open Positions</div>
+      <div id="moonshot-open-empty" style="text-align: center; padding: 15px; color: #a892c0; background: #2d1e36; border: 1px solid #6d4976; border-radius: 4px; display: none;">
+        No open positions
+      </div>
+      <div class="tw" style="display: none;" id="moonshot-open-wrapper">
+        <table id="moonshot-open-table">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>ML Score</th>
+              <th>Entry</th>
+              <th>Current</th>
+              <th>uPnL $</th>
+              <th>uPnL %</th>
+              <th>Leverage</th>
+              <th>SL</th>
+              <th>TP</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody id="moonshot-open-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Closed Trades Table -->
+    <div>
+      <div style="font-size: 13px; font-weight: 600; color: #a892c0; margin-bottom: 5px;">Closed Trades</div>
+      <div id="moonshot-closed-empty" style="text-align: center; padding: 15px; color: #a892c0; background: #2d1e36; border: 1px solid #6d4976; border-radius: 4px; display: none;">
+        No closed trades yet
+      </div>
+      <div class="tw" style="display: none;" id="moonshot-closed-wrapper">
+        <table id="moonshot-closed-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Symbol</th>
+              <th>ML Score</th>
+              <th>Entry</th>
+              <th>Exit</th>
+              <th>P&L $</th>
+              <th>P&L %</th>
+              <th>Reason</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody id="moonshot-closed-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <div id="moonshot-error" style="display: none; color: #ff6b6b; margin-top: 10px; padding: 8px; background: rgba(255,107,107,0.1); border-radius: 4px; border: 1px solid #ff6b6b;">
+    Error loading Moonshot data. Check service status.
+  </div>
+</div>
+
 <!-- Top Performers Table -->
 <div class="card">
   <div class="sec">Top Performers <span id="models-count" style="font-weight:400"></span></div>
@@ -266,6 +367,127 @@ let sparklineCache={}; // Cache sparkline data {model_id: {data: [...], svg: '..
 let sparklineWindow='7d'; // '7d' or '30d'
 
 // Portfolio summary removed - showing only top performers
+
+// ── Moonshot Live Trading ─────────────────────────────────────────────────
+async function loadMoonshotLive(){
+  try{
+    const data=await api('/api/moonshot-live');
+    
+    // Handle errors
+    if(data.error){
+      document.getElementById('moonshot-loading').style.display='none';
+      document.getElementById('moonshot-error').style.display='block';
+      document.getElementById('moonshot-error').textContent=`Error: ${data.error}`;
+      return;
+    }
+
+    // Hide loading, show content
+    document.getElementById('moonshot-loading').style.display='none';
+    document.getElementById('moonshot-content').style.display='block';
+    document.getElementById('moonshot-error').style.display='none';
+
+    const s=data.summary;
+
+    // Update header
+    const pnlSign=s.total_pnl_usd>=0?'+':'';
+    const pnlColor=s.total_pnl_usd>=0?'#22c55e':'#ef4444';
+    document.getElementById('moonshot-balance-header').innerHTML=
+      `— $38.87 → <span style="color:${pnlColor};">$${s.current_balance} (${pnlSign}${s.total_pnl_pct.toFixed(2)}%)</span>`;
+
+    // Update summary cards
+    document.getElementById('moonshot-current-balance').textContent=`$${s.current_balance}`;
+    
+    const pnlClass=s.total_pnl_usd>=0?'green':'red';
+    const pnlEl=document.getElementById('moonshot-total-pnl');
+    pnlEl.className=pnlClass;
+    pnlEl.textContent=`${pnlSign}$${Math.abs(s.total_pnl_usd).toFixed(2)} (${pnlSign}${s.total_pnl_pct.toFixed(2)}%)`;
+    
+    document.getElementById('moonshot-open-count').textContent=s.open_count;
+    document.getElementById('moonshot-closed-count').textContent=s.closed_count;
+    
+    const wrClass=s.win_rate>=50?'green':'';
+    const wrEl=document.getElementById('moonshot-win-rate');
+    wrEl.className=wrClass;
+    wrEl.textContent=`${s.win_rate}%`;
+
+    // Update open positions table
+    const openTbody=document.getElementById('moonshot-open-tbody');
+    const openWrapper=document.getElementById('moonshot-open-wrapper');
+    const openEmpty=document.getElementById('moonshot-open-empty');
+    
+    if(data.open_positions.length===0){
+      openWrapper.style.display='none';
+      openEmpty.style.display='block';
+    }else{
+      openWrapper.style.display='block';
+      openEmpty.style.display='none';
+      openTbody.innerHTML='';
+
+      data.open_positions.forEach(pos=>{
+        const pnlClass=pos.unrealized_pnl_pct>=0?'green':'red';
+        const pnlSign=pos.unrealized_pnl_usd>=0?'+':'';
+        const pnlPctSign=pos.unrealized_pnl_pct>=0?'+':'';
+        const rowBg=pos.unrealized_pnl_pct>=0?'rgba(34,197,94,0.05)':'rgba(239,68,68,0.05)';
+
+        const row=`
+          <tr style="background:${rowBg};">
+            <td class="mono">${pos.symbol}</td>
+            <td style="color:#a892c0;font-weight:600;">${pos.ml_score.toFixed(3)}</td>
+            <td>$${pos.entry_price.toFixed(4)}</td>
+            <td>$${pos.current_price.toFixed(4)}</td>
+            <td class="${pnlClass}">${pnlSign}$${Math.abs(pos.unrealized_pnl_usd).toFixed(2)}</td>
+            <td class="${pnlClass}">${pnlPctSign}${pos.unrealized_pnl_pct.toFixed(2)}%</td>
+            <td>${pos.leverage}x</td>
+            <td style="font-size:10px;">$${pos.sl_price?pos.sl_price.toFixed(4):'N/A'}</td>
+            <td style="font-size:10px;">$${pos.tp_price?pos.tp_price.toFixed(4):'N/A'}</td>
+            <td style="color:#a892c0;">${pos.duration}</td>
+          </tr>
+        `;
+        openTbody.innerHTML+=row;
+      });
+    }
+
+    // Update closed trades table
+    const closedTbody=document.getElementById('moonshot-closed-tbody');
+    const closedWrapper=document.getElementById('moonshot-closed-wrapper');
+    const closedEmpty=document.getElementById('moonshot-closed-empty');
+    
+    if(data.closed_trades.length===0){
+      closedWrapper.style.display='none';
+      closedEmpty.style.display='block';
+    }else{
+      closedWrapper.style.display='block';
+      closedEmpty.style.display='none';
+      closedTbody.innerHTML='';
+
+      data.closed_trades.forEach(trade=>{
+        const pnlClass=trade.pnl_pct>=0?'green':'red';
+        const pnlSign=trade.pnl_usd>=0?'+':'';
+        const pnlPctSign=trade.pnl_pct>=0?'+':'';
+
+        const row=`
+          <tr>
+            <td style="color:#a892c0;">${trade.id}</td>
+            <td class="mono">${trade.symbol}</td>
+            <td style="color:#a892c0;font-weight:600;">${trade.ml_score?trade.ml_score.toFixed(3):'N/A'}</td>
+            <td>$${trade.entry_price?trade.entry_price.toFixed(4):'N/A'}</td>
+            <td>$${trade.exit_price?trade.exit_price.toFixed(4):'N/A'}</td>
+            <td class="${pnlClass}">${pnlSign}$${Math.abs(trade.pnl_usd).toFixed(2)}</td>
+            <td class="${pnlClass}">${pnlPctSign}${trade.pnl_pct.toFixed(2)}%</td>
+            <td style="font-size:11px;">${trade.exit_reason||'N/A'}</td>
+            <td style="color:#a892c0;">${trade.duration}</td>
+          </tr>
+        `;
+        closedTbody.innerHTML+=row;
+      });
+    }
+  }catch(e){
+    console.error('Error loading Moonshot live data:',e);
+    document.getElementById('moonshot-loading').style.display='none';
+    document.getElementById('moonshot-error').style.display='block';
+    document.getElementById('moonshot-error').textContent=`Error: ${e.message}`;
+  }
+}
 
 // ── Header / Market ────────────────────────────────────────────────────────
 async function loadHeader(){
@@ -520,7 +742,7 @@ async function loadTrades(){
 
 // ── Orchestrate ────────────────────────────────────────────────────────────
 async function refreshAll(){
-  await Promise.allSettled([loadHeader(),loadModels(),loadPositions(),loadTrades()]);
+  await Promise.allSettled([loadMoonshotLive(),loadHeader(),loadModels(),loadPositions(),loadTrades()]);
 }
 refreshAll();
 setInterval(refreshAll,5*60*1000);
