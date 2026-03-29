@@ -198,25 +198,7 @@ def run_cycle():
         errors.append(f"execution: {e}")
         traceback.print_exc()
 
-    # ── 7. Tournament — challengers compete ──────────────────────────────
-    try:
-        from src.tournament.challenger import generate_challengers
-        new_challengers = generate_challengers(
-            db, n=config.CHALLENGER_COUNT_PER_CYCLE
-        )
-        log.info("Generated %d new challengers", len(new_challengers))
-    except Exception as e:
-        log.error("Challenger generation failed: %s", e)
-        errors.append(f"challengers: {e}")
-
-    try:
-        from src.tournament.backtest import backtest_new_challengers
-        backtest_new_challengers(db)
-        log.info("Backtest round complete")
-    except Exception as e:
-        log.error("Backtest failed: %s", e)
-        errors.append(f"backtest: {e}")
-
+    # ── 7. FT scoring + promotions (BEFORE backtest — no dependency on new challengers) ──
     try:
         from src.tournament.forward_test import score_forward_test_models
         score_forward_test_models(db, all_symbols, ts_ms)
@@ -253,7 +235,26 @@ def run_cycle():
         log.error("Champion promotion failed: %s", e)
         errors.append(f"promotion: {e}")
 
-    # ── 8. Log cycle end ─────────────────────────────────────────────────
+    # ── 8. Tournament — challengers (AFTER FT scoring, can be slow) ──────
+    try:
+        from src.tournament.challenger import generate_challengers
+        new_challengers = generate_challengers(
+            db, n=config.CHALLENGER_COUNT_PER_CYCLE
+        )
+        log.info("Generated %d new challengers", len(new_challengers))
+    except Exception as e:
+        log.error("Challenger generation failed: %s", e)
+        errors.append(f"challengers: {e}")
+
+    try:
+        from src.tournament.backtest import backtest_new_challengers
+        backtest_new_challengers(db)
+        log.info("Backtest round complete")
+    except Exception as e:
+        log.error("Backtest failed: %s", e)
+        errors.append(f"backtest: {e}")
+
+    # ── 9. Log cycle end ─────────────────────────────────────────────────
     end_ts = int(time.time() * 1000)
     duration_s = (end_ts - ts_ms) / 1000
     db.execute(
