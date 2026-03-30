@@ -1,11 +1,11 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORED
 
-**Last updated:** 2026-03-28 20:03 MST (AUTO)
+**Last updated:** 2026-03-30 00:03 MST (AUTO)
 
 ## ✅ BLOFIN V1 — OPERATIONAL
 
 ### Current Status
-- ✅ Paper trading: LIVE (first trade 17:21 MST)
+- ✅ Paper trading: LIVE (ongoing)
 - ✅ 30 active strategies, 14,273 tradeable pairs
 - ✅ Dashboard: http://127.0.0.1:8892
 - ⛔ Pipeline timer: STOPPED (crashes/hangs — needs investigation)
@@ -42,14 +42,14 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 29 08:03 MST)
+### Current Status (Mar 30 00:03 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
 - ✅ 2 active champions (SHORT champion, new_listing placeholder)
 - ✅ 0 open positions (paper)
-- ✅ **Cycle running since 07:44** (19min runtime, normal operation)
+- ✅ No cycle currently running (last 4h clean, 0 errors)
 - ✅ Tournament pipeline: 2 champions, 95% retirement rate (HEALTHY per tournament philosophy)
-- ✅ 941 candle parquet files across /mnt/data (well beyond 468 target)
-- ✅ 0 cycle errors in past 4h (2 minor ERROR lines, normal)
+- ✅ Candle data: Present in /mnt/data/blofin_tickers/raw/ (coin/tickers/*.parquet structure)
+- ✅ 0 cycle errors in past 4h (cycles running clean)
 - ⚠️ **HANG PROTOCOL:** Only kill if truly hung (same stage >30min + no logs). Slow ≠ broken.
 
 ### Recent Fixes
