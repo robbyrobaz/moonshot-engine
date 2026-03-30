@@ -1,0 +1,18 @@
+{
+  "model_type": "lightgbm",
+  "direction": "short",
+  "feature_set": [
+    "volume_ratio_3d",
+    "volume_ratio_7d",
+    "volume_spike",
+    "volume_trend",
+    "obv_slope",
+    "vol_24h_vs_7d_avg"
+  ],
+  "confidence_threshold": 0.7,
+  "learning_rate": 0.05,
+  "max_depth": 6,
+  "n_estimators": 200,
+  "neg_class_weight": 3,
+  "num_leaves": 63
+}

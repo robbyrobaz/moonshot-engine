@@ -1,0 +1,18 @@
+{
+  "model_type": "lightgbm",
+  "direction": "long",
+  "feature_set": [
+    "momentum_8w",
+    "price_vs_52w_low",
+    "distance_from_support",
+    "is_new_listing",
+    "days_since_listing",
+    "btc_30d_return"
+  ],
+  "confidence_threshold": 0.3,
+  "learning_rate": 0.05,
+  "max_depth": 6,
+  "n_estimators": 200,
+  "neg_class_weight": 15,
+  "num_leaves": 63
+}

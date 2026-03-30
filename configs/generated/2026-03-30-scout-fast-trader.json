@@ -1,0 +1,18 @@
+{
+  "model_type": "xgboost",
+  "direction": "short",
+  "feature_set": [
+    "momentum_1d",
+    "momentum_3d",
+    "bb_position",
+    "volume_ratio_3d",
+    "atr_percentile",
+    "high_low_range_pct"
+  ],
+  "confidence_threshold": 0.7,
+  "learning_rate": 0.1,
+  "max_depth": 3,
+  "n_estimators": 50,
+  "neg_class_weight": 3,
+  "num_leaves": 31
+}
