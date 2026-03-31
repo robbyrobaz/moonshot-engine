@@ -1,0 +1,15 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": ["price_vs_52w_high", "price_vs_52w_low", "momentum_4w", "volume_ratio_7d", "volume_ratio_3d", "obv_slope", "volume_spike"],
+  "params": {
+    "learning_rate": 0.05,
+    "depth": 6,
+    "n_estimators": 250,
+    "l2_leaf_reg": 5,
+    "neg_class_weight": 4
+  },
+  "entry_threshold": 0.55,
+  "invalidation_threshold": 0.35,
+  "description": "CatBoost Price-Volume Champion — proven price_volume feature set (PF 1.99) with CatBoost (best FT performer)"
+}

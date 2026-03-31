@@ -1,0 +1,15 @@
+{
+  "direction": "short",
+  "model_type": "lightgbm",
+  "feature_set": ["volume_ratio_3d", "volume_ratio_7d", "volume_spike", "volume_trend", "obv_slope", "vol_24h_vs_7d_avg"],
+  "params": {
+    "learning_rate": 0.06,
+    "max_depth": 6,
+    "n_estimators": 200,
+    "min_child_samples": 20,
+    "neg_class_weight": 3
+  },
+  "entry_threshold": 0.65,
+  "invalidation_threshold": 0.45,
+  "description": "Volume-Only Sniper — pure volume model, volume precedes price (risky, no price features)"
+}

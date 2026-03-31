@@ -1,0 +1,15 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": ["bb_squeeze_pct", "atr_compression", "atr_percentile", "realized_vol_ratio", "high_low_range_pct", "momentum_1d", "volume_spike"],
+  "params": {
+    "learning_rate": 0.06,
+    "depth": 6,
+    "n_estimators": 300,
+    "l2_leaf_reg": 4,
+    "neg_class_weight": 5
+  },
+  "entry_threshold": 0.58,
+  "invalidation_threshold": 0.38,
+  "description": "Volatility Compression Sniper — low vol precedes breakouts, BB squeeze + ATR compression combo"
+}

@@ -1,0 +1,15 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": ["momentum_1d", "atr_percentile", "bb_position", "volume_spike", "consec_down_bars"],
+  "params": {
+    "learning_rate": 0.10,
+    "depth": 4,
+    "n_estimators": 150,
+    "l2_leaf_reg": 2,
+    "neg_class_weight": 5
+  },
+  "entry_threshold": 0.55,
+  "invalidation_threshold": 0.35,
+  "description": "Minimal Core — simplicity wins, only 5 features (momentum + vol + structure)"
+}

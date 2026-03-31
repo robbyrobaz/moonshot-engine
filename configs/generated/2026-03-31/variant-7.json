@@ -1,0 +1,15 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": ["btc_30d_return", "btc_vol_percentile", "market_breadth", "momentum_4w", "volume_ratio_7d", "bb_position"],
+  "params": {
+    "learning_rate": 0.05,
+    "depth": 6,
+    "n_estimators": 250,
+    "l2_leaf_reg": 5,
+    "neg_class_weight": 4
+  },
+  "entry_threshold": 0.58,
+  "invalidation_threshold": 0.38,
+  "description": "BTC Regime Filter — BTC drives alts, use macro signals as regime context"
+}

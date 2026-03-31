@@ -1,0 +1,15 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": ["momentum_1d", "momentum_3d", "bb_position", "volume_ratio_3d", "atr_percentile", "high_low_range_pct", "consec_down_bars"],
+  "params": {
+    "learning_rate": 0.08,
+    "depth": 5,
+    "n_estimators": 200,
+    "l2_leaf_reg": 3,
+    "neg_class_weight": 5
+  },
+  "entry_threshold": 0.60,
+  "invalidation_threshold": 0.40,
+  "description": "Fast Momentum CatBoost — 1d/3d momentum for quicker entries vs champion's 4w/8w windows"
+}

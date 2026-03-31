@@ -1,0 +1,15 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": ["funding_rate_current", "funding_rate_extreme", "oi_price_divergence", "oi_change_24h", "mark_index_spread", "volume_spike", "momentum_1d"],
+  "params": {
+    "learning_rate": 0.05,
+    "depth": 7,
+    "n_estimators": 250,
+    "l2_leaf_reg": 6,
+    "neg_class_weight": 4
+  },
+  "entry_threshold": 0.62,
+  "invalidation_threshold": 0.42,
+  "description": "Funding Rate Contrarian — extreme funding + OI divergence signals reversals"
+}
