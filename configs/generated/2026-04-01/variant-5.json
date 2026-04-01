@@ -1,0 +1,21 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": [
+    "price_vs_52w_high",
+    "momentum_4w",
+    "volume_spike",
+    "obv_slope",
+    "btc_30d_return"
+  ],
+  "params": {
+    "learning_rate": 0.08,
+    "depth": 4,
+    "n_estimators": 150,
+    "l2_leaf_reg": 3,
+    "neg_class_weight": 4
+  },
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Ultra-Minimal - 5 best features outperform 15+ feature sets"
+}

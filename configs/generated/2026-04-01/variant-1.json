@@ -1,0 +1,24 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": [
+    "atr_compression",
+    "atr_percentile",
+    "high_low_range_pct",
+    "realized_vol_ratio",
+    "bb_squeeze_pct",
+    "price_vs_52w_high",
+    "momentum_4w",
+    "volume_spike"
+  ],
+  "params": {
+    "learning_rate": 0.03,
+    "depth": 5,
+    "n_estimators": 300,
+    "l2_leaf_reg": 5,
+    "neg_class_weight": 4
+  },
+  "entry_threshold": 0.60,
+  "invalidation_threshold": 0.40,
+  "description": "Volatility Regime Filter - Low volatility compression predicts explosive moves"
+}

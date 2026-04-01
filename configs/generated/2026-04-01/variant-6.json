@@ -1,0 +1,32 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": [
+    "price_vs_52w_high",
+    "price_vs_52w_low",
+    "momentum_4w",
+    "momentum_8w",
+    "bb_squeeze_pct",
+    "bb_position",
+    "volume_ratio_7d",
+    "volume_ratio_3d",
+    "obv_slope",
+    "volume_spike",
+    "volume_trend",
+    "btc_30d_return",
+    "btc_vol_percentile",
+    "market_breadth",
+    "days_since_listing",
+    "is_new_listing"
+  ],
+  "params": {
+    "learning_rate": 0.02,
+    "depth": 8,
+    "n_estimators": 400,
+    "l2_leaf_reg": 7,
+    "neg_class_weight": 4
+  },
+  "entry_threshold": 0.55,
+  "invalidation_threshold": 0.35,
+  "description": "Deep CatBoost - Deeper trees capture complex interactions (champion feature set)"
+}

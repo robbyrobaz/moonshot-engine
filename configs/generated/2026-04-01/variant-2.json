@@ -1,0 +1,23 @@
+{
+  "direction": "short",
+  "model_type": "lightgbm",
+  "feature_set": [
+    "consec_down_bars",
+    "consec_up_bars",
+    "higher_highs",
+    "price_vs_24h_high",
+    "price_vs_24h_low",
+    "vol_24h_vs_7d_avg",
+    "volume_spike",
+    "momentum_1d",
+    "momentum_3d"
+  ],
+  "params": {
+    "learning_rate": 0.05,
+    "num_leaves": 31,
+    "n_estimators": 200
+  },
+  "entry_threshold": 0.55,
+  "invalidation_threshold": 0.35,
+  "description": "Intraday Microstructure - Consecutive bars + intraday levels reveal exhaustion"
+}

@@ -1,0 +1,22 @@
+{
+  "direction": "long",
+  "model_type": "lightgbm",
+  "feature_set": [
+    "is_new_listing",
+    "days_since_listing",
+    "momentum_1d",
+    "momentum_3d",
+    "volume_spike",
+    "atr_percentile",
+    "price_vs_52w_low",
+    "btc_30d_return"
+  ],
+  "params": {
+    "learning_rate": 0.10,
+    "num_leaves": 15,
+    "n_estimators": 150
+  },
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Long Lottery v2 - New listing momentum + volatility spike"
+}

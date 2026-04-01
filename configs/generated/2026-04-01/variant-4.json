@@ -1,0 +1,23 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": [
+    "distance_from_support",
+    "distance_from_resistance",
+    "price_vs_52w_high",
+    "price_vs_52w_low",
+    "momentum_4w",
+    "volume_ratio_7d",
+    "obv_slope"
+  ],
+  "params": {
+    "learning_rate": 0.05,
+    "depth": 6,
+    "n_estimators": 200,
+    "l2_leaf_reg": 5,
+    "neg_class_weight": 4
+  },
+  "entry_threshold": 0.60,
+  "invalidation_threshold": 0.40,
+  "description": "Support/Resistance Levels - Distance from S/R levels predicts reversals"
+}

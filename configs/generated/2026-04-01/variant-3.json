@@ -1,0 +1,23 @@
+{
+  "direction": "short",
+  "model_type": "xgboost",
+  "feature_set": [
+    "momentum_1d",
+    "momentum_3d",
+    "momentum_4w",
+    "price_vs_52w_high",
+    "volume_ratio_3d",
+    "volume_spike",
+    "obv_slope",
+    "btc_30d_return"
+  ],
+  "params": {
+    "learning_rate": 0.05,
+    "max_depth": 4,
+    "n_estimators": 250,
+    "scale_pos_weight": 3
+  },
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Short-Term Momentum Burst - 1d/3d momentum captures fast reversals better than 4w/8w"
+}
