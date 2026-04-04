@@ -442,12 +442,13 @@ def backtest_challenger(db, model_params: dict) -> dict:
     return result
 
 
-def backtest_new_challengers(db, max_batch=None):
+def backtest_new_challengers(db, max_batch=None, cycle_budget_minutes=60):
     """Find all models with stage='backtest', run backtest, promote or retire.
     
     Args:
         db: Database connection
         max_batch: Maximum models to process per cycle (None = dynamic based on CPU load)
+        cycle_budget_minutes: Maximum total time budget for this batch (default 60min)
     """
     if max_batch is None:
         max_batch = BACKTEST_BATCH_SIZE
@@ -467,17 +468,87 @@ def backtest_new_challengers(db, max_batch=None):
     log.info("backtest_new_challengers: %d challengers to evaluate (%d total pending)", 
              len(rows), total_pending)
     now_ms = int(time.time() * 1000)
+    cycle_start_time = time.time()
+    cycle_budget_seconds = cycle_budget_minutes * 60
     processed = 0
 
     for row in rows:
+        # Check cycle time budget before processing next model
+        elapsed = time.time() - cycle_start_time
+        remaining = cycle_budget_seconds - elapsed
+        if remaining < 60:  # Less than 1min remaining
+            log.warning(
+                "backtest_new_challengers: cycle time budget exhausted (%.1fs elapsed, %.1fs budget). "
+                "Stopping batch. %d models processed, %d remaining.",
+                elapsed, cycle_budget_seconds, processed, len(rows) - processed
+            )
+            break
+
+        # Check memory before loading next model (prevent OOM)
+        rss_mb = _get_rss_mb()
+        try:
+            with open("/proc/meminfo", encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("MemAvailable:"):
+                        mem_available_kb = int(line.split()[1])
+                        mem_available_mb = mem_available_kb / 1024
+                        if rss_mb > mem_available_mb * 0.8:
+                            log.warning(
+                                "backtest_new_challengers: memory exhaustion risk (RSS %.1fMB, available %.1fMB). "
+                                "Stopping batch. %d models processed, %d remaining.",
+                                rss_mb, mem_available_mb, processed, len(rows) - processed
+                            )
+                            return
+                        break
+        except Exception:
+            pass  # Memory check is best-effort
+
         model_id = row["model_id"]
         params = json.loads(row["params"])
         params["model_id"] = model_id
+        model_start_time = time.time()
 
         try:
-            result = backtest_challenger(db, params)
+            # Per-model timeout: 10min max
+            import signal
+            
+            def timeout_handler(signum, frame):
+                raise TimeoutError(f"Model backtest exceeded 10min timeout")
+            
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(600)  # 10min timeout
+            
+            try:
+                result = backtest_challenger(db, params)
+            finally:
+                signal.alarm(0)  # Cancel alarm
+                
+        except TimeoutError as e:
+            model_elapsed = time.time() - model_start_time
+            log.error("backtest_challenger %s TIMEOUT after %.1fs: %s", model_id, model_elapsed, e)
+            db.execute(
+                """UPDATE tournament_models
+                   SET stage = 'retired', retired_at = ?, retire_reason = ?
+                   WHERE model_id = ?""",
+                (now_ms, f"timeout: {model_elapsed:.1f}s", model_id),
+            )
+            db.commit()
+            continue
+        except MemoryError as e:
+            log.error("backtest_challenger %s OOM: %s", model_id, e)
+            db.execute(
+                """UPDATE tournament_models
+                   SET stage = 'retired', retired_at = ?, retire_reason = ?
+                   WHERE model_id = ?""",
+                (now_ms, "oom", model_id),
+            )
+            db.commit()
+            # Stop batch on OOM — system is at limit
+            log.warning("backtest_new_challengers: OOM detected, stopping batch")
+            break
         except Exception as e:
-            log.error("backtest_challenger %s failed: %s", model_id, e)
+            model_elapsed = time.time() - model_start_time
+            log.error("backtest_challenger %s failed after %.1fs: %s", model_id, model_elapsed, e)
             db.execute(
                 """UPDATE tournament_models
                    SET stage = 'retired', retired_at = ?, retire_reason = ?
@@ -530,5 +601,19 @@ def backtest_new_challengers(db, max_batch=None):
 
         db.commit()
         processed += 1
+        
+        # Log time budget status after each model
+        model_elapsed = time.time() - model_start_time
+        total_elapsed = time.time() - cycle_start_time
+        remaining = cycle_budget_seconds - total_elapsed
+        log.info(
+            "backtest_new_challengers: model %s done in %.1fs. Progress: %d/%d. "
+            "Cycle elapsed: %.1fs, remaining: %.1fs",
+            model_id, model_elapsed, processed, len(rows), total_elapsed, remaining
+        )
 
-    log.info("backtest_new_challengers: complete (%d/%d processed)", processed, len(rows))
+    total_elapsed = time.time() - cycle_start_time
+    log.info(
+        "backtest_new_challengers: complete (%d/%d processed in %.1fs, budget: %.1fs)",
+        processed, len(rows), total_elapsed, cycle_budget_seconds
+    )
