@@ -27,6 +27,17 @@ from src.db.schema import init_db, get_db
 
 def run_cycle():
     """Execute one complete 4h cycle."""
+    import signal
+    
+    # CRITICAL: Top-level cycle timeout (90min max)
+    # Prevents infinite loops in ANY phase (extended data, features, FT scoring, backtest)
+    def cycle_timeout_handler(signum, frame):
+        log.error("CYCLE TIMEOUT: 90min budget exceeded. Aborting cycle.")
+        raise TimeoutError("Cycle exceeded 90min budget")
+    
+    signal.signal(signal.SIGALRM, cycle_timeout_handler)
+    signal.alarm(90 * 60)  # 90min hard limit
+    
     lock_path = Path(config.DB_PATH).with_suffix('.cycle.lock')
     lock_fh = open(lock_path, 'w')
     try:
@@ -34,10 +45,12 @@ def run_cycle():
     except BlockingIOError:
         log.warning("Another moonshot cycle is already running; skipping this trigger")
         lock_fh.close()
+        signal.alarm(0)  # Cancel timeout
         return False
 
     db = get_db()
     ts_ms = int(time.time() * 1000)
+    cycle_start_time = time.time()
     errors = []
 
     # ── 0. Log cycle start ───────────────────────────────────────────────
@@ -207,14 +220,40 @@ def run_cycle():
         # BUG FIX 2026-03-16: Update ft_stats for ALL FT models after each cycle
         # Previously only updated when positions closed in that specific cycle,
         # causing stats to be stale if cycles were interrupted or crashed.
+        # BUG FIX 2026-04-04: Add timeout to prevent infinite loop on 961 FT models
         from src.tournament.forward_test import _update_model_ft_stats
         ft_models = db.execute(
             'SELECT model_id FROM tournament_models WHERE stage IN ("forward_test", "ft")'
         ).fetchall()
+        
+        ft_update_start = time.time()
+        ft_update_budget = 10 * 60  # 10min max for all FT stats updates
+        ft_updated = 0
+        
         for m in ft_models:
+            elapsed = time.time() - ft_update_start
+            if elapsed > ft_update_budget:
+                log.warning(
+                    "FT stats update timeout: %.1fs elapsed, %d/%d models updated. Skipping remaining.",
+                    elapsed, ft_updated, len(ft_models)
+                )
+                break
             _update_model_ft_stats(db, m["model_id"])
+            ft_updated += 1
+            
+            # Log progress every 100 models
+            if ft_updated % 100 == 0:
+                remaining_time = ft_update_budget - elapsed
+                log.info(
+                    "FT stats update progress: %d/%d models (%.1fs elapsed, %.1fs remaining)",
+                    ft_updated, len(ft_models), elapsed, remaining_time
+                )
+        
         db.commit()
-        log.info("FT stats updated for %d models", len(ft_models))
+        log.info(
+            "FT stats updated for %d/%d models in %.1fs",
+            ft_updated, len(ft_models), time.time() - ft_update_start
+        )
     except Exception as e:
         import traceback
         log.error("FT scoring failed: %s", e)
@@ -283,6 +322,7 @@ def run_cycle():
         "═══ Cycle %d done in %.1fs — %d errors ═══",
         run_id, duration_s, len(errors),
     )
+    signal.alarm(0)  # Cancel cycle timeout
     fcntl.flock(lock_fh.fileno(), fcntl.LOCK_UN)
     lock_fh.close()
     return len(errors) == 0
