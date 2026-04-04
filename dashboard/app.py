@@ -183,19 +183,44 @@ def _load_leaderboard(conn):
 
 
 def _load_open_positions(conn):
-    """Load open positions with current price via a simple join on latest candle."""
+    """Load open positions with current price via indexed lookup (no full candle scan)."""
     sql = """
         SELECT p.id, p.symbol, p.direction, p.model_id, p.entry_ts,
                p.entry_price, p.entry_ml_score, p.size_usd, p.status,
-               p.high_water_price, p.trailing_active,
-               c.close AS current_price
+               p.high_water_price, p.trailing_active
         FROM positions p
-        LEFT JOIN candles c ON p.symbol = c.symbol
-            AND c.ts = (SELECT MAX(ts) FROM candles WHERE symbol = p.symbol)
         WHERE p.status = 'open'
         ORDER BY p.entry_ts DESC
+        LIMIT 200
     """
-    return _safe_query(conn, sql)
+    positions = _safe_query(conn, sql)
+    
+    # Fetch current price for each unique symbol via indexed query
+    symbols = list(set(p['symbol'] for p in positions))
+    symbol_prices = {}
+    for symbol in symbols:
+        price_sql = "SELECT close FROM candles WHERE symbol = ? ORDER BY ts DESC LIMIT 1"
+        price_row = _safe_query(conn, price_sql, (symbol,), fetchone=True)
+        symbol_prices[symbol] = price_row['close'] if price_row else None
+    
+    # Build result with current_price added (as dict-like Row objects)
+    # We'll use a simpler approach: create a list of dicts
+    result = []
+    for p in positions:
+        p_dict = dict(p)
+        p_dict['current_price'] = symbol_prices.get(p['symbol'])
+        result.append(p_dict)
+    
+    # Return a list that mimics Row behavior for backward compatibility
+    class FakeRow(dict):
+        """Dict subclass that allows both dict['key'] and dict.key access"""
+        def __getattr__(self, key):
+            try:
+                return self[key]
+            except KeyError:
+                raise AttributeError(key)
+    
+    return [FakeRow(r) for r in result]
 
 
 def _load_recent_closes(conn):
@@ -206,6 +231,7 @@ def _load_recent_closes(conn):
         FROM positions
         WHERE status = 'closed' AND exit_ts > ?
         ORDER BY exit_ts DESC
+        LIMIT 500
     """
     return _safe_query(conn, sql, (cutoff_ms,))
 
@@ -258,9 +284,11 @@ def _load_regime(conn):
         else:
             regime = "neutral"
 
-    # Market breadth from features
+    # Market breadth from features (limit feature blob size to prevent memory bloat)
     breadth_sql = """
-        SELECT feature_values, feature_names FROM features
+        SELECT substr(feature_values, 1, 10000) as feature_values, 
+               substr(feature_names, 1, 10000) as feature_names 
+        FROM features
         ORDER BY ts DESC LIMIT 1
     """
     breadth_row = _safe_query(conn, breadth_sql, fetchone=True)
@@ -506,7 +534,7 @@ def api_vault():
 @app.route("/api/models")
 @cached(cache=_api_cache, key=lambda: hashkey("models"))
 def api_models():
-    """All FT + champion models for the master leaderboard table."""
+    """All FT + champion models for the master leaderboard table (limited to top 200 to prevent memory bloat)."""
     try:
         conn = _ro_db()
     except sqlite3.OperationalError:
@@ -521,6 +549,7 @@ def api_models():
             FROM tournament_models
             WHERE stage IN ('forward_test', 'champion')
             ORDER BY ft_pnl_last_7d DESC, ft_pnl_per_day DESC, ft_pnl DESC
+            LIMIT 200
         """
         rows = _safe_query(conn, sql)
         now_ms = time.time() * 1000
@@ -588,6 +617,7 @@ def api_model_pnl_timeseries(model_id):
             WHERE {' AND '.join(where)}
             GROUP BY bucket
             ORDER BY bucket ASC
+            LIMIT 365
         """
         rows = _safe_query(conn, sql, tuple(params))
         series = [
@@ -938,9 +968,11 @@ def api_portfolio():
               AND model_id IN (
                   SELECT model_id FROM tournament_models
                   WHERE stage IN ('forward_test', 'champion')
+                  LIMIT 100
               )
             GROUP BY bucket
             ORDER BY bucket ASC
+            LIMIT 30
         """
         series_rows = _safe_query(conn, pnl_series_sql, (cutoff_ms,))
         pnl_series = [
@@ -1087,7 +1119,7 @@ def api_champion_equity():
 
         champion_id = champ_row["model_id"]
 
-        # Get daily cumulative PnL for champion
+        # Get daily cumulative PnL for champion (limit to prevent memory bloat)
         sql = """
             SELECT date(exit_ts / 1000, 'unixepoch') AS date,
                    pnl_pct
@@ -1096,6 +1128,7 @@ def api_champion_equity():
               AND status = 'closed'
               AND exit_ts IS NOT NULL
             ORDER BY exit_ts ASC
+            LIMIT 1000
         """
         rows = _safe_query(conn, sql, (champion_id,))
 
@@ -1139,9 +1172,11 @@ def api_daily_pnl():
               AND model_id IN (
                   SELECT model_id FROM tournament_models
                   WHERE stage IN ('forward_test', 'champion')
+                  LIMIT 100
               )
             GROUP BY date
             ORDER BY date ASC
+            LIMIT 30
         """
         rows = _safe_query(conn, sql, (cutoff_ms,))
 
@@ -1429,12 +1464,13 @@ def api_feature_subsets():
         return jsonify({"error": "database not found"}), 503
 
     try:
-        # Get all FT + champion models with their params
+        # Get all FT + champion models with their params (limit to prevent memory bloat)
         sql = """
             SELECT model_id, direction, stage, params, feature_set
             FROM tournament_models
             WHERE stage IN ('forward_test', 'champion', 'backtest')
             ORDER BY created_at DESC
+            LIMIT 500
         """
         rows = _safe_query(conn, sql)
 
