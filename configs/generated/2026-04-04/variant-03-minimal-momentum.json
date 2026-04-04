@@ -1,0 +1,19 @@
+{
+  "direction": "short",
+  "model_type": "xgboost",
+  "feature_set": [
+    "momentum_1d",
+    "momentum_3d",
+    "momentum_4w",
+    "momentum_8w"
+  ],
+  "params": {
+    "learning_rate": 0.02,
+    "max_depth": 4,
+    "n_estimators": 100,
+    "neg_class_weight": 10
+  },
+  "entry_threshold": 0.55,
+  "invalidation_threshold": 0.35,
+  "description": "Minimal Momentum - Test if simple momentum signals (1d, 3d, 4w, 8w) alone can predict reversals"
+}

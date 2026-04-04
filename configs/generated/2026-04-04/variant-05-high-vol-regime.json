@@ -1,0 +1,24 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": [
+    "atr_percentile",
+    "atr_compression",
+    "high_low_range_pct",
+    "realized_vol_ratio",
+    "bb_squeeze_pct",
+    "momentum_1d",
+    "volume_spike",
+    "btc_vol_percentile"
+  ],
+  "params": {
+    "learning_rate": 0.03,
+    "depth": 6,
+    "n_estimators": 200,
+    "l2_leaf_reg": 4,
+    "neg_class_weight": 8
+  },
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "High Volatility Regime - Specialized for atr_percentile > 70, predicting mean reversion after extreme moves"
+}

@@ -1,0 +1,20 @@
+{
+  "direction": "long",
+  "model_type": "xgboost",
+  "feature_set": [
+    "volume_ratio_7d",
+    "volume_ratio_3d",
+    "obv_slope",
+    "volume_spike",
+    "volume_trend"
+  ],
+  "params": {
+    "learning_rate": 0.02,
+    "max_depth": 4,
+    "n_estimators": 100,
+    "neg_class_weight": 6
+  },
+  "entry_threshold": 0.55,
+  "invalidation_threshold": 0.35,
+  "description": "Minimal Volume - Pure volume signals for detecting accumulation before breakouts"
+}

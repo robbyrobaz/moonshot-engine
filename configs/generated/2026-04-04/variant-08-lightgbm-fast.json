@@ -1,0 +1,26 @@
+{
+  "direction": "long",
+  "model_type": "lightgbm",
+  "feature_set": [
+    "price_vs_52w_low",
+    "momentum_1d",
+    "momentum_3d",
+    "bb_position",
+    "volume_spike",
+    "volume_trend",
+    "distance_from_support",
+    "consec_down_bars",
+    "days_since_listing",
+    "is_new_listing"
+  ],
+  "params": {
+    "learning_rate": 0.05,
+    "max_depth": 3,
+    "n_estimators": 50,
+    "num_leaves": 31,
+    "neg_class_weight": 6
+  },
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Fast LightGBM - Shallow trees (depth=3), fewer estimators (50), higher learning rate (0.05) for quick training and simple patterns"
+}

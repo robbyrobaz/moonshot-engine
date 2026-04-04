@@ -1,0 +1,40 @@
+{
+  "direction": "short",
+  "model_type": "lightgbm",
+  "feature_set": [
+    "price_vs_52w_high",
+    "price_vs_52w_low",
+    "momentum_4w",
+    "momentum_8w",
+    "momentum_1d",
+    "momentum_3d",
+    "bb_squeeze_pct",
+    "bb_position",
+    "volume_ratio_7d",
+    "volume_ratio_3d",
+    "obv_slope",
+    "volume_spike",
+    "atr_percentile",
+    "atr_compression",
+    "funding_rate_current",
+    "funding_rate_7d_avg",
+    "funding_rate_extreme",
+    "oi_change_24h",
+    "oi_change_7d",
+    "oi_price_divergence",
+    "mark_index_spread",
+    "price_vs_24h_high",
+    "price_vs_24h_low",
+    "vol_24h_vs_7d_avg"
+  ],
+  "params": {
+    "learning_rate": 0.01,
+    "max_depth": 5,
+    "n_estimators": 150,
+    "num_leaves": 127,
+    "neg_class_weight": 8
+  },
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Extended Features Short - Core + funding rates + OI + mark prices + 24h tickers"
+}

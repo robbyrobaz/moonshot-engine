@@ -1,0 +1,30 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": [
+    "price_vs_52w_high",
+    "momentum_4w",
+    "momentum_8w",
+    "momentum_1d",
+    "bb_squeeze_pct",
+    "bb_position",
+    "volume_ratio_7d",
+    "obv_slope",
+    "atr_percentile",
+    "distance_from_resistance",
+    "consec_up_bars",
+    "higher_highs",
+    "btc_30d_return",
+    "btc_vol_percentile"
+  ],
+  "params": {
+    "learning_rate": 0.01,
+    "depth": 8,
+    "n_estimators": 200,
+    "l2_leaf_reg": 3,
+    "neg_class_weight": 8
+  },
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Deep CatBoost - Deeper trees (depth=8) to capture complex feature interactions, slower training but potentially better pattern recognition"
+}

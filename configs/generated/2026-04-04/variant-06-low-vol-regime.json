@@ -1,0 +1,24 @@
+{
+  "direction": "long",
+  "model_type": "catboost",
+  "feature_set": [
+    "atr_compression",
+    "bb_squeeze_pct",
+    "volume_ratio_7d",
+    "volume_ratio_3d",
+    "consec_down_bars",
+    "distance_from_support",
+    "momentum_4w",
+    "is_new_listing"
+  ],
+  "params": {
+    "learning_rate": 0.02,
+    "depth": 5,
+    "n_estimators": 150,
+    "l2_leaf_reg": 5,
+    "neg_class_weight": 5
+  },
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Low Volatility Regime - Specialized for atr_percentile < 30, predicting breakouts from compression + support + accumulation"
+}
