@@ -1,0 +1,28 @@
+{
+  "direction": "short",
+  "model_type": "lightgbm",
+  "feature_set": [
+    "price_vs_52w_high",
+    "price_vs_24h_high",
+    "momentum_4w",
+    "bb_position",
+    "volume_spike",
+    "obv_slope",
+    "atr_percentile",
+    "funding_rate_7d_avg",
+    "btc_30d_return",
+    "btc_vol_percentile",
+    "market_breadth",
+    "days_since_listing"
+  ],
+  "params": {
+    "learning_rate": 0.01,
+    "max_depth": 4,
+    "n_estimators": 150,
+    "num_leaves": 127,
+    "neg_class_weight": 10
+  },
+  "entry_threshold": 0.60,
+  "invalidation_threshold": 0.40,
+  "description": "SHORT conservative variant - similar to champion but higher selectivity and neg_weight"
+}

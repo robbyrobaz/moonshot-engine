@@ -1,0 +1,21 @@
+{
+  "direction": "short",
+  "model_type": "lightgbm",
+  "feature_set": [
+    "price_vs_52w_high",
+    "momentum_4w",
+    "volume_spike",
+    "atr_percentile",
+    "btc_30d_return"
+  ],
+  "params": {
+    "learning_rate": 0.05,
+    "max_depth": 4,
+    "n_estimators": 100,
+    "num_leaves": 31,
+    "neg_class_weight": 8
+  },
+  "entry_threshold": 0.55,
+  "invalidation_threshold": 0.35,
+  "description": "SHORT ultra-minimal - only 5 strongest features, high selectivity"
+}

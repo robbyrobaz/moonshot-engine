@@ -1,0 +1,30 @@
+{
+  "direction": "short",
+  "model_type": "xgboost",
+  "feature_set": [
+    "price_vs_52w_high",
+    "price_vs_24h_high",
+    "momentum_4w",
+    "momentum_8w",
+    "bb_position",
+    "distance_from_resistance",
+    "higher_highs",
+    "consec_up_bars",
+    "volume_spike",
+    "obv_slope",
+    "funding_rate_current",
+    "funding_rate_extreme",
+    "oi_change_24h",
+    "btc_30d_return",
+    "market_breadth"
+  ],
+  "params": {
+    "learning_rate": 0.1,
+    "max_depth": 10,
+    "n_estimators": 200,
+    "neg_class_weight": 4
+  },
+  "entry_threshold": 0.45,
+  "invalidation_threshold": 0.25,
+  "description": "SHORT XGBoost deep tree - aggressive top reversal signals with extended features"
+}

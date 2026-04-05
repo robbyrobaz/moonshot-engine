@@ -1,0 +1,30 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "feature_set": [
+    "volume_ratio_7d",
+    "volume_ratio_3d",
+    "obv_slope",
+    "volume_spike",
+    "volume_trend",
+    "vol_24h_vs_7d_avg",
+    "oi_change_24h",
+    "oi_change_7d",
+    "oi_price_divergence",
+    "oi_percentile_90d",
+    "price_vs_52w_high",
+    "momentum_4w",
+    "atr_percentile",
+    "btc_30d_return"
+  ],
+  "params": {
+    "learning_rate": 0.08,
+    "depth": 6,
+    "n_estimators": 250,
+    "l2_leaf_reg": 3,
+    "neg_class_weight": 6
+  },
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "SHORT volume-heavy - 10 volume/OI features to catch distribution patterns"
+}

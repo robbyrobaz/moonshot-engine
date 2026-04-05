@@ -1,0 +1,27 @@
+{
+  "direction": "long",
+  "model_type": "xgboost",
+  "feature_set": [
+    "price_vs_52w_low",
+    "momentum_8w",
+    "bb_squeeze_pct",
+    "distance_from_support",
+    "consec_down_bars",
+    "volume_ratio_7d",
+    "atr_compression",
+    "realized_vol_ratio",
+    "btc_30d_return",
+    "funding_rate_7d_avg",
+    "oi_change_7d",
+    "mark_index_spread"
+  ],
+  "params": {
+    "learning_rate": 0.1,
+    "max_depth": 8,
+    "n_estimators": 150,
+    "neg_class_weight": 3
+  },
+  "entry_threshold": 0.55,
+  "invalidation_threshold": 0.35,
+  "description": "LONG aggressive - deep trees, higher LR, oversold bounce signals with extended features"
+}

@@ -1,0 +1,26 @@
+{
+  "direction": "long",
+  "model_type": "catboost",
+  "feature_set": [
+    "price_vs_52w_high",
+    "momentum_4w",
+    "btc_30d_return",
+    "btc_vol_percentile",
+    "market_breadth",
+    "volume_spike",
+    "obv_slope",
+    "atr_percentile",
+    "bb_position",
+    "days_since_listing"
+  ],
+  "params": {
+    "learning_rate": 0.05,
+    "depth": 5,
+    "n_estimators": 200,
+    "l2_leaf_reg": 2,
+    "neg_class_weight": 5
+  },
+  "entry_threshold": 0.45,
+  "invalidation_threshold": 0.25,
+  "description": "LONG-focused minimal regime-aware model - 10 features with BTC correlation signals"
+}

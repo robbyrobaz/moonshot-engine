@@ -1,0 +1,28 @@
+{
+  "direction": "long",
+  "model_type": "catboost",
+  "feature_set": [
+    "is_new_listing",
+    "days_since_listing",
+    "volume_spike",
+    "volume_trend",
+    "vol_24h_vs_7d_avg",
+    "price_change_24h_pct",
+    "momentum_4w",
+    "bb_squeeze_pct",
+    "funding_rate_current",
+    "oi_change_24h",
+    "btc_30d_return",
+    "market_breadth"
+  ],
+  "params": {
+    "learning_rate": 0.08,
+    "depth": 5,
+    "n_estimators": 150,
+    "l2_leaf_reg": 2,
+    "neg_class_weight": 4
+  },
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "LONG new listing specialist - early momentum captures on freshly listed coins"
+}

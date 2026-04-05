@@ -1,0 +1,27 @@
+{
+  "direction": "long",
+  "model_type": "lightgbm",
+  "feature_set": [
+    "atr_compression",
+    "bb_squeeze_pct",
+    "realized_vol_ratio",
+    "high_low_range_pct",
+    "funding_rate_extreme",
+    "mark_index_spread",
+    "btc_vol_percentile",
+    "price_vs_52w_low",
+    "distance_from_support",
+    "volume_ratio_3d",
+    "oi_percentile_90d"
+  ],
+  "params": {
+    "learning_rate": 0.05,
+    "max_depth": 6,
+    "n_estimators": 200,
+    "num_leaves": 63,
+    "neg_class_weight": 5
+  },
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "LONG volatility squeeze - compression breakout signals with low volatility entry"
+}
