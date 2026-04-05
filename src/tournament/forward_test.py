@@ -1,6 +1,8 @@
 """Moonshot v2 — Forward test arena: score coins & track per-model PnL."""
 
 import json
+import multiprocessing as mp
+import signal
 import sqlite3
 import time
 import traceback
@@ -258,7 +260,11 @@ def _compute_ft_pnl_metrics(db, model_id: str, total_pnl: float) -> tuple[float,
 
 
 def _update_model_ft_stats(db, model_id: str):
-    """Recompute forward test stats for a model from its closed positions."""
+    """Recompute forward test stats for a model from its closed positions.
+    
+    NOTE: This function is called in a child process via multiprocessing.
+    Do NOT call from main process — use update_all_ft_stats_batch() instead.
+    """
     rows = db.execute(
         """SELECT pnl_pct FROM positions
            WHERE model_id = ? AND is_champion_trade = 0 AND status = 'closed'""",
@@ -315,8 +321,113 @@ def _update_model_ft_stats(db, model_id: str):
                      model_id, max_dd * 100, FT_MAX_DRAWDOWN_PAUSE * 100)
 
 
-def check_ft_exits(db, ts_ms: int):
-    """Check and close FT positions that hit exit conditions."""
+def _worker_update_ft_stats(db_path: str, model_ids: list[str], timeout_seconds: int = 300):
+    """Child process worker: update FT stats for a batch of models with hard timeout.
+    
+    This runs in a separate process so signal.alarm() can interrupt C code.
+    Returns number of models successfully updated.
+    """
+    def timeout_handler(signum, frame):
+        raise TimeoutError("FT stats update timeout")
+    
+    # Connect to DB in child process
+    db = sqlite3.connect(db_path)
+    db.row_factory = sqlite3.Row
+    
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(timeout_seconds)
+    
+    updated = 0
+    try:
+        for model_id in model_ids:
+            _update_model_ft_stats(db, model_id)
+            updated += 1
+        db.commit()
+    except TimeoutError:
+        log.error("FT stats worker timeout after %ds (updated %d/%d models)", 
+                  timeout_seconds, updated, len(model_ids))
+        db.rollback()
+    except Exception as e:
+        log.error("FT stats worker error: %s", e)
+        db.rollback()
+    finally:
+        signal.alarm(0)
+        db.close()
+    
+    return updated
+
+
+def update_all_ft_stats_batch(db, models_with_changes: set[str] | None = None):
+    """Batch update FT stats for all FT models (or incremental subset).
+    
+    Uses multiprocessing with hard timeout to prevent C-code hangs.
+    
+    Args:
+        db: Main database connection
+        models_with_changes: If provided, only update these model_ids (incremental mode)
+    """
+    # Get models that need updates
+    if models_with_changes:
+        if not models_with_changes:
+            return  # Empty set, nothing to do
+        placeholders = ','.join('?' * len(models_with_changes))
+        query = f"""SELECT model_id FROM tournament_models 
+                    WHERE stage = 'forward_test' 
+                    AND model_id IN ({placeholders})"""
+        params = tuple(models_with_changes)
+    else:
+        query = "SELECT model_id FROM tournament_models WHERE stage = 'forward_test'"
+        params = ()
+    
+    ft_models = db.execute(query, params).fetchall()
+    model_ids = [r["model_id"] for r in ft_models]
+    
+    if not model_ids:
+        log.info("update_all_ft_stats_batch: no models to update")
+        return
+    
+    log.info("update_all_ft_stats_batch: updating %d FT models%s",
+             len(model_ids),
+             " (incremental)" if models_with_changes else " (full)")
+    
+    # Get DB path from connection
+    db_path = db.execute("PRAGMA database_list").fetchone()[2]
+    
+    # Split into batches for parallel processing (4 workers, 5min timeout each)
+    batch_size = max(1, len(model_ids) // 4)
+    batches = [model_ids[i:i + batch_size] for i in range(0, len(model_ids), batch_size)]
+    
+    # Run batches in parallel with hard timeout
+    timeout = 300  # 5 minutes per batch
+    total_updated = 0
+    
+    with mp.Pool(processes=min(4, len(batches))) as pool:
+        results = [
+            pool.apply_async(_worker_update_ft_stats, (db_path, batch, timeout))
+            for batch in batches
+        ]
+        
+        for i, res in enumerate(results):
+            try:
+                updated = res.get(timeout=timeout + 10)  # Extra 10s for process overhead
+                total_updated += updated
+                log.info("FT stats batch %d/%d: updated %d models", 
+                         i + 1, len(batches), updated)
+            except mp.TimeoutError:
+                log.error("FT stats batch %d/%d: process timeout", i + 1, len(batches))
+            except Exception as e:
+                log.error("FT stats batch %d/%d: error: %s", i + 1, len(batches), e)
+    
+    log.info("update_all_ft_stats_batch: completed %d/%d models", 
+             total_updated, len(model_ids))
+
+
+def check_ft_exits(db, ts_ms: int) -> set[str]:
+    """Check and close FT positions that hit exit conditions.
+    
+    Returns:
+        Set of model_ids that had closed positions (need stats update)
+    """
     open_positions = db.execute(
         """SELECT p.*, tm.feature_set, tm.model_type
            FROM positions p
@@ -325,9 +436,9 @@ def check_ft_exits(db, ts_ms: int):
     ).fetchall()
 
     if not open_positions:
-        return
+        return set()
 
-    models_updated = set()
+    models_with_exits = set()
 
     for pos in open_positions:
         symbol = pos["symbol"]
@@ -361,7 +472,7 @@ def check_ft_exits(db, ts_ms: int):
                 (ts_ms, current_price, exit_reason, pnl_pct,
                  new_hwm, trail_now_active, pos["id"]),
             )
-            models_updated.add(model_id)
+            models_with_exits.add(model_id)
             log.info("FT exit %s %s: %s pnl=%.2f%% reason=%s",
                      model_id, symbol, direction, pnl_pct * 100, exit_reason)
         else:
@@ -371,11 +482,8 @@ def check_ft_exits(db, ts_ms: int):
                 (new_hwm, trail_now_active, pos["id"]),
             )
 
-    # Recompute stats for models that had exits
-    for model_id in models_updated:
-        _update_model_ft_stats(db, model_id)
-
     db.commit()
+    return models_with_exits
 
 
 def score_forward_test_models(db, all_symbols: list[str], ts_ms: int):
@@ -517,5 +625,10 @@ def score_forward_test_models(db, all_symbols: list[str], ts_ms: int):
 
     db.commit()
 
-    # Check exits on all open FT positions
-    check_ft_exits(db, now_ms)
+    # Check exits on all open FT positions (returns models that had closures)
+    models_with_exits = check_ft_exits(db, now_ms)
+    
+    # Batch update FT stats for models that had exits (incremental)
+    # This runs in child processes with hard timeout to prevent C-code hangs
+    if models_with_exits:
+        update_all_ft_stats_batch(db, models_with_exits)

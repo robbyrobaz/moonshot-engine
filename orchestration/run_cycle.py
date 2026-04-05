@@ -200,18 +200,14 @@ def run_cycle():
 
     # ── 7. FT scoring + promotions (BEFORE backtest — no dependency on new challengers) ──
     try:
-        from src.tournament.forward_test import score_forward_test_models
+        from src.tournament.forward_test import score_forward_test_models, update_all_ft_stats_batch
         score_forward_test_models(db, all_symbols, ts_ms)
         log.info("Forward test scoring complete")
 
-        # BUG FIX 2026-03-16: Update ft_stats for ALL FT models after each cycle
-        # DISABLED 2026-04-04: This loop causes infinite hangs (13 kills since Mar 30)
-        # Root cause: 961 FT models × _update_model_ft_stats() × model.predict_proba() in C code
-        # signal.alarm cannot interrupt C extensions (LightGBM/XGBoost/CatBoost)
-        # TODO: Rewrite as batch SQL query or multiprocessing with hard timeout
-        log.warning(
-            "FT stats update DISABLED (causes infinite loops). Stats will be stale until fixed."
-        )
+        # Batch update FT stats for all models (runs in child processes with timeout)
+        # This replaces the old loop that caused 13 infinite hangs
+        update_all_ft_stats_batch(db, models_with_changes=None)  # Full update
+        log.info("FT stats batch update complete")
     except Exception as e:
         import traceback
         log.error("FT scoring failed: %s", e)
