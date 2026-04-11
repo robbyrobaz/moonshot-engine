@@ -200,14 +200,13 @@ def run_cycle():
 
     # ── 7. FT scoring + promotions (BEFORE backtest — no dependency on new challengers) ──
     try:
-        from src.tournament.forward_test import score_forward_test_models, update_all_ft_stats_batch
+        from src.tournament.forward_test import score_forward_test_models
         score_forward_test_models(db, all_symbols, ts_ms)
+        # NOTE: score_forward_test_models already calls update_all_ft_stats_batch()
+        # incrementally (only models with new exits). Do NOT call it again with
+        # models_with_changes=None — that triggers an O(N) full-update of all 992+
+        # FT models and was the root cause of the 13+ cycle hangs.
         log.info("Forward test scoring complete")
-
-        # Batch update FT stats for all models (runs in child processes with timeout)
-        # This replaces the old loop that caused 13 infinite hangs
-        update_all_ft_stats_batch(db, models_with_changes=None)  # Full update
-        log.info("FT stats batch update complete")
     except Exception as e:
         import traceback
         log.error("FT scoring failed: %s", e)
@@ -272,13 +271,19 @@ def run_cycle():
     db.commit()
     db.close()
 
+    # Classify errors: only infrastructure failures count as fatal (exit 1).
+    # Non-critical errors (backtest timeouts, challenger failures, social data)
+    # should not cause systemd to mark the cycle as failed and spam logs.
+    NON_FATAL_PREFIXES = ("backtest:", "challengers:", "social:", "new_listings:")
+    fatal_errors = [e for e in errors if not any(e.startswith(p) for p in NON_FATAL_PREFIXES)]
+
     log.info(
-        "═══ Cycle %d done in %.1fs — %d errors ═══",
-        run_id, duration_s, len(errors),
+        "═══ Cycle %d done in %.1fs — %d errors (%d fatal) ═══",
+        run_id, duration_s, len(errors), len(fatal_errors),
     )
     fcntl.flock(lock_fh.fileno(), fcntl.LOCK_UN)
     lock_fh.close()
-    return len(errors) == 0
+    return len(fatal_errors) == 0
 
 
 def run_social_collection():

@@ -80,8 +80,12 @@ MIN_FT_TRADES_EVAL = _env("MIN_FT_TRADES_EVAL", 150, int)  # tier 2 eval thresho
 MIN_FT_PF_KEEP = _env("MIN_FT_PF_KEEP", 0.5, float)  # tier 2: catastrophic losers
 MIN_FT_TRADES_EVAL_50 = _env("MIN_FT_TRADES_EVAL_50", 50, int)  # tier 1 eval threshold
 MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 0.9, float)  # tier 1: unprofitable models
-CHALLENGER_COUNT_PER_CYCLE = _env("CHALLENGER_COUNT_PER_CYCLE", 25, int)  # new challengers per cycle (4h)
-BACKTEST_BATCH_SIZE = _env("BACKTEST_BATCH_SIZE", 10, int)  # models per cycle
+# 2026-04-11: Reduced 25→5. At 25/cycle the FT backlog grew faster than it
+# retired (~135 net new/day), bloating to 992+ models. 5/cycle = 30/day, which
+# the retirement gates can keep up with. Quality over quantity.
+CHALLENGER_COUNT_PER_CYCLE = _env("CHALLENGER_COUNT_PER_CYCLE", 5, int)  # new challengers per cycle (4h)
+# 2026-04-11: Reduced 10→5 to match challenger rate and keep cycle time < 60min.
+BACKTEST_BATCH_SIZE = _env("BACKTEST_BATCH_SIZE", 5, int)  # models per backtest cycle
 
 CHAMPION_BEAT_MARGIN = _env("CHAMPION_BEAT_MARGIN", 0.10, float)
 BOOTSTRAP_RESAMPLES = _env("BOOTSTRAP_RESAMPLES", 1000, int)
@@ -94,8 +98,10 @@ PNL_WEIGHT_TP = _env("PNL_WEIGHT_TP", 1.0, float)
 PNL_WEIGHT_SL = _env("PNL_WEIGHT_SL", 0.50, float)  # (SL/TP) × 1.5 = 0.5
 
 # ── Execution ────────────────────────────────────────────────────────────
-# 2026-03-15: ENABLE LONGS — primary mission now (hunting new coin spikes)
-LONG_DISABLED = _env("LONG_DISABLED", False, lambda v: str(v).lower() in {"1", "true", "yes", "on"})
+# 2026-04-11: DISABLE LONGS — 993 long models tested, ALL negative avg PnL.
+# The 30%+ spike thesis no longer holds in Apr 2026 market. Double down on SHORT
+# (champion PF 3.12, 94 trades). Re-enable when market regime changes.
+LONG_DISABLED = _env("LONG_DISABLED", True, lambda v: str(v).lower() in {"1", "true", "yes", "on"})
 # 2026-03-16: Raised to 500 — 471 ML longs already open, 10-limit was blocking ALL new champion entries
 MAX_LONG_POSITIONS = _env("MAX_LONG_POSITIONS", 500, int)
 # 2026-03-16: Raised to 500 for consistency (456 ML shorts open)

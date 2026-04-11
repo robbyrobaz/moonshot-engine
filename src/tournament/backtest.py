@@ -1,5 +1,6 @@
 """Moonshot v2 — Walk-forward backtest with 3 expanding folds."""
 
+import gc
 import json
 import time
 
@@ -306,6 +307,7 @@ def backtest_challenger(db, model_params: dict) -> dict:
         rss_before_load_mb,
     )
     X, y, pnl, ts_list = _load_labeled_data(db, direction, feature_names)
+    gc.collect()  # Free cursor and intermediate Python objects from label loading
     rss_after_load_mb = _get_rss_mb()
     log.info(
         "backtest label load done: model_id=%s direction=%s rows=%d rss_mb=%.1f delta_mb=%.1f",
@@ -400,11 +402,18 @@ def backtest_challenger(db, model_params: dict) -> dict:
         total_pnl += metrics["pnl"]
         all_trades_pnl.extend(metrics["trades_pnl"])
 
-        # Keep fold 3 model + scores for thresholds
+        # Keep fold 3 model + scores for thresholds; free earlier fold models
         if fold_idx == 2:
             last_model = model
             last_val_scores = metrics.get("scores")
             last_val_y = metrics.get("y_test")
+        else:
+            del model  # Release fold model — only fold 3 model is saved
+            gc.collect()
+
+    # Free the full dataset now that all folds are done
+    del X, y, pnl
+    gc.collect()
 
     # Always compute aggregate metrics so failed models get real PF saved to DB
     agg_pf, agg_ci = bootstrap_pf(all_trades_pnl) if all_trades_pnl else (0.0, 0.0)
@@ -601,7 +610,8 @@ def backtest_new_challengers(db, max_batch=None, cycle_budget_minutes=60):
 
         db.commit()
         processed += 1
-        
+        gc.collect()  # Release model + arrays from this iteration before loading next
+
         # Log time budget status after each model
         model_elapsed = time.time() - model_start_time
         total_elapsed = time.time() - cycle_start_time
