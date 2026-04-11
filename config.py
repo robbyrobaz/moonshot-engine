@@ -85,7 +85,9 @@ MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 0.9, float)  # tier 1: unprofitabl
 # the retirement gates can keep up with. Quality over quantity.
 CHALLENGER_COUNT_PER_CYCLE = _env("CHALLENGER_COUNT_PER_CYCLE", 5, int)  # new challengers per cycle (4h)
 # 2026-04-11: Reduced 10→5 to match challenger rate and keep cycle time < 60min.
-BACKTEST_BATCH_SIZE = _env("BACKTEST_BATCH_SIZE", 5, int)  # models per backtest cycle
+# 2026-04-11: Raised 5→15 now that LONG backtest queue was bulk-retired (766 models).
+# SHORT-only backtests complete in ~30s each, so 15/cycle ≈ 7.5min — well within budget.
+BACKTEST_BATCH_SIZE = _env("BACKTEST_BATCH_SIZE", 15, int)  # models per backtest cycle
 
 CHAMPION_BEAT_MARGIN = _env("CHAMPION_BEAT_MARGIN", 0.10, float)
 BOOTSTRAP_RESAMPLES = _env("BOOTSTRAP_RESAMPLES", 1000, int)

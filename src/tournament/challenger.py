@@ -5,7 +5,7 @@ import json
 import random
 import time
 
-from config import CHALLENGER_COUNT_PER_CYCLE, log
+from config import CHALLENGER_COUNT_PER_CYCLE, LONG_DISABLED, log
 from src.db.schema import get_db
 
 # ── Parameter space for random sampling ─────────────────────────────────────
@@ -232,8 +232,11 @@ def generate_challengers(db, n: int = None) -> list[dict]:
     now_ms = int(time.time() * 1000)
     created = []
 
-    # Force directional balance per cycle to avoid short-only drift.
-    target_dirs = (["long", "short"] * ((n + 1) // 2))[:n]
+    # Force directional balance per cycle — but respect LONG_DISABLED.
+    if LONG_DISABLED:
+        target_dirs = ["short"] * n
+    else:
+        target_dirs = (["long", "short"] * ((n + 1) // 2))[:n]
 
     for i in range(n * 4):  # oversample to account for duplicates
         if len(created) >= n:
