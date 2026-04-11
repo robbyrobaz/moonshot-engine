@@ -515,6 +515,9 @@ def backtest_new_challengers(db, max_batch=None, cycle_budget_minutes=60):
         model_id = row["model_id"]
         params = json.loads(row["params"])
         params["model_id"] = model_id
+        # direction lives in the DB column; old challengers don't have it in params JSON
+        if "direction" not in params:
+            params["direction"] = row["direction"]
         model_start_time = time.time()
 
         try:

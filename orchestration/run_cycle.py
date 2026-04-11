@@ -274,7 +274,7 @@ def run_cycle():
     # Classify errors: only infrastructure failures count as fatal (exit 1).
     # Non-critical errors (backtest timeouts, challenger failures, social data)
     # should not cause systemd to mark the cycle as failed and spam logs.
-    NON_FATAL_PREFIXES = ("backtest:", "challengers:", "social:", "new_listings:")
+    NON_FATAL_PREFIXES = ("backtest:", "challengers:", "social:", "new_listings:", "extended:")
     fatal_errors = [e for e in errors if not any(e.startswith(p) for p in NON_FATAL_PREFIXES)]
 
     log.info(
