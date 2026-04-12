@@ -411,12 +411,16 @@ def update_all_ft_stats_batch(db, models_with_changes: set[str] | None = None):
             try:
                 updated = res.get(timeout=timeout + 10)  # Extra 10s for process overhead
                 total_updated += updated
-                log.info("FT stats batch %d/%d: updated %d models", 
+                log.info("FT stats batch %d/%d: updated %d models",
                          i + 1, len(batches), updated)
             except mp.TimeoutError:
-                log.error("FT stats batch %d/%d: process timeout", i + 1, len(batches))
+                log.error("FT stats batch %d/%d: process timeout — terminating pool", i + 1, len(batches))
+                pool.terminate()
+                break
             except Exception as e:
-                log.error("FT stats batch %d/%d: error: %s", i + 1, len(batches), e)
+                log.error("FT stats batch %d/%d: error — terminating pool: %s", i + 1, len(batches), e)
+                pool.terminate()
+                break
     
     log.info("update_all_ft_stats_batch: completed %d/%d models", 
              total_updated, len(model_ids))

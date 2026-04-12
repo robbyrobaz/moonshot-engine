@@ -156,6 +156,7 @@ def import_v1_data(db) -> int:
         log.info("import_v1_data: v1 database not found at %s, skipping", v1_db_path)
         return 0
 
+    v1_conn = None
     try:
         v1_conn = sqlite3.connect(str(v1_db_path))
         v1_conn.row_factory = sqlite3.Row
@@ -222,3 +223,9 @@ def import_v1_data(db) -> int:
     except Exception as e:
         log.warning("import_v1_data: error importing v1 data: %s", e)
         return 0
+    finally:
+        if v1_conn is not None:
+            try:
+                v1_conn.close()
+            except Exception:
+                pass
